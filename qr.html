@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code — Springfield Peptide Buyers Club</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
+    .brand { font-family: 'Bebas Neue', Impact, sans-serif; letter-spacing: 0.02em; }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center p-6">
+  <div class="max-w-md w-full text-center">
+    <h1 class="brand text-3xl text-[#FDD700] mb-2">SPRINGFIELD PEPTIDE BUYERS CLUB</h1>
+    <p class="text-zinc-400 text-sm mb-8">Scan to open the price list</p>
+
+    <div class="bg-white rounded-3xl p-6 inline-block mb-6">
+      <img id="qrImage" alt="QR code" width="280" height="280" class="block">
+    </div>
+
+    <p id="siteUrl" class="text-emerald-400 text-sm break-all mb-6 font-mono"></p>
+
+    <div class="flex flex-col gap-3">
+      <a id="downloadBtn" href="#" download="springfield-peptide-qr.png"
+         class="bg-[#FDD700] hover:bg-white text-black font-bold py-3 px-6 rounded-2xl transition-colors">
+        Download QR image
+      </a>
+      <a href="/" class="text-zinc-500 hover:text-white text-sm">← Back to site</a>
+    </div>
+
+    <p class="text-zinc-600 text-xs mt-10 leading-relaxed">
+      Print this QR code on flyers, business cards, or display it at events.
+      Once deployed to your server, it always points to your live site.
+    </p>
+  </div>
+
+  <script>
+    const siteUrl = window.location.origin + '/';
+    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=512x512&margin=10&color=0-0-0&bgcolor=255-255-255&data=${encodeURIComponent(siteUrl)}`;
+
+    document.getElementById('siteUrl').textContent = siteUrl;
+    document.getElementById('qrImage').src = qrApi;
+    document.getElementById('downloadBtn').href = qrApi;
+  </script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Springfield Peptide Buyers Club — research peptides price list and order inquiries.">
+    <meta name="theme-color" content="#006600">
+    <title>SPRINGFIELD PEPTIDE BUYERS CLUB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .ducks-font {
+            font-family: 'Bebas Neue', Impact, sans-serif;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        .terms-scroll { max-height: 260px; overflow-y: auto; scrollbar-width: thin; }
+    </style>
+</head>
+<body class="bg-black text-white overflow-x-hidden">
+
+    <!-- PASSWORD SCREEN -->
+    <div id="passwordScreen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
+        <div class="max-w-xs w-full text-center px-6">
+            <div class="ducks-font text-3xl mb-8 text-[#FDD700]">SPRINGFIELD PEPTIDE BUYERS CLUB</div>
+            <input type="password" id="passwordInput" placeholder="ENTER PASSWORD"
+                   class="w-full bg-zinc-900 border border-[#FDD700] text-center py-4 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-[#FDD700]/50"
+                   autocomplete="current-password">
+            <button onclick="checkPassword()"
+                    class="mt-6 w-full bg-[#FDD700] hover:bg-white text-black font-bold py-4 rounded-2xl transition-colors">ENTER</button>
+            <p id="errorMsg" class="text-red-500 mt-4 text-sm hidden">Incorrect password</p>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="mainContent" class="hidden">
+        <header class="bg-[#006600] border-b-4 border-[#FDD700] sticky top-0 z-50 py-5">
+            <div class="max-w-screen-xl mx-auto px-6 text-center">
+                <div class="ducks-font text-4xl md:text-5xl tracking-tight">
+                    <span class="text-[#FDD700]">SPRINGFIELD</span>
+                    <span class="text-white"> PEPTIDE BUYERS CLUB</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="hero-bg min-h-[40vh] flex items-center relative"
+                 style="background: linear-gradient(rgba(0, 102, 0, 0.92), rgba(0, 51, 0, 0.95)), url('https://picsum.photos/id/1015/2000/1200') center/cover no-repeat;">
+            <div class="max-w-screen-xl mx-auto px-6 text-center py-16">
+                <h1 class="ducks-font text-5xl md:text-6xl leading-none mb-4 text-white">GAINS WITHOUT COMPROMISE</h1>
+                <a href="#prices" class="mt-6 inline-block bg-[#FDD700] hover:bg-white text-black font-bold px-10 py-5 rounded-2xl text-lg transition-colors">VIEW PRICES</a>
+            </div>
+        </section>
+
+        <section id="prices" class="bg-zinc-950 py-8">
+            <div class="max-w-screen-xl mx-auto px-4">
+                <h2 class="ducks-font text-5xl text-center mb-6 text-[#FDD700]">PRICE LIST</h2>
+                <div class="overflow-x-auto rounded-3xl border border-[#FDD700]/30 bg-zinc-900">
+                    <table class="w-full text-base min-w-[600px]">
+                        <thead class="bg-[#006600]">
+                            <tr>
+                                <th class="text-left pl-6 py-4 text-[#FDD700]">PEPTIDE</th>
+                                <th class="text-center text-[#FDD700]">VIAL</th>
+                                <th class="text-center text-[#FDD700]">10-PACK / KIT</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-800 text-white" id="priceTable">
+                            <tr class="hover:bg-emerald-900/50" data-name="RETA 35 MG" data-vial="42.50" data-pack="325">
+                                <td class="pl-6 font-medium py-4">RETA 35 MG</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$42.50</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$325</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-emerald-900/50" data-name="RETA 66 MG" data-vial="76.00" data-pack="470">
+                                <td class="pl-6 font-medium py-4">RETA 66 MG</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$76.00</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$470</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-emerald-900/50" data-name="GHK-CU 34MG" data-vial="27.00" data-pack="170">
+                                <td class="pl-6 font-medium py-4">GHK-CU 34MG</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$27.00</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$170</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-emerald-900/50" data-name="KPV 10 MG" data-vial="30.00" data-pack="200">
+                                <td class="pl-6 font-medium py-4">KPV 10 MG</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$30.00</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$200</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-emerald-900/50" data-name="5-AMINO-1MQ 44MG" data-vial="32.50" data-pack="225">
+                                <td class="pl-6 font-medium py-4">5-AMINO-1MQ 44MG</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$32.50</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$225</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-emerald-900/50" data-name="NAD 1000MG" data-vial="33.00" data-pack="230">
+                                <td class="pl-6 font-medium py-4">NAD 1000MG</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$33.00</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$230</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-emerald-900/50" data-name="TIRZ 30MG" data-vial="33.50" data-pack="235">
+                                <td class="pl-6 font-medium py-4">TIRZ 30MG</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$33.50</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$235</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-emerald-900/50" data-name="MOTS-C 40MG" data-vial="43.00" data-pack="330">
+                                <td class="pl-6 font-medium py-4">MOTS-C 40MG</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$43.00</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$330</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-emerald-900/50" data-name="KLOW 80MG" data-vial="43.00" data-pack="330">
+                                <td class="pl-6 font-medium py-4">KLOW 80MG</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$43.00</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$330</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-emerald-900/50" data-name="CJC/IPA NO DAC 10MG" data-vial="34.00" data-pack="240">
+                                <td class="pl-6 font-medium py-4">CJC/IPA NO DAC 10MG</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$34.00</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$240</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-emerald-900/50" data-name="BAC WATER 3ML KIT" data-kit="40">
+                                <td class="pl-6 font-medium py-4">BAC WATER 3ML KIT</td>
+                                <td class="text-center text-zinc-500">—</td>
+                                <td class="text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="font-bold text-[#FDD700]">$40</span>
+                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
+                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-12 bg-black">
+            <div class="max-w-md mx-auto px-6">
+                <div class="bg-emerald-950 border border-emerald-600 text-emerald-300 text-center py-4 px-6 rounded-3xl mb-6 text-sm font-medium">
+                    ORDERS PLACED BY FRIDAY SHIP THE FOLLOWING MONDAY
+                </div>
+
+                <div class="bg-red-950 border border-red-600 text-red-300 text-center py-5 px-6 rounded-3xl mb-8 text-base font-bold tracking-wider">
+                    FOR RESEARCH ONLY<br>NOT FOR HUMAN CONSUMPTION
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-[#FDD700] font-bold mb-3 text-center">
+                        <a href="#terms-section" class="hover:underline">TERMS OF SERVICE & PURCHASE AGREEMENT</a>
+                    </h3>
+                    <div id="terms-section" class="terms-scroll bg-zinc-900 border border-zinc-700 rounded-3xl p-6 text-xs leading-relaxed text-zinc-300">
+                        By placing an order you agree to all terms below. Please read carefully.<br><br>
+                        <strong>All Sales Are Final.</strong> No refunds, returns, or exchanges after payment is confirmed.<br><br>
+                        <strong>Payment.</strong> All sales require confirmed payment. Crypto transactions are non-reversible.<br><br>
+                        <strong>Bulk Pricing.</strong> Every complete set of 10 units qualifies for the bulk rate.<br><br>
+                        <strong>Payment Screenshot.</strong> A screenshot of your completed payment is required.<br><br>
+                        <strong>Shipping & Lost Packages.</strong> US addresses only. Carrier issues are the carrier's responsibility.<br><br>
+                        <strong>Legal Disclaimer.</strong> ALL products are strictly for research and educational purposes only. NOT for human or animal consumption.<br><br>
+                        <strong>Age Requirement.</strong> You must be 21+.<br><br>
+                        By submitting this form you confirm you have read and agree to all terms.
+                    </div>
+                </div>
+
+                <form id="orderForm" class="space-y-5 bg-zinc-900 p-6 rounded-3xl border border-[#FDD700]/20">
+                    <input type="text" id="name" placeholder="Name" required class="w-full bg-black border border-zinc-700 rounded-2xl px-5 py-3.5 text-sm">
+                    <input type="email" id="email" placeholder="Your Email Address" required class="w-full bg-black border border-zinc-700 rounded-2xl px-5 py-3.5 text-sm">
+                    <textarea id="message" rows="5" placeholder="Your order summary will appear here..." class="w-full bg-black border border-zinc-700 rounded-3xl px-5 py-3.5 text-sm"></textarea>
+
+                    <label class="flex items-center gap-3 text-sm cursor-pointer">
+                        <input type="checkbox" id="agree" class="w-5 h-5 accent-[#FDD700]">
+                        <span class="text-[#FDD700] font-medium">I AGREE TO ALL TERMS</span>
+                    </label>
+
+                    <button type="submit" id="submitBtn" disabled class="w-full bg-zinc-600 text-zinc-400 font-bold py-4 rounded-2xl text-lg cursor-not-allowed">
+                        SEND ORDER INQUIRY
+                    </button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <footer class="text-center py-6 text-xs text-zinc-500 bg-black">
+        SPRINGFIELD PEPTIDE BUYERS CLUB • RESEARCH ONLY
+    </footer>
+
+    <script>
+        const correctPassword = "GoDucks";
+        const AUTH_KEY = "spbc_auth";
+
+        function unlockSite() {
+            sessionStorage.setItem(AUTH_KEY, "1");
+            document.getElementById('passwordScreen').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            updateOrder();
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            if (input === correctPassword) {
+                unlockSite();
+            } else {
+                const error = document.getElementById('errorMsg');
+                error.classList.remove('hidden');
+                setTimeout(() => error.classList.add('hidden'), 2500);
+            }
+        }
+
+        function updateOrder() {
+            let orderText = "ORDER SUMMARY:\n\n";
+            let total = 0;
+            const rows = document.querySelectorAll('#priceTable tr');
+            rows.forEach(row => {
+                const name = row.getAttribute('data-name');
+                const vialPrice = parseFloat(row.getAttribute('data-vial') || 0);
+                const packPrice = parseFloat(row.getAttribute('data-pack') || row.getAttribute('data-kit') || 0);
+                const vialSelect = row.cells[1].querySelector('select');
+                const kitSelect = row.cells[2].querySelector('select');
+                const vialQty = parseInt(vialSelect ? vialSelect.value : 0, 10);
+                const kitQty = parseInt(kitSelect ? kitSelect.value : 0, 10);
+                if (vialQty > 0) {
+                    orderText += `${vialQty}x ${name} (Vial) — $${(vialQty * vialPrice).toFixed(2)}\n`;
+                    total += vialQty * vialPrice;
+                }
+                if (kitQty > 0) {
+                    orderText += `${kitQty}x ${name} (10-Pack / Kit) — $${(kitQty * packPrice).toFixed(2)}\n`;
+                    total += kitQty * packPrice;
+                }
+            });
+            if (total > 0) orderText += `\nESTIMATED TOTAL: $${total.toFixed(2)}`;
+            document.getElementById('message').value = orderText.trim() || "No items selected yet.";
+        }
+
+        const agreeCheckbox = document.getElementById('agree');
+        const submitBtn = document.getElementById('submitBtn');
+
+        agreeCheckbox.addEventListener('change', () => {
+            if (agreeCheckbox.checked) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('bg-zinc-600', 'text-zinc-400', 'cursor-not-allowed');
+                submitBtn.classList.add('bg-[#FDD700]', 'text-black', 'hover:bg-white');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('bg-zinc-600', 'text-zinc-400', 'cursor-not-allowed');
+                submitBtn.classList.remove('bg-[#FDD700]', 'text-black', 'hover:bg-white');
+            }
+        });
+
+        document.getElementById('orderForm').addEventListener('submit', e => {
+            e.preventDefault();
+            if (!agreeCheckbox.checked) return;
+            const name = document.getElementById('name').value.trim() || "Customer";
+            const email = document.getElementById('email').value.trim();
+            const body = document.getElementById('message').value;
+            const subject = encodeURIComponent("New Order Inquiry — Springfield Peptide Buyers Club");
+            const mailBody = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${body}`);
+            window.location.href = `mailto:springfieldpeps@proton.me?subject=${subject}&body=${mailBody}`;
+        });
+
+        document.getElementById('passwordInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        if (sessionStorage.getItem(AUTH_KEY) === "1") {
+            unlockSite();
+        }
+    </script>
+</body>
+</html>
