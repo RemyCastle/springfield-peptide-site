@@ -2,7 +2,7 @@
  * SPBC unified site header
  * - Marks active nav from body[data-page]
  * - Sliding gold pill under active link
- * - Scroll shrink + frosted glass
+ * - Scroll state with hysteresis (no top-of-page thrashing)
  * - window.spbcHeaderRefresh() after password unlock / layout changes
  */
 (function () {
@@ -12,6 +12,12 @@
   var pill = null;
   var header = null;
   var links = [];
+  var isScrolled = false;
+  // Hysteresis: different enter/leave thresholds prevent sticky-header
+  // height changes from bouncing scrollY across a single threshold.
+  var SCROLL_ENTER = 48;
+  var SCROLL_LEAVE = 8;
+  var pillRaf = 0;
 
   function resolveActive() {
     var page = (document.body && document.body.dataset.page) || '';
@@ -48,9 +54,28 @@
     }
   }
 
+  function schedulePill() {
+    if (pillRaf) return;
+    pillRaf = requestAnimationFrame(function () {
+      pillRaf = 0;
+      movePill(false);
+    });
+  }
+
   function onScroll() {
     if (!header) return;
-    header.classList.toggle('is-scrolled', window.scrollY > 10);
+    var y = window.scrollY || window.pageYOffset || 0;
+    var next = isScrolled;
+    if (!isScrolled && y > SCROLL_ENTER) next = true;
+    else if (isScrolled && y < SCROLL_LEAVE) next = false;
+
+    if (next === isScrolled) return;
+    isScrolled = next;
+    header.classList.toggle('is-scrolled', isScrolled);
+    // Remeasure pill after layout settles (height change)
+    schedulePill();
+    // Second pass after CSS transition (~220ms)
+    setTimeout(schedulePill, 240);
   }
 
   function bindOnce() {
@@ -89,7 +114,10 @@
     pill = header.querySelector('.nav-pill');
     resolveActive();
     bindOnce();
-    onScroll();
+    // Seed scrolled state without thrash (use enter threshold only on first paint)
+    var y = window.scrollY || window.pageYOffset || 0;
+    isScrolled = y > SCROLL_ENTER;
+    header.classList.toggle('is-scrolled', isScrolled);
     movePill(!!animateGlow);
     requestAnimationFrame(function () { movePill(false); });
   }

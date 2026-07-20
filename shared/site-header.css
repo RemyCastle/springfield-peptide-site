@@ -8,7 +8,7 @@
 }
 
 .site-header {
-  --spbc-header-pad-y: 0.85rem;
+  --spbc-header-pad-y: 0.75rem;
   background: linear-gradient(180deg, #007a00 0%, var(--spbc-green) 55%, var(--spbc-green-deep) 100%);
   border-bottom: 4px solid var(--spbc-gold);
   position: sticky;
@@ -16,11 +16,12 @@
   z-index: 50;
   padding-top: max(var(--spbc-header-pad-y), env(safe-area-inset-top));
   padding-bottom: var(--spbc-header-pad-y);
+  /* Only visual chrome transitions — avoid layout-shifting size changes */
   transition:
-    padding 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.22s ease,
-    background 0.22s ease,
-    border-color 0.22s ease;
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    backdrop-filter 0.2s ease;
   isolation: isolate;
 }
 
@@ -58,8 +59,8 @@
 }
 
 .site-header.is-scrolled {
-  --spbc-header-pad-y: 0.45rem;
-  background: rgba(0, 80, 0, 0.88);
+  /* Keep padding/type size stable so sticky height does not fight scrollY */
+  background: rgba(0, 80, 0, 0.92);
   backdrop-filter: blur(12px) saturate(1.2);
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
   box-shadow:
@@ -116,7 +117,6 @@
   line-height: 1;
   letter-spacing: 0.01em;
   display: inline-block;
-  transition: font-size 0.22s ease;
 }
 
 @media (min-width: 640px) {
@@ -125,18 +125,6 @@
 
 @media (min-width: 768px) {
   .site-header__brand-text { font-size: 1.7rem; }
-}
-
-.site-header.is-scrolled .site-header__brand-text {
-  font-size: 1.1rem;
-}
-
-@media (min-width: 640px) {
-  .site-header.is-scrolled .site-header__brand-text { font-size: 1.3rem; }
-}
-
-@media (min-width: 768px) {
-  .site-header.is-scrolled .site-header__brand-text { font-size: 1.45rem; }
 }
 
 .site-header__brand-gold {
