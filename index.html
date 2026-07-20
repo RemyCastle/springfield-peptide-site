@@ -2,298 +2,393 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="description" content="Springfield Peptide Buyers Club — research peptides price list and order inquiries.">
     <meta name="theme-color" content="#006600">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>SPRINGFIELD PEPTIDE BUYERS CLUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', system-ui, sans-serif; }
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            padding-left: env(safe-area-inset-left, 0);
+            padding-right: env(safe-area-inset-right, 0);
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
         .ducks-font {
             font-family: 'Bebas Neue', Impact, sans-serif;
             font-weight: 400;
             letter-spacing: 0.02em;
             text-transform: uppercase;
         }
-        .terms-scroll { max-height: 260px; overflow-y: auto; scrollbar-width: thin; }
+        .terms-scroll {
+            max-height: min(40vh, 280px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+        .qty-select {
+            background: #000;
+            border: 1px solid #52525b;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.65rem;
+            font-size: 1rem; /* 16px avoids iOS focus zoom */
+            min-width: 3.5rem;
+            min-height: 2.75rem;
+            color: #fff;
+            touch-action: manipulation;
+        }
+        /* Stack price rows cleanly on narrow phones */
+        .price-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem 0.75rem;
+        }
+        .price-row .price-label {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        .price-row .price-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        .break-word { overflow-wrap: anywhere; word-break: break-word; }
+        /* Inputs: 16px+ prevents iOS auto-zoom */
+        input, textarea, select, button {
+            font-size: 16px;
+            touch-action: manipulation;
+        }
+        @media (max-width: 380px) {
+            .price-row .price-controls { gap: 0.5rem; }
+            .qty-select { min-width: 3.25rem; padding: 0.45rem 0.5rem; }
+        }
+        /* Premium brand hero — no external images */
+        .hero-bg {
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(253, 215, 0, 0.18) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 50% at 100% 100%, rgba(0, 102, 0, 0.55) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 40% at 0% 80%, rgba(0, 80, 0, 0.4) 0%, transparent 45%),
+                linear-gradient(165deg, #004d00 0%, #003300 40%, #001a00 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                repeating-linear-gradient(
+                    -12deg,
+                    transparent,
+                    transparent 18px,
+                    rgba(253, 215, 0, 0.03) 18px,
+                    rgba(253, 215, 0, 0.03) 19px
+                );
+            pointer-events: none;
+        }
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: linear-gradient(to top, #09090b, transparent);
+            pointer-events: none;
+        }
+        .hero-inner { position: relative; z-index: 1; }
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: 0.5rem;
+            z-index: 200;
+            background: #FDD700;
+            color: #000;
+            font-weight: 700;
+            padding: 0.6rem 1rem;
+            border-radius: 0.75rem;
+        }
+        .skip-link:focus {
+            left: 0.5rem;
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .search-field {
+            width: 100%;
+            background: #000;
+            border: 1px solid #3f3f46;
+            border-radius: 1rem;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            color: #fff;
+            font-size: 16px;
+            min-height: 2.75rem;
+        }
+        .search-field:focus {
+            outline: none;
+            border-color: #FDD700;
+            box-shadow: 0 0 0 2px rgba(253, 215, 0, 0.35);
+        }
+        .filter-chip {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 0.45rem 0.85rem;
+            border-radius: 999px;
+            border: 1px solid #3f3f46;
+            color: #a1a1aa;
+            background: transparent;
+            min-height: 2.25rem;
+            transition: color 0.15s, background 0.15s, border-color 0.15s;
+        }
+        .filter-chip.active {
+            background: #FDD700;
+            color: #000;
+            border-color: #FDD700;
+        }
+        .filter-chip:hover:not(.active) {
+            border-color: rgba(253, 215, 0, 0.5);
+            color: #fff;
+        }
+        .price-card {
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+        }
+        .price-card.qty-flash {
+            border-color: rgba(253, 215, 0, 0.7);
+            box-shadow: 0 0 0 1px rgba(253, 215, 0, 0.35);
+            transform: scale(1.01);
+        }
+        .sticky-order-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 60;
+            transform: translateY(110%);
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+            padding: 0 0.75rem max(0.75rem, env(safe-area-inset-bottom));
+            pointer-events: none;
+        }
+        .sticky-order-bar.visible {
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .sticky-order-inner {
+            max-width: 28rem;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #14532d 0%, #052e16 100%);
+            border: 1px solid rgba(253, 215, 0, 0.45);
+            border-radius: 1.25rem;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.2);
+            padding: 0.75rem 1rem;
+        }
+        .progress-track {
+            height: 6px;
+            background: rgba(0, 0, 0, 0.45);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FDD700, #86efac);
+            border-radius: 999px;
+            width: 0%;
+            transition: width 0.35s ease;
+        }
+        .skeleton-card {
+            border-radius: 1rem;
+            border: 1px solid rgba(253, 215, 0, 0.15);
+            background: #18181b;
+            padding: 1rem;
+            min-height: 5.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(253, 215, 0, 0.08), transparent);
+            animation: shimmer 1.4s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0;
+        }
+        @media (min-width: 640px) {
+            .modal-backdrop {
+                align-items: center;
+                padding: 1rem;
+            }
+        }
+        .modal-sheet {
+            width: 100%;
+            max-width: 28rem;
+            max-height: min(88vh, 640px);
+            overflow-y: auto;
+            background: #18181b;
+            border: 1px solid rgba(253, 215, 0, 0.35);
+            border-radius: 1.5rem 1.5rem 0 0;
+            padding: 1.25rem 1.25rem max(1.25rem, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch;
+        }
+        @media (min-width: 640px) {
+            .modal-sheet { border-radius: 1.5rem; }
+        }
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #FDD700;
+            border: 1px solid rgba(253, 215, 0, 0.4);
+            border-radius: 0.75rem;
+            padding: 0.4rem 0.75rem;
+            background: rgba(0, 0, 0, 0.35);
+            min-height: 2.25rem;
+        }
+        .copy-btn:hover { background: rgba(253, 215, 0, 0.12); }
+        body.has-cart-bar { padding-bottom: 7.5rem; }
+        @media (prefers-reduced-motion: reduce) {
+            .sticky-order-bar, .progress-fill, .price-card, .filter-chip, .skeleton-card::after {
+                transition: none !important;
+                animation: none !important;
+            }
+            .price-card.qty-flash { transform: none; }
+        }
     </style>
 </head>
 <body class="bg-black text-white overflow-x-hidden">
+    <a href="#prices" class="skip-link">Skip to price list</a>
 
     <!-- PASSWORD SCREEN -->
-    <div id="passwordScreen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
-        <div class="max-w-xs w-full text-center px-6">
-            <div class="ducks-font text-3xl mb-8 text-[#FDD700]">SPRINGFIELD PEPTIDE BUYERS CLUB</div>
+    <div id="passwordScreen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center p-4 safe-pad">
+        <div class="max-w-xs w-full text-center px-2 sm:px-4">
+            <div class="ducks-font text-2xl sm:text-3xl mb-6 sm:mb-8 text-[#FDD700] leading-tight break-word">
+                SPRINGFIELD<br class="sm:hidden"> PEPTIDE BUYERS CLUB
+            </div>
             <input type="password" id="passwordInput" placeholder="ENTER PASSWORD"
-                   class="w-full bg-zinc-900 border border-[#FDD700] text-center py-4 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-[#FDD700]/50"
-                   autocomplete="current-password">
-            <button onclick="checkPassword()"
-                    class="mt-6 w-full bg-[#FDD700] hover:bg-white text-black font-bold py-4 rounded-2xl transition-colors">ENTER</button>
-            <p id="errorMsg" class="text-red-500 mt-4 text-sm hidden">Incorrect password</p>
+                   class="w-full bg-zinc-900 border border-[#FDD700] text-center py-4 rounded-2xl text-base focus:outline-none focus:ring-2 focus:ring-[#FDD700]/50"
+                   autocomplete="current-password"
+                   enterkeyhint="go"
+                   inputmode="text"
+                   aria-label="Club password">
+            <button type="button" onclick="checkPassword()"
+                    class="mt-6 w-full bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-4 rounded-2xl transition-colors min-h-[3rem]">ENTER</button>
+            <p id="errorMsg" class="text-red-500 mt-4 text-sm hidden" role="alert">Incorrect password</p>
         </div>
     </div>
 
     <!-- MAIN CONTENT -->
     <div id="mainContent" class="hidden">
-        <header class="bg-[#006600] border-b-4 border-[#FDD700] sticky top-0 z-50 py-5">
-            <div class="max-w-screen-xl mx-auto px-6 text-center">
-                <div class="ducks-font text-4xl md:text-5xl tracking-tight">
-                    <span class="text-[#FDD700]">SPRINGFIELD</span>
-                    <span class="text-white"> PEPTIDE BUYERS CLUB</span>
+        <header class="bg-[#006600] border-b-4 border-[#FDD700] sticky top-0 z-50 py-3 sm:py-5" style="padding-top: max(0.75rem, env(safe-area-inset-top));">
+            <div class="max-w-screen-xl mx-auto px-3 sm:px-6">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="ducks-font text-xl xs:text-2xl sm:text-3xl md:text-4xl tracking-tight leading-none break-word text-center sm:text-left">
+                        <span class="text-[#FDD700] block sm:inline">SPRINGFIELD</span>
+                        <span class="text-white block sm:inline sm:ml-1">PEPTIDE BUYERS CLUB</span>
+                    </div>
+                    <nav class="flex items-center gap-2 flex-wrap justify-center" aria-label="Main">
+                        <a href="#prices" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-white/90 hover:text-[#FDD700] px-3 py-2 rounded-full min-h-[2.5rem] inline-flex items-center">Prices</a>
+                        <a href="/calculator.html" class="text-xs sm:text-sm font-bold uppercase tracking-wider bg-[#FDD700] text-black hover:bg-white px-3 py-2 rounded-full min-h-[2.5rem] inline-flex items-center">Dosage Calculator</a>
+                    </nav>
                 </div>
             </div>
         </header>
 
-        <section class="hero-bg min-h-[40vh] flex items-center relative"
-                 style="background: linear-gradient(rgba(0, 102, 0, 0.92), rgba(0, 51, 0, 0.95)), url('https://picsum.photos/id/1015/2000/1200') center/cover no-repeat;">
-            <div class="max-w-screen-xl mx-auto px-6 text-center py-16">
-                <h1 class="ducks-font text-5xl md:text-6xl leading-none mb-4 text-white">GAINS WITHOUT COMPROMISE</h1>
-                <a href="#prices" class="mt-6 inline-block bg-[#FDD700] hover:bg-white text-black font-bold px-10 py-5 rounded-2xl text-lg transition-colors">VIEW PRICES</a>
+        <section class="hero-bg min-h-[32vh] sm:min-h-[40vh] flex items-center relative" aria-label="Welcome">
+            <div class="hero-inner max-w-screen-xl mx-auto px-4 sm:px-6 text-center py-10 sm:py-16">
+                <p class="text-[#FDD700] text-xs tracking-[0.28em] uppercase font-semibold mb-3">Research club · members only</p>
+                <h1 class="ducks-font text-3xl sm:text-5xl md:text-6xl leading-tight sm:leading-none mb-3 text-white break-word">GAINS WITHOUT COMPROMISE</h1>
+                <p class="text-zinc-300 text-sm sm:text-base max-w-md mx-auto mb-6 leading-relaxed">Bulk-ready pricing, transparent discounts, and a dosage calculator — built for serious research buyers.</p>
+                <a href="#prices" class="mt-2 inline-block bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold px-8 sm:px-10 py-4 sm:py-5 rounded-2xl text-base sm:text-lg transition-colors min-h-[3rem]">VIEW PRICES</a>
             </div>
         </section>
 
-        <section id="prices" class="bg-zinc-950 py-8">
-            <div class="max-w-screen-xl mx-auto px-4">
-                <h2 class="ducks-font text-5xl text-center mb-6 text-[#FDD700]">PRICE LIST</h2>
-                <div class="overflow-x-auto rounded-3xl border border-[#FDD700]/30 bg-zinc-900">
-                    <table class="w-full text-base min-w-[600px]">
-                        <thead class="bg-[#006600]">
-                            <tr>
-                                <th class="text-left pl-6 py-4 text-[#FDD700]">PEPTIDE</th>
-                                <th class="text-center text-[#FDD700]">VIAL</th>
-                                <th class="text-center text-[#FDD700]">10-PACK / KIT</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-zinc-800 text-white" id="priceTable">
-                            <tr class="hover:bg-emerald-900/50" data-name="RETA 35 MG" data-vial="42.50" data-pack="325">
-                                <td class="pl-6 font-medium py-4">RETA 35 MG</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$42.50</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$325</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-emerald-900/50" data-name="RETA 66 MG" data-vial="76.00" data-pack="470">
-                                <td class="pl-6 font-medium py-4">RETA 66 MG</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$76.00</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$470</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-emerald-900/50" data-name="GHK-CU 34MG" data-vial="27.00" data-pack="170">
-                                <td class="pl-6 font-medium py-4">GHK-CU 34MG</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$27.00</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$170</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-emerald-900/50" data-name="KPV 10 MG" data-vial="30.00" data-pack="200">
-                                <td class="pl-6 font-medium py-4">KPV 10 MG</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$30.00</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$200</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-emerald-900/50" data-name="5-AMINO-1MQ 44MG" data-vial="32.50" data-pack="225">
-                                <td class="pl-6 font-medium py-4">5-AMINO-1MQ 44MG</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$32.50</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$225</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-emerald-900/50" data-name="NAD 1000MG" data-vial="33.00" data-pack="230">
-                                <td class="pl-6 font-medium py-4">NAD 1000MG</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$33.00</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$230</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-emerald-900/50" data-name="TIRZ 30MG" data-vial="33.50" data-pack="235">
-                                <td class="pl-6 font-medium py-4">TIRZ 30MG</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$33.50</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$235</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-emerald-900/50" data-name="MOTS-C 40MG" data-vial="43.00" data-pack="330">
-                                <td class="pl-6 font-medium py-4">MOTS-C 40MG</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$43.00</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$330</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-emerald-900/50" data-name="KLOW 80MG" data-vial="43.00" data-pack="330">
-                                <td class="pl-6 font-medium py-4">KLOW 80MG</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$43.00</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$330</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-emerald-900/50" data-name="CJC/IPA NO DAC 10MG" data-vial="34.00" data-pack="240">
-                                <td class="pl-6 font-medium py-4">CJC/IPA NO DAC 10MG</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$34.00</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$240</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-emerald-900/50" data-name="BAC WATER 3ML KIT" data-kit="40">
-                                <td class="pl-6 font-medium py-4">BAC WATER 3ML KIT</td>
-                                <td class="text-center text-zinc-500">—</td>
-                                <td class="text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <span class="font-bold text-[#FDD700]">$40</span>
-                                        <select onchange="updateOrder()" class="bg-black border border-zinc-600 rounded-lg px-2 py-1 text-xs">
-                                            <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <section id="prices" class="bg-zinc-950 py-6 sm:py-8" tabindex="-1">
+            <div class="max-w-screen-md mx-auto px-3 sm:px-4">
+                <h2 class="ducks-font text-3xl sm:text-4xl md:text-5xl text-center mb-4 sm:mb-6 text-[#FDD700]">PRICE LIST</h2>
+                <div class="bg-zinc-900 border border-[#FDD700]/40 rounded-2xl px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5">
+                    <p class="text-[#FDD700] font-semibold">Single vial rules</p>
+                    <p class="text-zinc-300"><strong class="text-white">3 vial minimum</strong> when ordering single vials</p>
+                    <p class="text-zinc-300"><strong class="text-white">5+ single vials</strong> → <span class="text-emerald-400 font-semibold">10% off</span> single-vial prices</p>
+                    <p class="text-[#FDD700] font-semibold pt-2">10-pack / kit rules</p>
+                    <p class="text-zinc-300"><strong class="text-white">2+ kits</strong> → <span class="text-emerald-400 font-semibold">10% off</span> kit subtotal</p>
+                    <p class="text-zinc-300"><strong class="text-white">5+ kits</strong> → <span class="text-emerald-400 font-semibold">15% off</span> kit subtotal</p>
                 </div>
+
+                <!-- Search + filter -->
+                <div class="mb-4 space-y-3">
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+                        </span>
+                        <input type="search" id="productSearch" class="search-field" placeholder="Search products…" autocomplete="off" enterkeyhint="search" aria-label="Search products">
+                    </div>
+                    <div class="flex flex-wrap gap-2 justify-center" role="group" aria-label="Filter products">
+                        <button type="button" class="filter-chip active" data-filter="all" aria-pressed="true">All</button>
+                        <button type="button" class="filter-chip" data-filter="vials" aria-pressed="false">Has vials</button>
+                        <button type="button" class="filter-chip" data-filter="kit-only" aria-pressed="false">Kit-only</button>
+                    </div>
+                    <p id="filterEmpty" class="hidden text-center text-zinc-500 text-sm py-2">No products match your search.</p>
+                </div>
+
+                <div id="priceTable" class="flex flex-col gap-3" aria-live="polite">
+                    <div id="priceLoading" class="flex flex-col gap-3" aria-busy="true" aria-label="Loading prices">
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
+                </div>
+                <p id="vialRuleStatus" class="mt-4 text-center text-sm text-zinc-500"></p>
+                <p id="kitRuleStatus" class="mt-2 text-center text-sm text-zinc-500"></p>
             </div>
         </section>
 
-        <section class="py-12 bg-black">
-            <div class="max-w-md mx-auto px-6">
-                <div class="bg-emerald-950 border border-emerald-600 text-emerald-300 text-center py-4 px-6 rounded-3xl mb-6 text-sm font-medium">
+        <section class="py-8 sm:py-12 bg-black">
+            <div class="max-w-md mx-auto px-3 sm:px-6">
+                <div class="bg-emerald-950 border border-emerald-600 text-emerald-300 text-center py-4 px-4 sm:px-6 rounded-3xl mb-6 text-sm font-medium break-word">
                     ORDERS PLACED BY FRIDAY SHIP THE FOLLOWING MONDAY
                 </div>
 
-                <div class="bg-red-950 border border-red-600 text-red-300 text-center py-5 px-6 rounded-3xl mb-8 text-base font-bold tracking-wider">
+                <div class="bg-red-950 border border-red-600 text-red-300 text-center py-4 sm:py-5 px-4 sm:px-6 rounded-3xl mb-8 text-sm sm:text-base font-bold tracking-wider">
                     FOR RESEARCH ONLY<br>NOT FOR HUMAN CONSUMPTION
                 </div>
 
                 <div class="mb-8">
-                    <h3 class="text-[#FDD700] font-bold mb-3 text-center">
-                        <a href="#terms-section" class="hover:underline">TERMS OF SERVICE & PURCHASE AGREEMENT</a>
+                    <h3 class="text-[#FDD700] font-bold mb-3 text-center text-sm sm:text-base">
+                        <a href="#terms-section" class="hover:underline">TERMS OF SERVICE &amp; PURCHASE AGREEMENT</a>
                     </h3>
-                    <div id="terms-section" class="terms-scroll bg-zinc-900 border border-zinc-700 rounded-3xl p-6 text-xs leading-relaxed text-zinc-300">
+                    <div id="terms-section" class="terms-scroll bg-zinc-900 border border-zinc-700 rounded-3xl p-4 sm:p-6 text-xs leading-relaxed text-zinc-300">
                         By placing an order you agree to all terms below. Please read carefully.<br><br>
                         <strong>All Sales Are Final.</strong> No refunds, returns, or exchanges after payment is confirmed.<br><br>
-                        <strong>Payment.</strong> All sales require confirmed payment. Crypto transactions are non-reversible.<br><br>
-                        <strong>Bulk Pricing.</strong> Every complete set of 10 units qualifies for the bulk rate.<br><br>
+                        <strong>Payment.</strong> Payment instructions and accepted methods are provided at checkout after you place your order. Include your order number in the payment memo. We confirm payment manually before shipping.<br><br>
+                        <strong>Bulk Pricing.</strong> Every complete set of 10 units qualifies for the bulk (10-pack) rate.<br><br>
+                        <strong>Single Vial Minimum.</strong> Single-vial orders require a minimum of 3 single vials (can be mixed products).<br><br>
+                        <strong>5+ Single Vial Discount.</strong> Orders of 5 or more single vials receive 10% off the single-vial subtotal (does not apply to 10-packs/kits).<br><br>
+                        <strong>Kit / 10-Pack Discounts.</strong> 2 or more kits/10-packs: 10% off the kit subtotal. 5 or more kits/10-packs: 15% off the kit subtotal (mixed products count toward the total kit count).<br><br>
                         <strong>Payment Screenshot.</strong> A screenshot of your completed payment is required.<br><br>
                         <strong>Shipping & Lost Packages.</strong> US addresses only. Carrier issues are the carrier's responsibility.<br><br>
                         <strong>Legal Disclaimer.</strong> ALL products are strictly for research and educational purposes only. NOT for human or animal consumption.<br><br>
@@ -302,37 +397,319 @@
                     </div>
                 </div>
 
-                <form id="orderForm" class="space-y-5 bg-zinc-900 p-6 rounded-3xl border border-[#FDD700]/20">
-                    <input type="text" id="name" placeholder="Name" required class="w-full bg-black border border-zinc-700 rounded-2xl px-5 py-3.5 text-sm">
-                    <input type="email" id="email" placeholder="Your Email Address" required class="w-full bg-black border border-zinc-700 rounded-2xl px-5 py-3.5 text-sm">
-                    <textarea id="message" rows="5" placeholder="Your order summary will appear here..." class="w-full bg-black border border-zinc-700 rounded-3xl px-5 py-3.5 text-sm"></textarea>
+                <form id="orderForm" class="space-y-4 sm:space-y-5 bg-zinc-900 p-4 sm:p-6 rounded-3xl border border-[#FDD700]/20">
+                    <input type="text" id="name" placeholder="Name" required autocomplete="name"
+                           class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                    <input type="email" id="email" placeholder="Your Email Address" required autocomplete="email" inputmode="email"
+                           class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                    <textarea id="message" rows="6" placeholder="Your order summary will appear here..." readonly
+                              class="w-full bg-black border border-zinc-700 rounded-3xl px-4 sm:px-5 py-3.5 text-sm sm:text-base leading-relaxed"></textarea>
+                    <p id="orderRuleHint" class="text-xs text-zinc-500 text-center break-word px-1"></p>
 
-                    <label class="flex items-center gap-3 text-sm cursor-pointer">
-                        <input type="checkbox" id="agree" class="w-5 h-5 accent-[#FDD700]">
-                        <span class="text-[#FDD700] font-medium">I AGREE TO ALL TERMS</span>
+                    <label class="flex items-start gap-3 text-sm cursor-pointer select-none">
+                        <input type="checkbox" id="agree" class="w-6 h-6 mt-0.5 shrink-0 accent-[#FDD700]">
+                        <span class="text-[#FDD700] font-medium leading-snug">I AGREE TO ALL TERMS</span>
                     </label>
 
-                    <button type="submit" id="submitBtn" disabled class="w-full bg-zinc-600 text-zinc-400 font-bold py-4 rounded-2xl text-lg cursor-not-allowed">
-                        SEND ORDER INQUIRY
+                    <p id="submitError" class="text-red-400 text-sm text-center hidden break-word"></p>
+                    <p id="submitSuccess" class="text-emerald-400 text-sm text-center hidden"></p>
+                    <button type="submit" id="submitBtn" disabled class="w-full bg-zinc-600 text-zinc-400 font-bold py-4 rounded-2xl text-base sm:text-lg cursor-not-allowed min-h-[3.25rem]">
+                        PLACE ORDER &amp; PAY
                     </button>
+                    <p class="text-xs text-zinc-500 text-center px-1">You'll get an order number and payment instructions after placing your order</p>
                 </form>
+
+                <div id="orderSuccess" class="hidden mt-6 bg-emerald-950 border border-emerald-600 rounded-3xl p-4 sm:p-6 text-center space-y-3">
+                    <p class="text-emerald-300 font-bold text-lg">Order placed</p>
+                    <div class="flex flex-col items-center gap-2">
+                        <p class="text-[#FDD700] text-xl sm:text-2xl font-bold font-mono break-all" id="successOrderNumber"></p>
+                        <button type="button" id="copyOrderBtn" class="copy-btn" aria-live="polite">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            <span id="copyOrderLabel">Copy order #</span>
+                        </button>
+                    </div>
+                    <p class="text-zinc-300 text-sm break-word">
+                        Next: pay <span id="successTotal" class="text-white font-semibold"></span> on the payment page
+                        (Friends &amp; Family · memo = <strong>code only</strong>).
+                        You can enter your shipping address before or after paying.
+                    </p>
+                    <div class="flex flex-col gap-2 pt-2">
+                        <a id="successPayLink" href="#" class="bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Open payment page</a>
+                        <a id="successShipLink" href="#" class="border border-zinc-600 hover:border-[#FDD700] text-zinc-200 font-semibold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Enter shipping address</a>
+                    </div>
+                    <p class="text-xs text-zinc-500">Payment handles and full steps are on the payment page only</p>
+                </div>
             </div>
         </section>
+
+        <!-- Sticky floating cart bar -->
+        <div id="stickyOrderBar" class="sticky-order-bar" aria-hidden="true">
+            <div class="sticky-order-inner">
+                <div class="flex items-center justify-between gap-3 mb-2">
+                    <div class="min-w-0">
+                        <p class="text-[10px] uppercase tracking-wider text-emerald-300/90 font-semibold">Your order</p>
+                        <p id="stickyCount" class="text-sm text-white font-semibold truncate">0 items</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <p class="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">Total</p>
+                        <p id="stickyTotal" class="text-lg font-bold text-[#FDD700] tabular-nums" aria-live="polite">$0.00</p>
+                    </div>
+                </div>
+                <div class="mb-2.5">
+                    <div class="progress-track" role="progressbar" id="discountProgress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Discount progress">
+                        <div id="discountProgressFill" class="progress-fill"></div>
+                    </div>
+                    <p id="stickyProgressHint" class="text-[11px] text-zinc-300 mt-1.5 leading-snug">Add items to unlock discounts</p>
+                </div>
+                <button type="button" id="stickyReviewBtn"
+                        class="w-full bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-3 rounded-xl text-sm min-h-[2.75rem] transition-colors">
+                    Review order →
+                </button>
+            </div>
+        </div>
     </div>
 
-    <footer class="text-center py-6 text-xs text-zinc-500 bg-black">
+    <!-- Order review modal -->
+    <div id="reviewModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="reviewTitle" hidden>
+        <div class="modal-sheet">
+            <div class="flex items-start justify-between gap-3 mb-4">
+                <div>
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-[#FDD700] font-semibold mb-1">Confirm</p>
+                    <h2 id="reviewTitle" class="ducks-font text-2xl text-white">Review order</h2>
+                </div>
+                <button type="button" id="reviewCloseBtn" class="text-zinc-400 hover:text-white text-2xl leading-none px-2 min-h-[2.5rem]" aria-label="Close review">&times;</button>
+            </div>
+            <div id="reviewLines" class="space-y-2 text-sm text-zinc-300 mb-4"></div>
+            <div class="border-t border-zinc-700 pt-3 mb-4 space-y-1.5 text-sm">
+                <div class="flex justify-between gap-2"><span class="text-zinc-400">Email</span><span id="reviewEmail" class="text-white break-all text-right"></span></div>
+                <div class="flex justify-between gap-2"><span class="text-zinc-400">Name</span><span id="reviewName" class="text-white text-right"></span></div>
+                <div class="flex justify-between gap-2 text-base font-bold pt-1"><span class="text-zinc-200">Total</span><span id="reviewTotal" class="text-[#FDD700] tabular-nums"></span></div>
+            </div>
+            <p id="reviewError" class="text-red-400 text-sm text-center hidden mb-3" role="alert"></p>
+            <div class="flex flex-col gap-2">
+                <button type="button" id="reviewConfirmBtn" class="w-full bg-[#FDD700] hover:bg-white text-black font-bold py-3.5 rounded-2xl min-h-[3rem]">Confirm &amp; place order</button>
+                <button type="button" id="reviewCancelBtn" class="w-full border border-zinc-600 text-zinc-300 font-semibold py-3 rounded-2xl min-h-[2.75rem]">Go back</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-6 text-xs text-zinc-500 bg-black px-3 break-word">
         SPRINGFIELD PEPTIDE BUYERS CLUB • RESEARCH ONLY
     </footer>
 
     <script>
         const correctPassword = "GoDucks";
         const AUTH_KEY = "spbc_auth";
+        const CART_KEY = "spbc_cart_draft";
+        const CONTACT_KEY = "spbc_contact_draft";
+        const VIAL_OPTS = [0, 1, 2, 3, 5, 10];
+        const PACK_OPTS = [0, 1, 2, 3, 5];
+        const MIN_SINGLE_VIALS = 3;
+        const DISCOUNT_VIAL_THRESHOLD = 5;
+        const SINGLE_VIAL_DISCOUNT = 0.10;
+        const KIT_DISCOUNT_TIER1_QTY = 2;
+        const KIT_DISCOUNT_TIER1_RATE = 0.10;
+        const KIT_DISCOUNT_TIER2_QTY = 5;
+        const KIT_DISCOUNT_TIER2_RATE = 0.15;
+
+        let activeFilter = 'all';
+        let placingOrder = false;
+
+        function formatPrice(n) {
+            const num = Number(n);
+            if (!Number.isFinite(num)) return '';
+            return Number.isInteger(num) ? String(num) : num.toFixed(2);
+        }
+
+        function money(n) {
+            return Number(n).toFixed(2);
+        }
+
+        function kitDiscountRate(kitCount) {
+            if (kitCount >= KIT_DISCOUNT_TIER2_QTY) return KIT_DISCOUNT_TIER2_RATE;
+            if (kitCount >= KIT_DISCOUNT_TIER1_QTY) return KIT_DISCOUNT_TIER1_RATE;
+            return 0;
+        }
+
+        function optionHtml(values, selected) {
+            const sel = Number(selected) || 0;
+            return values.map(v => `<option value="${v}"${v === sel ? ' selected' : ''}>${v}</option>`).join('');
+        }
+
+        function escapeHtml(s) {
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function loadCartDraft() {
+            try {
+                const raw = localStorage.getItem(CART_KEY);
+                if (!raw) return {};
+                const data = JSON.parse(raw);
+                return data && typeof data === 'object' ? data : {};
+            } catch (_) {
+                return {};
+            }
+        }
+
+        function saveCartDraft() {
+            const draft = {};
+            document.querySelectorAll('#priceTable .price-card').forEach(card => {
+                const name = card.getAttribute('data-name');
+                if (!name) return;
+                const vialSelect = card.querySelector('select[data-kind="vial"]');
+                const kitSelect = card.querySelector('select[data-kind="pack"]');
+                const vialQty = parseInt(vialSelect ? vialSelect.value : 0, 10) || 0;
+                const kitQty = parseInt(kitSelect ? kitSelect.value : 0, 10) || 0;
+                if (vialQty > 0 || kitQty > 0) {
+                    draft[name] = { vial: vialQty, pack: kitQty };
+                }
+            });
+            try {
+                if (Object.keys(draft).length) localStorage.setItem(CART_KEY, JSON.stringify(draft));
+                else localStorage.removeItem(CART_KEY);
+            } catch (_) { /* ignore quota */ }
+        }
+
+        function clearCartDraft() {
+            try { localStorage.removeItem(CART_KEY); } catch (_) {}
+        }
+
+        function saveContactDraft() {
+            try {
+                localStorage.setItem(CONTACT_KEY, JSON.stringify({
+                    name: document.getElementById('name').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                }));
+            } catch (_) {}
+        }
+
+        function restoreContactDraft() {
+            try {
+                const raw = localStorage.getItem(CONTACT_KEY);
+                if (!raw) return;
+                const d = JSON.parse(raw);
+                if (d.name) document.getElementById('name').value = d.name;
+                if (d.email) document.getElementById('email').value = d.email;
+            } catch (_) {}
+        }
+
+        function flashCard(card) {
+            if (!card || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            card.classList.remove('qty-flash');
+            void card.offsetWidth;
+            card.classList.add('qty-flash');
+            setTimeout(() => card.classList.remove('qty-flash'), 280);
+        }
+
+        function applyProductFilter() {
+            const q = (document.getElementById('productSearch').value || '').trim().toLowerCase();
+            const cards = document.querySelectorAll('#priceTable .price-card');
+            let visible = 0;
+            cards.forEach(card => {
+                const name = (card.getAttribute('data-name') || '').toLowerCase();
+                const hasVial = card.hasAttribute('data-vial');
+                const kitOnly = card.hasAttribute('data-kit') && !card.hasAttribute('data-pack');
+                let typeOk = true;
+                if (activeFilter === 'vials') typeOk = hasVial;
+                if (activeFilter === 'kit-only') typeOk = kitOnly;
+                const textOk = !q || name.includes(q);
+                const show = typeOk && textOk;
+                card.classList.toggle('hidden', !show);
+                if (show) visible += 1;
+            });
+            const empty = document.getElementById('filterEmpty');
+            if (empty) empty.classList.toggle('hidden', visible > 0 || !cards.length);
+        }
+
+        function onQtyChange(selectEl) {
+            const card = selectEl.closest('.price-card');
+            flashCard(card);
+            updateOrder();
+        }
+
+        function renderProducts(products) {
+            const root = document.getElementById('priceTable');
+            root.innerHTML = '';
+            if (!products.length) {
+                root.innerHTML = '<p class="text-center text-zinc-500 text-sm py-8">No products available.</p>';
+                return;
+            }
+            const draft = loadCartDraft();
+            products.forEach(p => {
+                const name = p.name;
+                const kitOnly = !!p.kit_only;
+                const saved = draft[name] || {};
+                const article = document.createElement('article');
+                article.className = 'price-card rounded-2xl border border-[#FDD700]/30 bg-zinc-900 p-3 sm:p-4';
+                article.setAttribute('data-name', name);
+                if (kitOnly) {
+                    article.setAttribute('data-kit', String(p.pack_price));
+                } else {
+                    if (p.vial_price != null) article.setAttribute('data-vial', String(p.vial_price));
+                    article.setAttribute('data-pack', String(p.pack_price));
+                }
+
+                let body = `<h3 class="font-semibold text-white text-base sm:text-lg mb-3 break-word leading-snug">${escapeHtml(name)}</h3><div class="flex flex-col gap-3">`;
+                if (!kitOnly && p.vial_price != null) {
+                    body += `
+                        <div class="price-row">
+                            <span class="price-label text-sm text-zinc-400">Vial</span>
+                            <div class="price-controls">
+                                <span class="font-bold text-[#FDD700] tabular-nums">$${formatPrice(p.vial_price)}</span>
+                                <select data-kind="vial" class="qty-select" aria-label="${escapeHtml(name)} vial qty">
+                                    ${optionHtml(VIAL_OPTS, saved.vial)}
+                                </select>
+                            </div>
+                        </div>`;
+                }
+                body += `
+                    <div class="price-row">
+                        <span class="price-label text-sm text-zinc-400">${kitOnly ? 'Kit' : '10-Pack / Kit'}</span>
+                        <div class="price-controls">
+                            <span class="font-bold text-[#FDD700] tabular-nums">$${formatPrice(p.pack_price)}</span>
+                            <select data-kind="pack" class="qty-select" aria-label="${escapeHtml(name)} kit qty">
+                                ${optionHtml(kitOnly ? VIAL_OPTS : PACK_OPTS, saved.pack)}
+                            </select>
+                        </div>
+                    </div>
+                </div>`;
+                article.innerHTML = body;
+                article.querySelectorAll('select.qty-select').forEach(sel => {
+                    sel.addEventListener('change', () => onQtyChange(sel));
+                });
+                root.appendChild(article);
+            });
+            applyProductFilter();
+            updateOrder();
+        }
+
+        async function loadProducts() {
+            const root = document.getElementById('priceTable');
+            root.innerHTML = `
+                <div id="priceLoading" class="flex flex-col gap-3" aria-busy="true" aria-label="Loading prices">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>`;
+            try {
+                const res = await fetch('/api/products');
+                if (!res.ok) throw new Error('bad status');
+                const data = await res.json();
+                renderProducts(data.products || []);
+            } catch (e) {
+                root.innerHTML = '<p class="text-center text-red-400 text-sm py-8">Could not load prices. Please refresh.</p>';
+            }
+        }
 
         function unlockSite() {
             sessionStorage.setItem(AUTH_KEY, "1");
             document.getElementById('passwordScreen').classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
-            updateOrder();
+            restoreContactDraft();
+            loadProducts();
         }
 
         function checkPassword() {
@@ -342,59 +719,483 @@
             } else {
                 const error = document.getElementById('errorMsg');
                 error.classList.remove('hidden');
+                document.getElementById('passwordInput').focus();
                 setTimeout(() => error.classList.add('hidden'), 2500);
             }
         }
 
-        function updateOrder() {
-            let orderText = "ORDER SUMMARY:\n\n";
-            let total = 0;
-            const rows = document.querySelectorAll('#priceTable tr');
-            rows.forEach(row => {
-                const name = row.getAttribute('data-name');
-                const vialPrice = parseFloat(row.getAttribute('data-vial') || 0);
-                const packPrice = parseFloat(row.getAttribute('data-pack') || row.getAttribute('data-kit') || 0);
-                const vialSelect = row.cells[1].querySelector('select');
-                const kitSelect = row.cells[2].querySelector('select');
-                const vialQty = parseInt(vialSelect ? vialSelect.value : 0, 10);
-                const kitQty = parseInt(kitSelect ? kitSelect.value : 0, 10);
+        function skuFrom(name, kind) {
+            const base = String(name).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
+            return `${base}-${kind === 'vial' ? 'VIAL' : 'KIT'}`.slice(0, 64);
+        }
+
+        function dollarsToCents(d) {
+            return Math.round(Number(d) * 100);
+        }
+
+        function tallyOrder() {
+            let singleVials = 0;
+            let kitCount = 0;
+            let vialSubtotal = 0;
+            let packSubtotal = 0;
+            const lines = [];
+            const rawLines = [];
+            const cards = document.querySelectorAll('#priceTable .price-card');
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                const vialPrice = parseFloat(card.getAttribute('data-vial') || 0);
+                const packPrice = parseFloat(card.getAttribute('data-pack') || card.getAttribute('data-kit') || 0);
+                const vialSelect = card.querySelector('select[data-kind="vial"]');
+                const kitSelect = card.querySelector('select[data-kind="pack"]');
+                const vialQty = parseInt(vialSelect ? vialSelect.value : 0, 10) || 0;
+                const kitQty = parseInt(kitSelect ? kitSelect.value : 0, 10) || 0;
                 if (vialQty > 0) {
-                    orderText += `${vialQty}x ${name} (Vial) — $${(vialQty * vialPrice).toFixed(2)}\n`;
-                    total += vialQty * vialPrice;
+                    const line = vialQty * vialPrice;
+                    singleVials += vialQty;
+                    vialSubtotal += line;
+                    lines.push({ kind: 'vial', text: `${vialQty}x ${name} (Vial) — $${money(line)}` });
+                    rawLines.push({
+                        kind: 'vial',
+                        name: `${name} (Vial)`,
+                        sku: skuFrom(name, 'vial'),
+                        qty: vialQty,
+                        unit_price_dollars: vialPrice,
+                    });
                 }
                 if (kitQty > 0) {
-                    orderText += `${kitQty}x ${name} (10-Pack / Kit) — $${(kitQty * packPrice).toFixed(2)}\n`;
-                    total += kitQty * packPrice;
+                    const label = card.hasAttribute('data-kit') && !card.hasAttribute('data-pack') ? 'Kit' : '10-Pack / Kit';
+                    const line = kitQty * packPrice;
+                    kitCount += kitQty;
+                    packSubtotal += line;
+                    lines.push({ kind: 'pack', text: `${kitQty}x ${name} (${label}) — $${money(line)}` });
+                    rawLines.push({
+                        kind: 'pack',
+                        name: `${name} (${label})`,
+                        sku: skuFrom(name, 'kit'),
+                        qty: kitQty,
+                        unit_price_dollars: packPrice,
+                    });
                 }
             });
-            if (total > 0) orderText += `\nESTIMATED TOTAL: $${total.toFixed(2)}`;
-            document.getElementById('message').value = orderText.trim() || "No items selected yet.";
+            const vialDiscountEligible = singleVials >= DISCOUNT_VIAL_THRESHOLD;
+            const vialDiscount = vialDiscountEligible ? vialSubtotal * SINGLE_VIAL_DISCOUNT : 0;
+            const kitRate = kitDiscountRate(kitCount);
+            const kitDiscount = kitRate > 0 ? packSubtotal * kitRate : 0;
+            const kitDiscountPct = Math.round(kitRate * 100);
+            const total = vialSubtotal + packSubtotal - vialDiscount - kitDiscount;
+
+            const vialMult = vialDiscountEligible ? (1 - SINGLE_VIAL_DISCOUNT) : 1;
+            const kitMult = 1 - kitRate;
+            const items = rawLines.map((r) => {
+                const mult = r.kind === 'vial' ? vialMult : kitMult;
+                return {
+                    sku: r.sku,
+                    name: r.name,
+                    qty: r.qty,
+                    unit_price_cents: dollarsToCents(r.unit_price_dollars * mult),
+                };
+            });
+
+            return {
+                singleVials,
+                kitCount,
+                vialSubtotal,
+                packSubtotal,
+                vialDiscount,
+                vialDiscountEligible,
+                kitDiscount,
+                kitRate,
+                kitDiscountPct,
+                total,
+                lines,
+                items,
+            };
+        }
+
+        function discountProgressMeta(t) {
+            // Prefer vial progress when user is building vials; else kit progress
+            if (t.singleVials > 0 || t.kitCount === 0) {
+                if (t.singleVials === 0) {
+                    return { pct: 0, hint: `Min ${MIN_SINGLE_VIALS} singles · 10% off at ${DISCOUNT_VIAL_THRESHOLD}+` };
+                }
+                if (t.singleVials < MIN_SINGLE_VIALS) {
+                    const need = MIN_SINGLE_VIALS - t.singleVials;
+                    return {
+                        pct: Math.round((t.singleVials / MIN_SINGLE_VIALS) * 55),
+                        hint: `Add ${need} more single vial${need === 1 ? '' : 's'} for minimum`,
+                    };
+                }
+                if (t.singleVials < DISCOUNT_VIAL_THRESHOLD) {
+                    const need = DISCOUNT_VIAL_THRESHOLD - t.singleVials;
+                    return {
+                        pct: Math.round(55 + (t.singleVials / DISCOUNT_VIAL_THRESHOLD) * 45),
+                        hint: `Add ${need} more for 10% off singles`,
+                    };
+                }
+                return {
+                    pct: 100,
+                    hint: `10% singles discount · −$${money(t.vialDiscount)}`,
+                };
+            }
+            if (t.kitCount < KIT_DISCOUNT_TIER1_QTY) {
+                return {
+                    pct: Math.round((t.kitCount / KIT_DISCOUNT_TIER1_QTY) * 50),
+                    hint: 'Add 1 more kit for 10% off kits',
+                };
+            }
+            if (t.kitCount < KIT_DISCOUNT_TIER2_QTY) {
+                const need = KIT_DISCOUNT_TIER2_QTY - t.kitCount;
+                return {
+                    pct: Math.round(50 + ((t.kitCount - KIT_DISCOUNT_TIER1_QTY) / (KIT_DISCOUNT_TIER2_QTY - KIT_DISCOUNT_TIER1_QTY)) * 50),
+                    hint: `Add ${need} more kit${need === 1 ? '' : 's'} for 15% off`,
+                };
+            }
+            return {
+                pct: 100,
+                hint: `15% kit discount · −$${money(t.kitDiscount)}`,
+            };
+        }
+
+        function updateStickyBar(t) {
+            const bar = document.getElementById('stickyOrderBar');
+            const hasItems = t.lines.length > 0;
+            bar.classList.toggle('visible', hasItems);
+            bar.setAttribute('aria-hidden', hasItems ? 'false' : 'true');
+            document.body.classList.toggle('has-cart-bar', hasItems);
+
+            const itemCount = t.items.reduce((s, it) => s + it.qty, 0);
+            document.getElementById('stickyCount').textContent =
+                `${itemCount} item${itemCount === 1 ? '' : 's'}` +
+                (t.vialDiscount > 0 || t.kitDiscount > 0 ? ' · discounts applied' : '');
+            document.getElementById('stickyTotal').textContent = `$${money(t.total)}`;
+
+            const meta = discountProgressMeta(t);
+            const fill = document.getElementById('discountProgressFill');
+            const prog = document.getElementById('discountProgress');
+            fill.style.width = `${Math.max(0, Math.min(100, meta.pct))}%`;
+            prog.setAttribute('aria-valuenow', String(meta.pct));
+            document.getElementById('stickyProgressHint').textContent = meta.hint;
+        }
+
+        function updateOrder() {
+            const t = tallyOrder();
+            saveCartDraft();
+
+            let orderText = "ORDER SUMMARY:\n\n";
+            if (!t.lines.length) {
+                document.getElementById('message').value = "No items selected yet.";
+            } else {
+                t.lines.forEach(l => { orderText += l.text + "\n"; });
+                orderText += `\nSingle vials: ${t.singleVials}`;
+                if (t.vialSubtotal > 0) {
+                    orderText += `\nSingle vial subtotal: $${money(t.vialSubtotal)}`;
+                }
+                if (t.vialDiscountEligible && t.vialDiscount > 0) {
+                    orderText += `\n5+ vial discount (10%): -$${money(t.vialDiscount)}`;
+                } else if (t.singleVials > 0 && t.singleVials < DISCOUNT_VIAL_THRESHOLD) {
+                    const need = DISCOUNT_VIAL_THRESHOLD - t.singleVials;
+                    orderText += `\n(Add ${need} more single vial${need === 1 ? '' : 's'} for 10% off singles)`;
+                }
+                orderText += `\nKits / 10-packs: ${t.kitCount}`;
+                if (t.packSubtotal > 0) {
+                    orderText += `\n10-pack / kit subtotal: $${money(t.packSubtotal)}`;
+                }
+                if (t.kitDiscount > 0) {
+                    orderText += `\nKit discount (${t.kitDiscountPct}%): -$${money(t.kitDiscount)}`;
+                } else if (t.kitCount === 1) {
+                    orderText += `\n(Add 1 more kit for 10% off kits)`;
+                } else if (t.kitCount >= KIT_DISCOUNT_TIER1_QTY && t.kitCount < KIT_DISCOUNT_TIER2_QTY) {
+                    const need = KIT_DISCOUNT_TIER2_QTY - t.kitCount;
+                    orderText += `\n(Add ${need} more kit${need === 1 ? '' : 's'} for 15% off kits)`;
+                }
+                orderText += `\n\nESTIMATED TOTAL: $${money(t.total)}`;
+                document.getElementById('message').value = orderText.trim();
+            }
+
+            const statusEl = document.getElementById('vialRuleStatus');
+            const kitStatusEl = document.getElementById('kitRuleStatus');
+            const hintEl = document.getElementById('orderRuleHint');
+            let status = '';
+            let tone = 'text-zinc-500';
+            if (t.singleVials === 0 && t.packSubtotal === 0) {
+                status = `Minimum ${MIN_SINGLE_VIALS} single vials · 10% off at ${DISCOUNT_VIAL_THRESHOLD}+ singles`;
+                tone = 'text-zinc-500';
+            } else if (t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
+                const need = MIN_SINGLE_VIALS - t.singleVials;
+                status = `Need ${need} more single vial${need === 1 ? '' : 's'} to meet the ${MIN_SINGLE_VIALS}-vial minimum`;
+                tone = 'text-amber-400';
+            } else if (t.vialDiscountEligible) {
+                status = `✓ ${t.singleVials} single vials · 10% discount applied (−$${money(t.vialDiscount)})`;
+                tone = 'text-emerald-400';
+            } else if (t.singleVials >= MIN_SINGLE_VIALS) {
+                const need = DISCOUNT_VIAL_THRESHOLD - t.singleVials;
+                status = `✓ Minimum met (${t.singleVials} vials) · add ${need} more for 10% off singles`;
+                tone = 'text-zinc-300';
+            } else if (t.singleVials === 0) {
+                status = 'No single vials selected';
+                tone = 'text-zinc-500';
+            }
+
+            let kitStatus = '';
+            let kitTone = 'text-zinc-500';
+            if (t.kitCount === 0) {
+                kitStatus = `Kits: 10% off at ${KIT_DISCOUNT_TIER1_QTY}+ · 15% off at ${KIT_DISCOUNT_TIER2_QTY}+`;
+            } else if (t.kitCount >= KIT_DISCOUNT_TIER2_QTY) {
+                kitStatus = `✓ ${t.kitCount} kits · 15% kit discount applied (−$${money(t.kitDiscount)})`;
+                kitTone = 'text-emerald-400';
+            } else if (t.kitCount >= KIT_DISCOUNT_TIER1_QTY) {
+                const need = KIT_DISCOUNT_TIER2_QTY - t.kitCount;
+                kitStatus = `✓ ${t.kitCount} kits · 10% kit discount (−$${money(t.kitDiscount)}) · add ${need} more for 15%`;
+                kitTone = 'text-emerald-400';
+            } else {
+                kitStatus = `${t.kitCount} kit — add 1 more for 10% off kits`;
+                kitTone = 'text-zinc-300';
+            }
+
+            statusEl.className = `mt-4 text-center text-sm ${tone}`;
+            statusEl.textContent = status;
+            kitStatusEl.className = `mt-2 text-center text-sm ${kitTone}`;
+            kitStatusEl.textContent = kitStatus;
+
+            const hints = [status, kitStatus].filter(Boolean).join(' · ');
+            hintEl.textContent = hints;
+            document.getElementById('submitError').classList.add('hidden');
+            updateStickyBar(t);
+            refreshSubmitEnabled();
+        }
+
+        function canSubmitOrder() {
+            const t = tallyOrder();
+            if (!t.lines.length) return { ok: false, reason: 'Select at least one item.' };
+            if (t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
+                return {
+                    ok: false,
+                    reason: `Single vial orders need at least ${MIN_SINGLE_VIALS} vials (you have ${t.singleVials}).`,
+                };
+            }
+            return { ok: true, reason: '' };
         }
 
         const agreeCheckbox = document.getElementById('agree');
         const submitBtn = document.getElementById('submitBtn');
 
-        agreeCheckbox.addEventListener('change', () => {
-            if (agreeCheckbox.checked) {
-                submitBtn.disabled = false;
+        function refreshSubmitEnabled() {
+            const agreed = agreeCheckbox.checked;
+            const check = canSubmitOrder();
+            const enable = agreed && check.ok && !placingOrder;
+            submitBtn.disabled = !enable;
+            if (enable) {
                 submitBtn.classList.remove('bg-zinc-600', 'text-zinc-400', 'cursor-not-allowed');
                 submitBtn.classList.add('bg-[#FDD700]', 'text-black', 'hover:bg-white');
             } else {
-                submitBtn.disabled = true;
                 submitBtn.classList.add('bg-zinc-600', 'text-zinc-400', 'cursor-not-allowed');
                 submitBtn.classList.remove('bg-[#FDD700]', 'text-black', 'hover:bg-white');
             }
-        });
+        }
+
+        function showSubmitError(msg, focusEl) {
+            const err = document.getElementById('submitError');
+            err.textContent = msg;
+            err.classList.remove('hidden');
+            if (focusEl && typeof focusEl.focus === 'function') {
+                focusEl.focus({ preventScroll: false });
+                focusEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function openReviewModal() {
+            const check = canSubmitOrder();
+            if (!agreeCheckbox.checked) {
+                showSubmitError('Please agree to the terms first.', agreeCheckbox);
+                document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            if (!check.ok) {
+                showSubmitError(check.reason, document.getElementById('orderForm'));
+                document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                showSubmitError('Email is required.', document.getElementById('email'));
+                return;
+            }
+            const name = document.getElementById('name').value.trim() || 'Customer';
+            const t = tallyOrder();
+            const linesEl = document.getElementById('reviewLines');
+            linesEl.innerHTML = t.lines.map(l =>
+                `<div class="flex justify-between gap-2 border-b border-zinc-800 pb-2"><span class="break-word">${escapeHtml(l.text.split(' — ')[0])}</span><span class="text-[#FDD700] tabular-nums shrink-0">${escapeHtml((l.text.split(' — ')[1] || ''))}</span></div>`
+            ).join('');
+            if (t.vialDiscount > 0) {
+                linesEl.innerHTML += `<div class="flex justify-between text-emerald-400 text-xs"><span>5+ vial discount (10%)</span><span>−$${money(t.vialDiscount)}</span></div>`;
+            }
+            if (t.kitDiscount > 0) {
+                linesEl.innerHTML += `<div class="flex justify-between text-emerald-400 text-xs"><span>Kit discount (${t.kitDiscountPct}%)</span><span>−$${money(t.kitDiscount)}</span></div>`;
+            }
+            document.getElementById('reviewEmail').textContent = email;
+            document.getElementById('reviewName').textContent = name;
+            document.getElementById('reviewTotal').textContent = `$${money(t.total)}`;
+            document.getElementById('reviewError').classList.add('hidden');
+
+            const modal = document.getElementById('reviewModal');
+            modal.classList.remove('hidden');
+            modal.removeAttribute('hidden');
+            document.getElementById('reviewConfirmBtn').focus();
+        }
+
+        function closeReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            modal.classList.add('hidden');
+            modal.setAttribute('hidden', '');
+        }
+
+        async function placeOrder() {
+            if (placingOrder) return;
+            const check = canSubmitOrder();
+            if (!agreeCheckbox.checked || !check.ok) return;
+
+            const name = document.getElementById('name').value.trim() || 'Customer';
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                showSubmitError('Email is required.', document.getElementById('email'));
+                closeReviewModal();
+                return;
+            }
+
+            const t = tallyOrder();
+            const notes = document.getElementById('message').value.trim();
+            const items = t.items;
+            const subtotalFinal = items.reduce((s, it) => s + it.qty * it.unit_price_cents, 0);
+
+            placingOrder = true;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'PLACING ORDER…';
+            const confirmBtn = document.getElementById('reviewConfirmBtn');
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Placing…';
+            document.getElementById('submitError').classList.add('hidden');
+            document.getElementById('submitSuccess').classList.add('hidden');
+            document.getElementById('reviewError').classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/place-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer: { name, email },
+                        items,
+                        shipping_cents: 0,
+                        total_cents: subtotalFinal,
+                        currency: 'USD',
+                        notes: notes || undefined,
+                    }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.message || data.error || `Order failed (${res.status})`);
+                }
+
+                clearCartDraft();
+                closeReviewModal();
+                document.getElementById('orderForm').classList.add('hidden');
+                document.getElementById('stickyOrderBar').classList.remove('visible');
+                document.body.classList.remove('has-cart-bar');
+
+                const box = document.getElementById('orderSuccess');
+                box.classList.remove('hidden');
+                document.getElementById('successOrderNumber').textContent = data.order_number;
+                document.getElementById('successTotal').textContent =
+                    '$' + (Number(data.total_cents || subtotalFinal) / 100).toFixed(2);
+                document.getElementById('successPayLink').href =
+                    data.pay_url || `https://spbc-orders.spbc.workers.dev/pay/${encodeURIComponent(data.order_number)}`;
+                document.getElementById('successShipLink').href =
+                    data.shipping_url || `https://spbc-orders.spbc.workers.dev/shipping/${encodeURIComponent(data.order_number)}`;
+
+                box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                if (data.pay_url) {
+                    window.setTimeout(() => {
+                        window.location.href = data.pay_url;
+                    }, 1600);
+                }
+            } catch (err) {
+                const msg = err.message || 'Could not place order. Please try again.';
+                document.getElementById('reviewError').textContent = msg;
+                document.getElementById('reviewError').classList.remove('hidden');
+                document.getElementById('submitError').textContent = msg;
+                document.getElementById('submitError').classList.remove('hidden');
+                placingOrder = false;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'PLACE ORDER & PAY';
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Confirm & place order';
+                refreshSubmitEnabled();
+            }
+        }
+
+        agreeCheckbox.addEventListener('change', refreshSubmitEnabled);
+        document.getElementById('name').addEventListener('change', saveContactDraft);
+        document.getElementById('email').addEventListener('change', saveContactDraft);
+        document.getElementById('name').addEventListener('blur', saveContactDraft);
+        document.getElementById('email').addEventListener('blur', saveContactDraft);
 
         document.getElementById('orderForm').addEventListener('submit', e => {
             e.preventDefault();
-            if (!agreeCheckbox.checked) return;
-            const name = document.getElementById('name').value.trim() || "Customer";
-            const email = document.getElementById('email').value.trim();
-            const body = document.getElementById('message').value;
-            const subject = encodeURIComponent("New Order Inquiry — Springfield Peptide Buyers Club");
-            const mailBody = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${body}`);
-            window.location.href = `mailto:springfieldpeps@proton.me?subject=${subject}&body=${mailBody}`;
+            openReviewModal();
+        });
+
+        document.getElementById('reviewConfirmBtn').addEventListener('click', placeOrder);
+        document.getElementById('reviewCancelBtn').addEventListener('click', closeReviewModal);
+        document.getElementById('reviewCloseBtn').addEventListener('click', closeReviewModal);
+        document.getElementById('reviewModal').addEventListener('click', e => {
+            if (e.target.id === 'reviewModal') closeReviewModal();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeReviewModal();
+        });
+
+        document.getElementById('stickyReviewBtn').addEventListener('click', () => {
+            document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const email = document.getElementById('email');
+            if (!email.value.trim()) {
+                setTimeout(() => email.focus(), 400);
+            } else if (!agreeCheckbox.checked) {
+                setTimeout(() => agreeCheckbox.focus(), 400);
+            }
+        });
+
+        document.getElementById('productSearch').addEventListener('input', applyProductFilter);
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                activeFilter = chip.getAttribute('data-filter') || 'all';
+                document.querySelectorAll('.filter-chip').forEach(c => {
+                    const on = c === chip;
+                    c.classList.toggle('active', on);
+                    c.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+                applyProductFilter();
+            });
+        });
+
+        document.getElementById('copyOrderBtn').addEventListener('click', async () => {
+            const num = document.getElementById('successOrderNumber').textContent.trim();
+            const label = document.getElementById('copyOrderLabel');
+            if (!num) return;
+            try {
+                await navigator.clipboard.writeText(num);
+                label.textContent = 'Copied!';
+                setTimeout(() => { label.textContent = 'Copy order #'; }, 2000);
+            } catch (_) {
+                // Fallback
+                const ta = document.createElement('textarea');
+                ta.value = num;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                label.textContent = 'Copied!';
+                setTimeout(() => { label.textContent = 'Copy order #'; }, 2000);
+            }
         });
 
         document.getElementById('passwordInput').addEventListener('keydown', e => {

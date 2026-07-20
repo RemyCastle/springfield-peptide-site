@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="SPBC peptide reconstitution dosage calculator for U-100 insulin syringes. Research planning only.">
+  <meta name="theme-color" content="#006600">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Dosage Calculator — Springfield Peptide Buyers Club</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #000;
+      padding-left: env(safe-area-inset-left, 0);
+      padding-right: env(safe-area-inset-right, 0);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .ducks-font {
+      font-family: 'Bebas Neue', Impact, sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .field {
+      width: 100%;
+      background: #000;
+      border: 1px solid #3f3f46;
+      border-radius: 1rem;
+      padding: 0.85rem 1.1rem;
+      color: #fff;
+      font-size: 16px; /* avoids iOS focus zoom */
+      min-height: 2.75rem;
+      touch-action: manipulation;
+    }
+    .field:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(253, 215, 0, 0.55);
+      border-color: #FDD700;
+    }
+    .field:focus-visible {
+      outline: 2px solid #FDD700;
+      outline-offset: 2px;
+    }
+    .nav-link {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.5rem 0.85rem;
+      border-radius: 999px;
+      transition: color 0.15s, background 0.15s;
+      min-height: 2.5rem;
+      display: inline-flex;
+      align-items: center;
+      touch-action: manipulation;
+    }
+    .nav-link:hover { color: #fff; background: rgba(253, 215, 0, 0.12); }
+    .nav-link:focus-visible {
+      outline: 2px solid #FDD700;
+      outline-offset: 2px;
+    }
+    .nav-link.active {
+      color: #000;
+      background: #FDD700;
+    }
+    .result-card {
+      background: #18181b;
+      border: 1px solid rgba(253, 215, 0, 0.25);
+      border-radius: 1.25rem;
+    }
+    .syringe-wrap {
+      background: linear-gradient(180deg, #14532d 0%, #052e16 45%, #000 100%);
+      border: 1px solid rgba(253, 215, 0, 0.3);
+      border-radius: 1.25rem;
+      padding: 1.25rem 1rem 1rem;
+    }
+    .syringe-svg {
+      width: 100%;
+      max-width: 420px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .syringe-fill { transition: width 0.35s ease, x 0.35s ease; }
+    .tick-label {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 8px;
+      fill: rgba(255, 255, 255, 0.45);
+    }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0.5rem;
+      z-index: 200;
+      background: #FDD700;
+      color: #000;
+      font-weight: 700;
+      padding: 0.6rem 1rem;
+      border-radius: 0.75rem;
+    }
+    .skip-link:focus {
+      left: 0.5rem;
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+    input, textarea, select, button {
+      font-size: 16px;
+      touch-action: manipulation;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .syringe-fill, .nav-link, button { transition: none !important; }
+    }
+  </style>
+</head>
+<body class="text-white min-h-screen overflow-x-hidden">
+  <a href="#calc-main" class="skip-link">Skip to calculator</a>
+
+  <header class="bg-[#006600] border-b-4 border-[#FDD700] sticky top-0 z-50 py-3 sm:py-4"
+          style="padding-top: max(0.75rem, env(safe-area-inset-top));">
+    <div class="max-w-screen-xl mx-auto px-3 sm:px-6">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <a href="/" class="text-center sm:text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FDD700] rounded-lg">
+          <div class="ducks-font text-xl sm:text-2xl md:text-3xl tracking-tight leading-none">
+            <span class="text-[#FDD700]">SPRINGFIELD</span>
+            <span class="text-white sm:ml-1">PEPTIDE BUYERS CLUB</span>
+          </div>
+        </a>
+        <nav class="flex items-center gap-1 sm:gap-2 flex-wrap justify-center" aria-label="Main">
+          <a href="/#prices" class="nav-link">Prices</a>
+          <a href="/calculator.html" class="nav-link active" aria-current="page">Dosage Calculator</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main id="calc-main" class="max-w-lg mx-auto px-4 py-8 sm:py-10" tabindex="-1">
+    <div class="text-center mb-8">
+      <p class="text-[#FDD700] text-xs tracking-[0.25em] uppercase mb-2 font-semibold">Research tool</p>
+      <h1 class="ducks-font text-4xl sm:text-5xl text-white">Dosage Calculator</h1>
+      <p class="text-zinc-400 text-sm mt-3 leading-relaxed max-w-md mx-auto">
+        Reconstitution math for U-100 insulin syringes (100 units = 1&nbsp;mL).
+        BAC water max <strong class="text-zinc-200">3&nbsp;mL</strong> per vial.
+        For research planning only — not medical advice.
+      </p>
+    </div>
+
+    <form id="calcForm" class="space-y-4 result-card p-5 sm:p-6 mb-6" onsubmit="return false;" aria-labelledby="calc-heading">
+      <h2 id="calc-heading" class="sr-only">Calculator inputs</h2>
+
+      <div>
+        <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="peptideName">Peptide (optional)</label>
+        <select id="peptideName" class="field" autocomplete="off">
+          <option value="">Custom / other</option>
+          <option value="RETA 30 MG" data-mg="30">RETA 30 MG</option>
+          <option value="RETA 66 MG" data-mg="66">RETA 66 MG</option>
+          <option value="GHK-CU 34MG" data-mg="34">GHK-CU 34MG</option>
+          <option value="NAD +1000MG" data-mg="1000">NAD +1000MG</option>
+          <option value="TIRZ 30MG" data-mg="30">TIRZ 30MG</option>
+          <option value="MOTS-C 40MG" data-mg="40">MOTS-C 40MG</option>
+          <option value="KLOW 80MG" data-mg="80">KLOW 80MG</option>
+          <option value="CJC/IPA NO DAC 10MG" data-mg="10">CJC/IPA NO DAC 10MG</option>
+          <option value="CAGRILINTIDE 5MG" data-mg="5">CAGRILINTIDE 5MG</option>
+          <option value="MELANOTAN II 10 MG" data-mg="10">MELANOTAN II 10 MG</option>
+          <option value="SS-31 10 MG" data-mg="10">SS-31 10 MG</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="vialMg">Vial size (mg)</label>
+          <input id="vialMg" type="number" min="0.01" step="any" value="10" class="field" required inputmode="decimal" aria-describedby="vialMg-hint">
+          <p id="vialMg-hint" class="text-[11px] text-zinc-500 mt-1">Total peptide in the vial</p>
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="bacMl">BAC water (mL)</label>
+          <input id="bacMl" type="number" min="0.1" max="3" step="0.1" value="2" class="field" required inputmode="decimal" aria-describedby="bacMl-hint">
+          <p id="bacMl-hint" class="text-[11px] text-zinc-500 mt-1">Max 3.0 mL</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="doseValue">Desired dose</label>
+          <input id="doseValue" type="number" min="0.01" step="any" value="250" class="field" required inputmode="decimal">
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="doseUnit">Dose unit</label>
+          <select id="doseUnit" class="field">
+            <option value="mcg" selected>mcg</option>
+            <option value="mg">mg</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="button" id="calcBtn"
+              class="w-full bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-3.5 rounded-2xl transition-colors min-h-[3rem] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+        Calculate
+      </button>
+    </form>
+
+    <!-- SYRINGE VISUAL -->
+    <section id="syringePanel" class="syringe-wrap mb-6" aria-labelledby="syringe-heading">
+      <div class="flex items-center justify-between mb-3 px-1 gap-2">
+        <h2 id="syringe-heading" class="text-xs text-zinc-300 uppercase tracking-wider font-semibold">U-100 Insulin Syringe</h2>
+        <p id="syringeLabel" class="text-sm font-bold text-[#FDD700]" aria-live="polite">— units</p>
+      </div>
+
+      <svg class="syringe-svg" viewBox="0 0 460 120" role="img" aria-labelledby="syringe-title syringe-desc">
+        <title id="syringe-title">Insulin syringe fill indicator</title>
+        <desc id="syringe-desc">Visual of a U-100 syringe barrel showing how many units to draw for the calculated dose.</desc>
+
+        <!-- Needle + hub (LEFT) -->
+        <g id="needleGroup" aria-hidden="true">
+          <polygon points="2,53 15,50 15,56" fill="#e8ecf4"/>
+          <line x1="15" y1="53" x2="62" y2="53" stroke="#e8ecf4" stroke-width="1.5"/>
+          <polygon points="62,48 62,58 84,56 84,50" fill="#c8d0e0"/>
+          <rect x="82" y="42" width="20" height="22" rx="3" fill="#9aa3b5"/>
+        </g>
+
+        <!-- Barrel -->
+        <rect x="100" y="34" width="260" height="38" rx="6" fill="#1a2438" stroke="#6b7a99" stroke-width="2"/>
+        <rect x="104" y="38" width="252" height="30" rx="4" fill="#0d1526"/>
+        <rect x="352" y="28" width="6" height="50" rx="1.5" fill="#7a869e"/>
+        <rect x="348" y="30" width="14" height="6" rx="1" fill="#9aa3b5"/>
+        <rect x="348" y="70" width="14" height="6" rx="1" fill="#9aa3b5"/>
+
+        <!-- Liquid fill -->
+        <rect id="syringeFill" class="syringe-fill" x="104" y="38" width="0" height="30" rx="3"
+              fill="url(#fillGrad)" opacity="0.92"/>
+
+        <g id="tickMarks"></g>
+
+        <!-- Plunger handle outside barrel -->
+        <g id="plungerHandle" aria-hidden="true">
+          <rect x="366" y="49" width="40" height="8" rx="2" fill="#9aa3b5"/>
+          <rect x="402" y="36" width="14" height="34" rx="3" fill="#d0d5e0" stroke="#8a93a8" stroke-width="1"/>
+        </g>
+
+        <polygon id="doseMarker" points="104,78 110,88 98,88" fill="#FDD700"/>
+
+        <defs>
+          <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4ade80"/>
+            <stop offset="50%" stop-color="#16a34a"/>
+            <stop offset="100%" stop-color="#006600"/>
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div class="flex justify-between text-[10px] text-zinc-500 px-2 mt-1 max-w-[460px] mx-auto" aria-hidden="true">
+        <span>Needle</span>
+        <span>0 u</span>
+        <span>50 u</span>
+        <span>100 u</span>
+        <span>Handle</span>
+      </div>
+      <p id="syringeSub" class="text-center text-xs text-zinc-400 mt-3" aria-live="polite">Enter values to see draw volume</p>
+    </section>
+
+    <section id="results" class="result-card p-5 sm:p-6 space-y-4 hidden" aria-live="polite" aria-atomic="true" aria-labelledby="results-heading">
+      <h2 id="results-heading" class="ducks-font text-2xl text-white flex items-center gap-2">
+        <span class="text-[#FDD700]" aria-hidden="true">★</span> Results
+      </h2>
+      <dl class="grid gap-3 text-sm">
+        <div class="flex justify-between gap-3 border-b border-zinc-700 pb-2">
+          <dt class="text-zinc-400">Concentration</dt>
+          <dd id="outConc" class="font-semibold text-white text-right m-0"></dd>
+        </div>
+        <div class="flex justify-between gap-3 border-b border-zinc-700 pb-2">
+          <dt class="text-zinc-400">Draw on U-100 syringe</dt>
+          <dd id="outUnits" class="font-bold text-[#FDD700] text-lg text-right m-0"></dd>
+        </div>
+        <div class="flex justify-between gap-3 border-b border-zinc-700 pb-2">
+          <dt class="text-zinc-400">Volume per dose</dt>
+          <dd id="outVol" class="font-semibold text-white text-right m-0"></dd>
+        </div>
+        <div class="flex justify-between gap-3 border-b border-zinc-700 pb-2">
+          <dt class="text-zinc-400">Doses per vial</dt>
+          <dd id="outDoses" class="font-semibold text-white text-right m-0"></dd>
+        </div>
+        <div class="flex justify-between gap-3">
+          <dt class="text-zinc-400">Total peptide used / dose</dt>
+          <dd id="outDoseMg" class="font-semibold text-white text-right m-0"></dd>
+        </div>
+      </dl>
+      <p id="outWarn" class="text-amber-400 text-xs hidden" role="status"></p>
+      <div class="flex flex-col sm:flex-row gap-2 pt-1">
+        <button type="button" id="copyCalcLinkBtn"
+                class="flex-1 border border-[#FDD700]/40 text-[#FDD700] hover:bg-[#FDD700]/10 font-bold text-sm py-2.5 rounded-xl min-h-[2.75rem] transition-colors">
+          Copy shareable link
+        </button>
+        <button type="button" id="copyResultsBtn"
+                class="flex-1 border border-zinc-600 text-zinc-200 hover:border-[#FDD700] font-semibold text-sm py-2.5 rounded-xl min-h-[2.75rem] transition-colors">
+          Copy results text
+        </button>
+      </div>
+      <p id="shareStatus" class="text-emerald-400 text-xs text-center hidden" role="status"></p>
+      <p class="text-zinc-500 text-[11px] leading-relaxed">
+        Formula: concentration (mcg/mL) = (vial mg × 1000) ÷ BAC mL.
+        Units to draw = (dose mcg ÷ concentration) × 100.
+        BAC water capped at 3 mL.
+      </p>
+    </section>
+
+    <p class="text-center text-zinc-500 text-xs mt-8">
+      <a href="/#prices" class="hover:text-[#FDD700] underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FDD700] rounded">← Back to price list</a>
+    </p>
+  </main>
+
+  <footer class="text-center py-6 text-xs text-zinc-500 bg-black border-t border-zinc-800 mt-10 px-3">
+    SPRINGFIELD PEPTIDE BUYERS CLUB · RESEARCH ONLY
+  </footer>
+
+  <script>
+    const AUTH_KEY = 'spbc_auth';
+    if (sessionStorage.getItem(AUTH_KEY) !== '1') {
+      window.location.href = '/';
+    }
+
+    const MAX_BAC_ML = 3;
+    const BARREL_X = 104;
+    const BARREL_W = 252;
+    const MAX_UNITS_SCALE = 100;
+
+    const peptideName = document.getElementById('peptideName');
+    const vialMg = document.getElementById('vialMg');
+    const bacMl = document.getElementById('bacMl');
+    const doseValue = document.getElementById('doseValue');
+    const doseUnit = document.getElementById('doseUnit');
+    const results = document.getElementById('results');
+    const syringeFill = document.getElementById('syringeFill');
+    const doseMarker = document.getElementById('doseMarker');
+    const syringeLabel = document.getElementById('syringeLabel');
+    const syringeSub = document.getElementById('syringeSub');
+
+    (function buildTicks() {
+      const g = document.getElementById('tickMarks');
+      for (let u = 0; u <= 100; u += 5) {
+        const x = BARREL_X + (u / MAX_UNITS_SCALE) * BARREL_W;
+        const major = u % 10 === 0;
+        const y1 = major ? 38 : 42;
+        const y2 = major ? 68 : 64;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x);
+        line.setAttribute('x2', x);
+        line.setAttribute('y1', y1);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', major ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.15)');
+        line.setAttribute('stroke-width', major ? '1.2' : '0.8');
+        g.appendChild(line);
+        if (major && u > 0 && u < 100) {
+          const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          t.setAttribute('x', x);
+          t.setAttribute('y', 32);
+          t.setAttribute('text-anchor', 'middle');
+          t.setAttribute('class', 'tick-label');
+          t.textContent = String(u);
+          g.appendChild(t);
+        }
+      }
+    })();
+
+    peptideName.addEventListener('change', () => {
+      const opt = peptideName.selectedOptions[0];
+      const mg = opt && opt.dataset.mg ? Number(opt.dataset.mg) : null;
+      if (mg != null && Number.isFinite(mg)) vialMg.value = String(mg);
+      calculate();
+    });
+
+    function clampBac() {
+      let v = Number(bacMl.value);
+      if (!Number.isFinite(v)) return;
+      if (v > MAX_BAC_ML) {
+        bacMl.value = String(MAX_BAC_ML);
+      }
+    }
+
+    function fmt(n, digits = 2) {
+      if (!Number.isFinite(n)) return '—';
+      const f = Number(n.toFixed(digits));
+      return Number.isInteger(f) ? String(f) : String(f);
+    }
+
+    function updateSyringe(units) {
+      const safe = Number.isFinite(units) ? Math.max(0, units) : 0;
+      const displayUnits = Math.min(safe, MAX_UNITS_SCALE);
+      const over = safe > MAX_UNITS_SCALE;
+
+      const fillWidth = Math.max(0, Math.min(BARREL_W, (displayUnits / MAX_UNITS_SCALE) * BARREL_W));
+      syringeFill.setAttribute('x', String(BARREL_X));
+      syringeFill.setAttribute('width', String(fillWidth));
+
+      const markerX = BARREL_X + fillWidth;
+      doseMarker.setAttribute('points', `${markerX},78 ${markerX + 6},88 ${markerX - 6},88`);
+
+      const label = over
+        ? `${fmt(safe, 1)} u (over 100)`
+        : `${fmt(safe, 1)} units`;
+      syringeLabel.textContent = label;
+      syringeLabel.className = over
+        ? 'text-sm font-bold text-amber-400'
+        : 'text-sm font-bold text-[#FDD700]';
+
+      if (!Number.isFinite(units) || units <= 0) {
+        syringeSub.textContent = 'Enter values to see draw volume';
+      } else if (over) {
+        syringeSub.textContent = `Draw is ${fmt(safe, 1)} units (${fmt(safe / 100, 3)} mL) — exceeds 1 mL barrel. Reduce dose or BAC water.`;
+      } else {
+        syringeSub.textContent = `Draw to ${fmt(safe, 1)} units  ·  ${fmt(safe / 100, 3)} mL on the barrel`;
+      }
+
+      const desc = document.getElementById('syringe-desc');
+      if (desc) {
+        desc.textContent = Number.isFinite(units) && units > 0
+          ? `Syringe shows ${fmt(safe, 1)} units of ${fmt(safe / 100, 3)} milliliters.`
+          : 'Visual of a U-100 syringe barrel. Enter values to see fill level.';
+      }
+    }
+
+    function calculate() {
+      clampBac();
+      const vial = Number(vialMg.value);
+      let bac = Number(bacMl.value);
+      let dose = Number(doseValue.value);
+
+      if (Number.isFinite(bac) && bac > MAX_BAC_ML) {
+        bac = MAX_BAC_ML;
+        bacMl.value = String(MAX_BAC_ML);
+      }
+
+      if (!Number.isFinite(vial) || vial <= 0 || !Number.isFinite(bac) || bac <= 0 || !Number.isFinite(dose) || dose <= 0) {
+        results.classList.add('hidden');
+        updateSyringe(0);
+        return;
+      }
+      if (doseUnit.value === 'mg') dose = dose * 1000;
+
+      const concMcgPerMl = (vial * 1000) / bac;
+      const volMl = dose / concMcgPerMl;
+      const units = volMl * 100;
+      const dosesPerVial = (vial * 1000) / dose;
+      const doseMg = dose / 1000;
+
+      document.getElementById('outConc').textContent =
+        `${fmt(concMcgPerMl, 1)} mcg/mL  ·  ${fmt(concMcgPerMl / 1000, 3)} mg/mL`;
+      document.getElementById('outUnits').textContent = `${fmt(units, 1)} units`;
+      document.getElementById('outVol').textContent = `${fmt(volMl, 3)} mL`;
+      document.getElementById('outDoses').textContent = fmt(dosesPerVial, 1);
+      document.getElementById('outDoseMg').textContent = `${fmt(doseMg, 3)} mg (${fmt(dose, 1)} mcg)`;
+
+      updateSyringe(units);
+
+      const warn = document.getElementById('outWarn');
+      const msgs = [];
+      if (bac >= MAX_BAC_ML) {
+        msgs.push(`BAC water is at the ${MAX_BAC_ML} mL maximum.`);
+      }
+      if (units > 100) {
+        msgs.push('Draw exceeds 100 units (1 mL). Use a lower dose, less BAC water (more concentrated), or multiple draws.');
+      } else if (units > 50) {
+        msgs.push('Draw is over 50 units — consider less BAC water for a smaller syringe volume.');
+      }
+      if (msgs.length) {
+        warn.textContent = msgs.join(' ');
+        warn.classList.remove('hidden');
+      } else {
+        warn.classList.add('hidden');
+      }
+
+      results.classList.remove('hidden');
+    }
+
+    function buildShareParams() {
+      const params = new URLSearchParams();
+      const peptide = peptideName.value;
+      if (peptide) params.set('p', peptide);
+      params.set('mg', vialMg.value);
+      params.set('bac', bacMl.value);
+      params.set('dose', doseValue.value);
+      params.set('unit', doseUnit.value);
+      return params;
+    }
+
+    function applyShareParams() {
+      const params = new URLSearchParams(window.location.search);
+      if (![...params.keys()].length) return false;
+      const p = params.get('p');
+      if (p) {
+        const match = [...peptideName.options].find(o => o.value === p);
+        if (match) peptideName.value = p;
+      }
+      if (params.has('mg')) vialMg.value = params.get('mg');
+      if (params.has('bac')) bacMl.value = params.get('bac');
+      if (params.has('dose')) doseValue.value = params.get('dose');
+      if (params.has('unit') && (params.get('unit') === 'mg' || params.get('unit') === 'mcg')) {
+        doseUnit.value = params.get('unit');
+      }
+      return true;
+    }
+
+    function flashShare(msg) {
+      const el = document.getElementById('shareStatus');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 2200);
+    }
+
+    async function copyText(text, okMsg) {
+      try {
+        await navigator.clipboard.writeText(text);
+        flashShare(okMsg);
+      } catch (_) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        flashShare(okMsg);
+      }
+    }
+
+    document.getElementById('copyCalcLinkBtn').addEventListener('click', () => {
+      const url = `${window.location.origin}${window.location.pathname}?${buildShareParams().toString()}`;
+      copyText(url, 'Link copied — share with club members');
+      try {
+        history.replaceState(null, '', `?${buildShareParams().toString()}`);
+      } catch (_) {}
+    });
+
+    document.getElementById('copyResultsBtn').addEventListener('click', () => {
+      const peptide = peptideName.value || 'Custom peptide';
+      const text = [
+        `SPBC Dosage Calculator`,
+        `Peptide: ${peptide}`,
+        `Vial: ${vialMg.value} mg · BAC: ${bacMl.value} mL`,
+        `Dose: ${doseValue.value} ${doseUnit.value}`,
+        `Concentration: ${document.getElementById('outConc').textContent}`,
+        `Draw: ${document.getElementById('outUnits').textContent}`,
+        `Volume: ${document.getElementById('outVol').textContent}`,
+        `Doses/vial: ${document.getElementById('outDoses').textContent}`,
+        `Research planning only — not medical advice.`,
+      ].join('\n');
+      copyText(text, 'Results copied');
+    });
+
+    document.getElementById('calcBtn').addEventListener('click', calculate);
+    [vialMg, bacMl, doseValue, doseUnit].forEach((el) => {
+      el.addEventListener('input', calculate);
+      el.addEventListener('change', calculate);
+    });
+    bacMl.addEventListener('blur', () => {
+      clampBac();
+      if (Number(bacMl.value) > MAX_BAC_ML) bacMl.value = String(MAX_BAC_ML);
+      if (Number(bacMl.value) < 0.1) bacMl.value = '0.1';
+      calculate();
+    });
+    applyShareParams();
+    calculate();
+  </script>
+</body>
+</html>
