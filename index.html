@@ -10,6 +10,7 @@
     <title>SPRINGFIELD PEPTIDE BUYERS CLUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/shared/site-header.css?v=3">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -280,7 +281,7 @@
         }
     </style>
 </head>
-<body class="bg-black text-white overflow-x-hidden">
+<body class="bg-black text-white overflow-x-hidden" data-page="index">
     <a href="#prices" class="skip-link">Skip to price list</a>
 
     <!-- PASSWORD SCREEN -->
@@ -303,18 +304,19 @@
 
     <!-- MAIN CONTENT -->
     <div id="mainContent" class="hidden">
-        <header class="bg-[#006600] border-b-4 border-[#FDD700] sticky top-0 z-50 py-3 sm:py-5" style="padding-top: max(0.75rem, env(safe-area-inset-top));">
-            <div class="max-w-screen-xl mx-auto px-3 sm:px-6">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <div class="ducks-font text-xl xs:text-2xl sm:text-3xl md:text-4xl tracking-tight leading-none break-word text-center sm:text-left">
-                        <span class="text-[#FDD700] block sm:inline">SPRINGFIELD</span>
-                        <span class="text-white block sm:inline sm:ml-1">PEPTIDE BUYERS CLUB</span>
-                    </div>
-                    <nav class="flex items-center gap-2 flex-wrap justify-center" aria-label="Main">
-                        <a href="#prices" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-white/90 hover:text-[#FDD700] px-3 py-2 rounded-full min-h-[2.5rem] inline-flex items-center">Prices</a>
-                        <a href="/calculator.html" class="text-xs sm:text-sm font-bold uppercase tracking-wider bg-[#FDD700] text-black hover:bg-white px-3 py-2 rounded-full min-h-[2.5rem] inline-flex items-center">Dosage Calculator</a>
-                    </nav>
-                </div>
+        <header class="site-header" data-site-header>
+            <div class="site-header__inner">
+                <a href="/" class="site-header__brand" aria-label="Springfield Peptide Buyers Club — home">
+                    <span class="ducks-font site-header__brand-text">
+                        <span class="site-header__brand-gold">SPRINGFIELD</span>
+                        <span class="site-header__brand-white">PEPTIDE BUYERS CLUB</span>
+                    </span>
+                </a>
+                <nav class="site-header__nav" aria-label="Main">
+                    <span class="nav-pill" aria-hidden="true"></span>
+                    <a href="#prices" class="nav-link" data-nav="index">Prices</a>
+                    <a href="/calculator.html" class="nav-link" data-nav="calculator">Dosage Calculator</a>
+                </nav>
             </div>
         </header>
 
@@ -710,6 +712,10 @@
             document.getElementById('mainContent').classList.remove('hidden');
             restoreContactDraft();
             loadProducts();
+            // Header was display:none behind gate — remeasure sliding pill
+            if (typeof window.spbcHeaderRefresh === 'function') {
+                requestAnimationFrame(function () { window.spbcHeaderRefresh(); });
+            }
         }
 
         function checkPassword() {
@@ -1206,5 +1212,6 @@
             unlockSite();
         }
     </script>
+    <script src="/shared/site-header.js?v=3" defer></script>
 </body>
 </html>

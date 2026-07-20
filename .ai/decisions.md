@@ -16,3 +16,10 @@ Append-only log. Newest at bottom.
 - Shipped: CSS hero (no picsum), sticky cart bar + discount progress, localStorage cart/contact draft, product search/filter, order review modal, copy order #, shareable calculator URL + copy results, a11y skip-link/aria-live/focus-on-error, skeleton loading
 - Why: Conversion + mobile UX without new services or backend refactors
 - Deploy: root HTML is source of truth; copy to `.cf-pages/` for Pages build output
+
+### 2026-07-20
+- Decision: Unified public header via `/shared/site-header.css` + `/shared/site-header.js` (not inlined)
+- Why: index vs calculator headers drifted (active pill, logo link, type size); shared files prevent re-drift
+- Features: sliding gold nav pill, scroll shrink + frosted glass, one-shot shimmer, hover preview, reduced-motion, `spbcHeaderRefresh()` after password unlock
+- Admin header left separate (auth surface)
+- No Motion/GSAP on SPBC (static, no bundler) per Claude
