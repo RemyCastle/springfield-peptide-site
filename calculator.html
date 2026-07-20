@@ -26,6 +26,42 @@
       letter-spacing: 0.02em;
       text-transform: uppercase;
     }
+    /* Match home hero + coaching hero green/gold page atmosphere */
+    .calc-hero {
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(253, 215, 0, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 100% 100%, rgba(0, 102, 0, 0.55) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 0% 80%, rgba(0, 80, 0, 0.4) 0%, transparent 45%),
+        linear-gradient(165deg, #004d00 0%, #003300 40%, #001a00 100%);
+      border-bottom: 1px solid rgba(253, 215, 0, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    .calc-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(
+          -12deg,
+          transparent,
+          transparent 18px,
+          rgba(253, 215, 0, 0.03) 18px,
+          rgba(253, 215, 0, 0.03) 19px
+        );
+      pointer-events: none;
+    }
+    .calc-hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: linear-gradient(to top, #000, transparent);
+      pointer-events: none;
+    }
+    .calc-hero-inner { position: relative; z-index: 1; }
     .field {
       width: 100%;
       background: #000;
@@ -52,7 +88,7 @@
       border-radius: 1.25rem;
     }
     .syringe-wrap {
-      background: linear-gradient(180deg, #14532d 0%, #052e16 45%, #000 100%);
+      background: linear-gradient(180deg, #14532d 0%, #052e16 45%, #0a0a0a 100%);
       border: 1px solid rgba(253, 215, 0, 0.3);
       border-radius: 1.25rem;
       padding: 1.25rem 1rem 1rem;
@@ -95,7 +131,7 @@
     }
   </style>
 </head>
-<body class="text-white min-h-screen overflow-x-hidden" data-page="calculator">
+<body class="bg-black text-white min-h-screen overflow-x-hidden" data-page="calculator">
   <a href="#calc-main" class="skip-link">Skip to calculator</a>
 
   <header class="site-header" data-site-header>
@@ -115,17 +151,19 @@
     </div>
   </header>
 
-  <main id="calc-main" class="max-w-lg mx-auto px-4 py-8 sm:py-10" tabindex="-1">
-    <div class="text-center mb-8">
-      <p class="text-[#FDD700] text-xs tracking-[0.25em] uppercase mb-2 font-semibold">Research tool</p>
+  <section class="calc-hero px-4 py-10 sm:py-12 text-center" aria-label="Calculator intro">
+    <div class="calc-hero-inner max-w-lg mx-auto">
+      <p class="text-[#FDD700] text-xs tracking-[0.28em] uppercase mb-2 font-semibold">Research tool</p>
       <h1 class="ducks-font text-4xl sm:text-5xl text-white">Dosage Calculator</h1>
-      <p class="text-zinc-400 text-sm mt-3 leading-relaxed max-w-md mx-auto">
+      <p class="text-zinc-300 text-sm mt-3 leading-relaxed max-w-md mx-auto">
         Reconstitution math for U-100 insulin syringes (100 units = 1&nbsp;mL).
-        BAC water max <strong class="text-zinc-200">3&nbsp;mL</strong> per vial.
+        BAC water max <strong class="text-zinc-100">3&nbsp;mL</strong> per vial.
         For research planning only — not medical advice.
       </p>
     </div>
+  </section>
 
+  <main id="calc-main" class="max-w-lg mx-auto px-4 py-8 sm:py-10 bg-black" tabindex="-1">
     <form id="calcForm" class="space-y-4 result-card p-5 sm:p-6 mb-6" onsubmit="return false;" aria-labelledby="calc-heading">
       <h2 id="calc-heading" class="sr-only">Calculator inputs</h2>
 
