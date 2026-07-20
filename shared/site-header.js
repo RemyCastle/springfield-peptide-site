@@ -87,24 +87,7 @@
       resizeTimer = setTimeout(function () { movePill(false); }, 80);
     });
     window.addEventListener('scroll', onScroll, { passive: true });
-
-    if (!reduced && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      links.forEach(function (a) {
-        a.addEventListener('mouseenter', function () {
-          var prev = active;
-          active = a;
-          movePill(false);
-          active = prev || header.querySelector('.nav-link.active');
-        });
-      });
-      var nav = header.querySelector('.site-header__nav');
-      if (nav) {
-        nav.addEventListener('mouseleave', function () {
-          active = header.querySelector('.nav-link.active');
-          movePill(false);
-        });
-      }
-    }
+    // Menu uses CSS border glow only — no hover pill slide / tilt
   }
 
   function init(animateGlow) {
