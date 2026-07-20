@@ -7,11 +7,32 @@
     <meta name="theme-color" content="#006600">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="canonical" href="https://springfieldpbc.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://springfieldpbc.com/">
+    <meta property="og:title" content="Springfield Peptide Buyers Club">
+    <meta property="og:description" content="Members research collective — bulk pricing, dosage tools, and protocol coaching. Research use only.">
+    <meta property="og:image" content="https://springfieldpbc.com/favicon.svg">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Springfield Peptide Buyers Club">
+    <meta name="twitter:description" content="Members research collective — bulk pricing, dosage tools, and protocol coaching. Research use only.">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <title>SPRINGFIELD PEPTIDE BUYERS CLUB</title>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Springfield Peptide Buyers Club",
+      "url": "https://springfieldpbc.com/",
+      "description": "Members research collective for research-use peptides. Not medical advice.",
+      "logo": "https://springfieldpbc.com/favicon.svg"
+    }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="/shared/site-header.css?v=9">
-    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=7">
+    <link rel="stylesheet" href="/shared/site-header.css?v=10">
+    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=8">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -668,8 +689,14 @@
     <script>
         const correctPassword = "GoDucks";
         const AUTH_KEY = "spbc_auth";
+        const MEMBER_COOKIE = "spbc_member";
         const CART_KEY = "spbc_cart_draft";
         const CONTACT_KEY = "spbc_contact_draft";
+
+        function setMemberCookie() {
+            // Soft member session for /api/products (not hard security)
+            document.cookie = MEMBER_COOKIE + "=1; Path=/; Max-Age=604800; SameSite=Lax";
+        }
         const VIAL_OPTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // single vials: any qty 1–10
         const PACK_OPTS = [0, 1, 2, 3, 5];
         const MIN_SINGLE_VIALS = 3;
@@ -961,7 +988,7 @@
                     <div class="skeleton-card"></div>
                 </div>`;
             try {
-                const res = await fetch('/api/products');
+                const res = await fetch('/api/products', { credentials: 'same-origin' });
                 if (!res.ok) throw new Error('bad status');
                 const data = await res.json();
                 renderProducts(data.products || []);
@@ -972,6 +999,7 @@
 
         function unlockSite() {
             sessionStorage.setItem(AUTH_KEY, "1");
+            setMemberCookie();
             document.getElementById('passwordScreen').classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
             restoreContactDraft();
@@ -1625,7 +1653,7 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
-    <script src="/shared/site-atmosphere.js?v=6" defer></script>
-    <script src="/shared/site-header.js?v=9" defer></script>
+    <script src="/shared/site-atmosphere.js?v=8" defer></script>
+    <script src="/shared/site-header.js?v=10" defer></script>
 </body>
 </html>

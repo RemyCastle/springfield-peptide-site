@@ -30,3 +30,11 @@ Append-only log. Newest at bottom.
 - Deleted site-fx.* duplicates
 - Deploy: copy root HTML + shared/* → `.cf-pages/` then `wrangler pages deploy .cf-pages --branch=main`
 - Three.js CDN kept for particles only; no GSAP; reduced-motion gates all effects
+
+### 2026-07-20 (QA/SEO pack)
+- robots.txt + sitemap.xml (home only) + favicon.svg
+- noindex on calculator, coaching, admin
+- calc/coach: spbc-locked FOUC hide + mainContent hidden until session; cookie `spbc_member=1` on unlock
+- /api/products requires member cookie (soft gate); override MEMBERS_API_OPEN=1 if needed
+- Home: canonical + OG/Twitter + Organization JSON-LD
+- Soft gate is intentional UI privacy, not hard security (document)

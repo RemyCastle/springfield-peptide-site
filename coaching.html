@@ -4,15 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="SPBC research coaching — $100/hr. Stack recommendations, solutions, consulting, and bloodwork guidance.">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#006600">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>Coaching — Springfield Peptide Buyers Club</title>
+  <script>
+    (function () {
+      try {
+        if (sessionStorage.getItem('spbc_auth') === '1') {
+          document.documentElement.classList.add('spbc-authed');
+          document.cookie = 'spbc_member=1; Path=/; Max-Age=604800; SameSite=Lax';
+        } else {
+          document.documentElement.classList.add('spbc-locked');
+        }
+      } catch (e) {
+        document.documentElement.classList.add('spbc-locked');
+      }
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shared/site-header.css?v=9">
-  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=7">
+  <link rel="stylesheet" href="/shared/site-header.css?v=10">
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=8">
   <style>
+    html.spbc-locked body { visibility: hidden !important; background: #000 !important; }
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
       font-family: 'Inter', system-ui, sans-serif;
@@ -127,6 +144,7 @@
   </style>
 </head>
 <body class="atmosphere text-white min-h-screen overflow-x-hidden" data-page="coaching">
+  <div id="mainContent" class="hidden">
   <a href="#coach-main" class="skip-link">Skip to coaching</a>
 
   <header class="site-header" data-site-header>
@@ -336,11 +354,18 @@
   <footer class="text-center py-6 text-xs text-zinc-500 bg-black border-t border-zinc-800 mt-6 px-3">
     SPRINGFIELD PEPTIDE BUYERS CLUB · RESEARCH ONLY · COACHING $100/HR
   </footer>
+  </div>
 
   <script>
     const AUTH_KEY = 'spbc_auth';
     if (sessionStorage.getItem(AUTH_KEY) !== '1') {
-      window.location.href = '/';
+      window.location.replace('/');
+    } else {
+      document.cookie = 'spbc_member=1; Path=/; Max-Age=604800; SameSite=Lax';
+      document.documentElement.classList.remove('spbc-locked');
+      document.documentElement.classList.add('spbc-authed');
+      var mc = document.getElementById('mainContent');
+      if (mc) mc.classList.remove('hidden');
     }
 
     const RATE = 100;
@@ -391,7 +416,7 @@
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
-  <script src="/shared/site-atmosphere.js?v=6" defer></script>
-  <script src="/shared/site-header.js?v=9" defer></script>
+  <script src="/shared/site-atmosphere.js?v=8" defer></script>
+  <script src="/shared/site-header.js?v=10" defer></script>
 </body>
 </html>

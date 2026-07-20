@@ -1,0 +1,8 @@
+name = "springfieldpeps"
+compatibility_date = "2024-11-12"
+pages_build_output_dir = ".cf-pages"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "springfieldpeps-db"
+database_id = "67d60e74-cd83-46a7-b907-3a0b3437ceb3"

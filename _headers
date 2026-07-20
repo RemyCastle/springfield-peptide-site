@@ -1,25 +1,21 @@
 # Cloudflare Pages static headers
-/spbc-header.js
-  Content-Type: application/javascript; charset=utf-8
-  Cache-Control: public, max-age=300, must-revalidate
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=300
 
-/spbc-header.css
-  Content-Type: text/css; charset=utf-8
-  Cache-Control: public, max-age=300, must-revalidate
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=300
+
+/favicon.svg
+  Content-Type: image/svg+xml
+  Cache-Control: public, max-age=86400
 
 /shared/site-header.js
   Content-Type: application/javascript; charset=utf-8
   Cache-Control: public, max-age=300, must-revalidate
 
 /shared/site-header.css
-  Content-Type: text/css; charset=utf-8
-  Cache-Control: public, max-age=300, must-revalidate
-
-/shared/site-fx.js
-  Content-Type: application/javascript; charset=utf-8
-  Cache-Control: public, max-age=300, must-revalidate
-
-/shared/site-fx.css
   Content-Type: text/css; charset=utf-8
   Cache-Control: public, max-age=300, must-revalidate
 

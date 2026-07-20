@@ -1,0 +1,11 @@
+# SPBC — members club. Public brand page only; tools/catalog soft-gated.
+User-agent: *
+Allow: /
+Disallow: /calculator.html
+Disallow: /coaching.html
+Disallow: /admin.html
+Disallow: /admin
+Disallow: /api/
+Disallow: /functions/
+
+Sitemap: https://springfieldpbc.com/sitemap.xml

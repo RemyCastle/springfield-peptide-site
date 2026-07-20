@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#006600">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>Admin — Springfield Peptide Buyers Club</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      padding-left: env(safe-area-inset-left, 0);
+      padding-right: env(safe-area-inset-right, 0);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .ducks-font {
+      font-family: 'Bebas Neue', Impact, sans-serif;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    input, select, textarea, button {
+      color-scheme: dark;
+      font-size: 16px;
+      touch-action: manipulation;
+    }
+    tr.order-row:hover td { background: #18181b; }
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      max-width: 100%;
+    }
+    .table-scroll table { min-width: 640px; }
+    .break-word { overflow-wrap: anywhere; word-break: break-word; }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen overflow-x-hidden">
+  <header class="bg-[#006600] border-b-4 border-[#FDD700] py-3 sm:py-4" style="padding-top: max(0.75rem, env(safe-area-inset-top));">
+    <div class="max-w-5xl mx-auto px-3 sm:px-4 flex items-center justify-between gap-2 sm:gap-3">
+      <div class="ducks-font text-xl sm:text-3xl leading-none">
+        <span class="text-[#FDD700]">SPBC</span>
+        <span class="text-white"> Admin</span>
+      </div>
+      <div id="headerActions" class="hidden">
+        <button id="logoutBtn" type="button"
+                class="text-sm font-semibold bg-black/30 hover:bg-black/50 border border-[#FDD700]/50 text-[#FDD700] px-3 py-2 rounded-xl">
+          Log out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+    <!-- LOGIN -->
+    <section id="loginSection" class="max-w-sm mx-auto">
+      <h1 class="ducks-font text-2xl sm:text-3xl text-[#FDD700] text-center mb-6">Admin login</h1>
+      <form id="loginForm" class="space-y-4 bg-zinc-900 border border-[#FDD700]/30 rounded-3xl p-5 sm:p-6">
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1" for="username">Username</label>
+          <input id="username" name="username" autocomplete="username" required
+                 class="w-full bg-black border border-zinc-700 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#FDD700]/50">
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1" for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required
+                 class="w-full bg-black border border-zinc-700 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#FDD700]/50">
+        </div>
+        <p id="loginError" class="text-red-500 text-sm hidden break-word"></p>
+        <button type="submit"
+                class="w-full bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-3.5 rounded-2xl transition-colors min-h-[3rem]">
+          Sign in
+        </button>
+      </form>
+      <p class="text-center text-zinc-600 text-xs mt-6">
+        <a href="/" class="hover:text-zinc-400">← Back to store</a>
+      </p>
+    </section>
+
+    <!-- APP (after login) -->
+    <section id="appSection" class="hidden">
+      <!-- Tabs -->
+      <nav class="flex flex-wrap gap-2 mb-6 border-b border-zinc-800 pb-3">
+        <button type="button" data-tab="orders" id="tabOrders"
+                class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+          Orders
+        </button>
+        <button type="button" data-tab="products" id="tabProducts"
+                class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+          Price list
+        </button>
+        <button type="button" data-tab="suppliers" id="tabSuppliers"
+                class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+          Suppliers
+        </button>
+      </nav>
+
+      <!-- ORDERS -->
+      <div id="ordersPanel" class="hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Orders</h1>
+          <button id="ordersRefreshBtn" type="button"
+                  class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
+            Refresh
+          </button>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-4">
+          <select id="orderStatus"
+                  class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
+            <option value="">All statuses</option>
+            <option value="pending_payment">pending_payment</option>
+            <option value="paid">paid</option>
+            <option value="shipped">shipped</option>
+            <option value="complete">complete</option>
+            <option value="cancelled">cancelled</option>
+          </select>
+          <input id="orderQ" type="search" placeholder="Search #, email, name"
+                 class="min-w-[180px] flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
+          <input id="orderFrom" type="date"
+                 class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
+          <input id="orderTo" type="date"
+                 class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
+        </div>
+
+        <p id="ordersMeta" class="text-xs text-zinc-500 mb-2"></p>
+        <p id="ordersError" class="text-red-400 text-sm mb-3 hidden"></p>
+
+        <div class="table-scroll border border-[#FDD700]/20 rounded-2xl">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-[11px] uppercase tracking-wide text-[#FDD700] border-b border-zinc-800">
+                <th class="px-3 py-2.5">Order</th>
+                <th class="px-3 py-2.5">Status</th>
+                <th class="px-3 py-2.5">Customer</th>
+                <th class="px-3 py-2.5">Total</th>
+                <th class="px-3 py-2.5">Ship</th>
+                <th class="px-3 py-2.5">Created</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTbody"></tbody>
+          </table>
+        </div>
+        <p class="text-[11px] text-zinc-600 mt-1 sm:hidden">Swipe sideways to see all columns</p>
+
+        <div class="flex gap-2 mt-3">
+          <button type="button" id="ordersPrev"
+                  class="px-4 py-2 rounded-xl text-sm font-semibold bg-zinc-900 border border-zinc-700 hover:border-zinc-500">
+            Prev
+          </button>
+          <button type="button" id="ordersNext"
+                  class="px-4 py-2 rounded-xl text-sm font-semibold bg-zinc-900 border border-zinc-700 hover:border-zinc-500">
+            Next
+          </button>
+        </div>
+
+        <div id="orderDetail" class="hidden mt-6 bg-zinc-900 border border-[#FDD700]/25 rounded-2xl p-5 space-y-4"></div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div id="productsPanel" class="hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Price list</h1>
+          <button id="addBtn" type="button"
+                  class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
+            + Add product
+          </button>
+        </div>
+        <p class="text-xs text-zinc-500 mb-3">
+          Assign a <strong class="text-amber-400">Supplier</strong> per product (admin only). That name is sent to Telegram when an order is paid — never shown to customers.
+        </p>
+        <p id="editorMsg" class="text-sm mb-4 hidden"></p>
+        <div id="productList" class="flex flex-col gap-3"></div>
+      </div>
+
+      <!-- SUPPLIERS -->
+      <div id="suppliersPanel" class="hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Suppliers</h1>
+          <button id="addSupplierBtn" type="button"
+                  class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
+            + Add supplier
+          </button>
+        </div>
+        <p class="text-xs text-zinc-500 mb-3">
+          Create suppliers, set each <strong class="text-emerald-400">Telegram chat ID</strong>, then assign products on Price list.
+          When an order is paid, <strong class="text-white">each supplier is texted separately</strong> with only their items (no prices).
+        </p>
+        <p id="supplierMsg" class="text-sm mb-4 hidden"></p>
+        <div id="supplierList" class="flex flex-col gap-3"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const loginSection = document.getElementById('loginSection');
+    const appSection = document.getElementById('appSection');
+    const headerActions = document.getElementById('headerActions');
+    const productList = document.getElementById('productList');
+    const editorMsg = document.getElementById('editorMsg');
+    const loginError = document.getElementById('loginError');
+    const ordersPanel = document.getElementById('ordersPanel');
+    const productsPanel = document.getElementById('productsPanel');
+    const suppliersPanel = document.getElementById('suppliersPanel');
+    const supplierList = document.getElementById('supplierList');
+    const supplierMsg = document.getElementById('supplierMsg');
+    /** @type {{id:number,name:string,notes?:string,active:boolean}[]} */
+    let suppliersCache = [];
+    const ordersTbody = document.getElementById('ordersTbody');
+    const ordersMeta = document.getElementById('ordersMeta');
+    const ordersError = document.getElementById('ordersError');
+    const orderDetail = document.getElementById('orderDetail');
+
+    let activeTab = 'orders';
+    let ordersPage = 1;
+    const ordersLimit = 25;
+    let selectedOrder = null;
+
+    function showMsg(text, ok = true) {
+      editorMsg.textContent = text;
+      editorMsg.className = `text-sm mb-4 ${ok ? 'text-emerald-400' : 'text-red-400'}`;
+      editorMsg.classList.remove('hidden');
+      if (ok) setTimeout(() => editorMsg.classList.add('hidden'), 2500);
+    }
+
+    function moneyVal(n) {
+      if (n == null || n === '') return '';
+      const num = Number(n);
+      if (!Number.isFinite(num)) return '';
+      return Number.isInteger(num) ? String(num) : num.toFixed(2);
+    }
+
+    function formatCents(n) {
+      return '$' + (Number(n) / 100).toFixed(2);
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(s) {
+      return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;');
+    }
+
+    function statusBadge(status) {
+      const colors = {
+        pending_payment: 'bg-amber-950 text-amber-300 border-amber-800',
+        paid: 'bg-emerald-950 text-emerald-300 border-emerald-800',
+        shipped: 'bg-sky-950 text-sky-300 border-sky-800',
+        complete: 'bg-green-950 text-green-300 border-green-800',
+        cancelled: 'bg-red-950 text-red-300 border-red-800',
+      };
+      const c = colors[status] || 'bg-zinc-800 text-zinc-300 border-zinc-700';
+      return `<span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border ${c}">${escapeHtml(status)}</span>`;
+    }
+
+    function setTabStyles() {
+      document.querySelectorAll('.tab-btn').forEach((btn) => {
+        const on = btn.dataset.tab === activeTab;
+        btn.className = on
+          ? 'tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors bg-[#FDD700] text-black'
+          : 'tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors bg-zinc-900 text-zinc-300 border border-zinc-700 hover:border-zinc-500';
+      });
+      ordersPanel.classList.toggle('hidden', activeTab !== 'orders');
+      productsPanel.classList.toggle('hidden', activeTab !== 'products');
+      suppliersPanel.classList.toggle('hidden', activeTab !== 'suppliers');
+    }
+
+    async function switchTab(tab) {
+      activeTab = tab;
+      setTabStyles();
+      if (tab === 'orders') await loadOrders();
+      if (tab === 'products') {
+        await loadSuppliersCache();
+        await loadProducts();
+      }
+      if (tab === 'suppliers') await loadSuppliers();
+    }
+
+    function showSupplierMsg(text, ok = true) {
+      supplierMsg.textContent = text;
+      supplierMsg.className = `text-sm mb-4 ${ok ? 'text-emerald-400' : 'text-red-400'}`;
+      supplierMsg.classList.remove('hidden');
+      if (ok) setTimeout(() => supplierMsg.classList.add('hidden'), 2500);
+    }
+
+    async function loadSuppliersCache() {
+      try {
+        const res = await fetch('/api/admin/suppliers', { credentials: 'same-origin' });
+        if (res.status === 401) {
+          showLogin();
+          return;
+        }
+        if (!res.ok) return;
+        const data = await res.json();
+        suppliersCache = data.suppliers || [];
+      } catch {
+        /* ignore */
+      }
+    }
+
+    async function loadSuppliers() {
+      supplierList.innerHTML = '<p class="text-zinc-500 text-sm">Loading…</p>';
+      const res = await fetch('/api/admin/suppliers', { credentials: 'same-origin' });
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        supplierList.innerHTML = '<p class="text-red-400 text-sm">Failed to load suppliers</p>';
+        return;
+      }
+      const data = await res.json();
+      suppliersCache = data.suppliers || [];
+      renderSuppliers(suppliersCache);
+    }
+
+    function renderSuppliers(suppliers) {
+      if (!suppliers.length) {
+        supplierList.innerHTML =
+          '<p class="text-zinc-500 text-sm">No suppliers yet. Add one, then assign on Price list products.</p>';
+        return;
+      }
+      supplierList.innerHTML = '';
+      suppliers.forEach((s) => supplierList.appendChild(supplierCard(s)));
+    }
+
+    function supplierCard(s) {
+      const card = document.createElement('article');
+      card.className = 'bg-zinc-900 border border-amber-700/30 rounded-2xl p-4 space-y-3';
+      card.dataset.id = s.id;
+      const hasChat = !!(s.telegram_chat_id && String(s.telegram_chat_id).trim());
+      // Prefer stored username in notes prefix? Use separate field via data-username if we store in notes - use empty for now
+      const guessedUser =
+        (s.telegram_username || '').replace(/^@/, '') ||
+        (String(s.name || '').startsWith('@') ? String(s.name).replace(/^@/, '') : '');
+      card.innerHTML = `
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-zinc-500 mb-1">Supplier name</label>
+            <input data-field="name" value="${escapeAttr(s.name)}"
+                   class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">
+          </div>
+          <div class="flex items-end">
+            <label class="flex items-center gap-2 cursor-pointer pb-2">
+              <input data-field="active" type="checkbox" ${s.active ? 'checked' : ''} class="accent-[#FDD700]">
+              <span class="text-zinc-300 text-sm">Active</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-500 mb-1">
+            Telegram @username
+            <span class="text-emerald-400/90">(auto-lookup chat ID)</span>
+          </label>
+          <div class="flex gap-2">
+            <input data-field="telegram_username" value="${escapeAttr(guessedUser)}"
+                   placeholder="@unicornfartzz"
+                   class="flex-1 bg-black border border-emerald-800/50 rounded-xl px-3 py-2 text-sm text-emerald-100 placeholder:text-zinc-600">
+            <button type="button" data-action="lookup"
+                    class="px-3 bg-emerald-950 border border-emerald-700 text-emerald-200 font-semibold rounded-xl text-sm hover:bg-emerald-900 whitespace-nowrap">
+              Lookup ID
+            </button>
+          </div>
+          <p class="text-[11px] text-zinc-600 mt-1">
+            Supplier must open your bot and press <strong>Start</strong> once, then Lookup fills chat ID automatically.
+          </p>
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-500 mb-1">
+            Telegram chat ID
+            <span class="${hasChat ? 'text-emerald-400' : 'text-amber-400'}">
+              (${hasChat ? 'will receive their orders' : 'auto-filled by Lookup'})
+            </span>
+          </label>
+          <input data-field="telegram_chat_id" value="${escapeAttr(s.telegram_chat_id || '')}"
+                 placeholder="filled automatically after Lookup"
+                 class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm font-mono text-zinc-200 placeholder:text-zinc-600">
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-500 mb-1">Notes (optional, admin only)</label>
+          <input data-field="notes" value="${escapeAttr(s.notes || '')}"
+                 placeholder="Contact, lead time, etc."
+                 class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">
+        </div>
+        <div class="flex gap-2">
+          <button type="button" data-action="save"
+                  class="flex-1 bg-[#FDD700] hover:bg-white text-black font-bold py-2 rounded-xl text-sm">Save</button>
+          <button type="button" data-action="delete"
+                  class="px-4 bg-red-950 hover:bg-red-900 border border-red-700 text-red-300 font-semibold py-2 rounded-xl text-sm">Delete</button>
+        </div>
+      `;
+      card.querySelector('[data-action="save"]').addEventListener('click', () => saveSupplier(card));
+      card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteSupplier(card));
+      card.querySelector('[data-action="lookup"]').addEventListener('click', () =>
+        lookupTelegramForCard(card)
+      );
+      return card;
+    }
+
+    async function resolveTelegramUsername(username) {
+      const res = await fetch('/api/admin/telegram-resolve', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: String(username || '').trim() }),
+      });
+      if (res.status === 401) {
+        showLogin();
+        return null;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        throw new Error(
+          data.message || data.error || 'Could not resolve Telegram user'
+        );
+      }
+      return data;
+    }
+
+    async function lookupTelegramForCard(card) {
+      let user = card.querySelector('[data-field="telegram_username"]').value.trim();
+      if (!user) {
+        const name = card.querySelector('[data-field="name"]').value.trim();
+        if (name.startsWith('@')) user = name;
+      }
+      if (!user) {
+        showSupplierMsg('Enter a Telegram @username first', false);
+        return;
+      }
+      try {
+        showSupplierMsg('Looking up Telegram…');
+        const data = await resolveTelegramUsername(user);
+        if (!data) return;
+        card.querySelector('[data-field="telegram_chat_id"]').value =
+          data.telegram_chat_id || '';
+        if (data.username) {
+          card.querySelector('[data-field="telegram_username"]').value =
+            data.username;
+        }
+        showSupplierMsg(
+          `Found chat ID ${data.telegram_chat_id}` +
+            (data.username ? ` (@${data.username})` : '') +
+            ' — click Save'
+        );
+      } catch (e) {
+        showSupplierMsg(e.message || String(e), false);
+      }
+    }
+
+    async function saveSupplier(card, { autoLookup = true } = {}) {
+      const id = card.dataset.id;
+      let chatId =
+        card.querySelector('[data-field="telegram_chat_id"]').value.trim() ||
+        null;
+      const username = (
+        card.querySelector('[data-field="telegram_username"]')?.value || ''
+      ).trim();
+
+      // Auto-lookup when username set but chat id empty
+      if (autoLookup && username && !chatId) {
+        try {
+          showSupplierMsg('Looking up Telegram chat ID…');
+          const data = await resolveTelegramUsername(username);
+          if (data?.telegram_chat_id) {
+            chatId = String(data.telegram_chat_id);
+            card.querySelector('[data-field="telegram_chat_id"]').value = chatId;
+          }
+        } catch (e) {
+          showSupplierMsg(
+            'Saved name, but Telegram lookup failed: ' + (e.message || e) +
+              ' — have them Start the bot, then Lookup again',
+            false
+          );
+        }
+      }
+
+      const body = {
+        name: card.querySelector('[data-field="name"]').value.trim(),
+        notes: card.querySelector('[data-field="notes"]').value.trim() || null,
+        telegram_chat_id: chatId,
+        active: card.querySelector('[data-field="active"]').checked,
+      };
+      if (!body.name) {
+        showSupplierMsg('Name is required', false);
+        return;
+      }
+      const res = await fetch('/api/admin/suppliers/' + id, {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showSupplierMsg(err.error || 'Save failed', false);
+        return;
+      }
+      showSupplierMsg(
+        body.telegram_chat_id
+          ? 'Supplier saved — will receive Telegram orders'
+          : 'Supplier saved (no chat ID yet — Lookup after they Start the bot)'
+      );
+      await loadSuppliers();
+    }
+
+    async function deleteSupplier(card) {
+      const name = card.querySelector('[data-field="name"]').value;
+      if (!confirm(`Delete supplier “${name}”? Products using it will be unassigned.`)) return;
+      const id = card.dataset.id;
+      const res = await fetch('/api/admin/suppliers/' + id, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+      });
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        showSupplierMsg('Delete failed', false);
+        return;
+      }
+      showSupplierMsg('Deleted');
+      await loadSuppliers();
+    }
+
+    function supplierOptionsHtml(selectedId) {
+      const opts = ['<option value="">— Unassigned —</option>'];
+      const list = suppliersCache.filter((s) => s.active || String(s.id) === String(selectedId));
+      for (const s of list) {
+        const sel = String(s.id) === String(selectedId || '') ? ' selected' : '';
+        const label = s.active ? s.name : s.name + ' (inactive)';
+        opts.push(`<option value="${s.id}"${sel}>${escapeHtml(label)}</option>`);
+      }
+      return opts.join('');
+    }
+
+    function showLogin() {
+      loginSection.classList.remove('hidden');
+      appSection.classList.add('hidden');
+      headerActions.classList.add('hidden');
+    }
+
+    function showApp() {
+      loginSection.classList.add('hidden');
+      appSection.classList.remove('hidden');
+      headerActions.classList.remove('hidden');
+      setTabStyles();
+    }
+
+    async function checkSession() {
+      try {
+        const res = await fetch('/api/admin/session', { credentials: 'same-origin' });
+        if (res.ok) {
+          showApp();
+          await switchTab(activeTab);
+          return;
+        }
+      } catch (_) {}
+      showLogin();
+    }
+
+    // ---------- Orders ----------
+    function showOrdersError(msg) {
+      if (!msg) {
+        ordersError.classList.add('hidden');
+        ordersError.textContent = '';
+        return;
+      }
+      ordersError.textContent = msg;
+      ordersError.classList.remove('hidden');
+    }
+
+    async function loadOrders() {
+      showOrdersError(null);
+      ordersTbody.innerHTML = '<tr><td colspan="6" class="px-3 py-6 text-zinc-500 text-center">Loading…</td></tr>';
+      const params = new URLSearchParams({
+        page: String(ordersPage),
+        limit: String(ordersLimit),
+      });
+      const status = document.getElementById('orderStatus').value;
+      const q = document.getElementById('orderQ').value.trim();
+      const from = document.getElementById('orderFrom').value;
+      const to = document.getElementById('orderTo').value;
+      if (status) params.set('status', status);
+      if (q) params.set('q', q);
+      if (from) params.set('from', from);
+      if (to) params.set('to', to);
+
+      const res = await fetch('/api/admin/orders?' + params.toString(), {
+        credentials: 'same-origin',
+      });
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        ordersTbody.innerHTML = '';
+        showOrdersError(
+          err.message || err.error || `Failed to load orders (${res.status})`
+        );
+        ordersMeta.textContent = '';
+        return;
+      }
+
+      const data = await res.json();
+      const orders = data.orders || [];
+      ordersMeta.textContent = `${data.total ?? orders.length} orders · page ${data.page ?? ordersPage} / ${data.total_pages ?? 1}`;
+      ordersTbody.innerHTML = '';
+
+      if (!orders.length) {
+        ordersTbody.innerHTML =
+          '<tr><td colspan="6" class="px-3 py-6 text-zinc-500 text-center">No orders found</td></tr>';
+        return;
+      }
+
+      for (const o of orders) {
+        const tr = document.createElement('tr');
+        tr.className = 'order-row border-b border-zinc-800/80 cursor-pointer';
+        tr.innerHTML =
+          `<td class="px-3 py-2.5 font-semibold text-[#FDD700]">${escapeHtml(o.order_number)}</td>` +
+          `<td class="px-3 py-2.5">${statusBadge(o.status)}</td>` +
+          `<td class="px-3 py-2.5">${escapeHtml(o.customer_name)}<br><span class="text-xs text-zinc-500">${escapeHtml(o.customer_email)}</span></td>` +
+          `<td class="px-3 py-2.5">${formatCents(o.total_cents)}</td>` +
+          `<td class="px-3 py-2.5">${o.shipping_complete ? '✓' : '—'}</td>` +
+          `<td class="px-3 py-2.5 text-xs text-zinc-500">${escapeHtml((o.created_at || '').slice(0, 19).replace('T', ' '))}</td>`;
+        tr.addEventListener('click', () => showOrderDetail(o.order_number));
+        ordersTbody.appendChild(tr);
+      }
+    }
+
+    async function showOrderDetail(orderNumber) {
+      selectedOrder = orderNumber;
+      orderDetail.classList.remove('hidden');
+      orderDetail.innerHTML = '<p class="text-zinc-500 text-sm">Loading detail…</p>';
+
+      const res = await fetch(
+        '/api/admin/orders/' + encodeURIComponent(orderNumber),
+        { credentials: 'same-origin' }
+      );
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        orderDetail.innerHTML = '<p class="text-red-400 text-sm">Failed to load order detail</p>';
+        return;
+      }
+
+      const d = await res.json();
+      const o = d.order || {};
+      const items = d.items || [];
+      const history = d.history || [];
+      const emails = d.emails || [];
+      const next = d.allowed_transitions || [];
+
+      const shipLines = o.shipping_complete
+        ? [
+            o.ship_name,
+            o.ship_line1,
+            o.ship_line2,
+            [o.ship_city, o.ship_state, o.ship_postal].filter(Boolean).join(', '),
+            o.ship_country,
+            o.ship_phone,
+          ]
+            .filter(Boolean)
+            .map(escapeHtml)
+            .join('<br>')
+        : '<span class="text-zinc-500">Not submitted yet</span>';
+
+      const itemsHtml = items.length
+        ? `<div class="overflow-x-auto"><table class="w-full text-sm">
+            <thead><tr class="text-left text-xs text-zinc-500">
+              <th class="py-1 pr-2">SKU</th><th class="py-1 pr-2">Name</th>
+              <th class="py-1 pr-2">Qty</th><th class="py-1 pr-2">Unit</th><th class="py-1">Line</th>
+            </tr></thead>
+            <tbody>${items
+              .map(
+                (it) =>
+                  `<tr class="border-t border-zinc-800">
+                    <td class="py-1.5 pr-2 font-mono text-xs">${escapeHtml(it.sku)}</td>
+                    <td class="py-1.5 pr-2">${escapeHtml(it.name)}</td>
+                    <td class="py-1.5 pr-2">${it.qty}</td>
+                    <td class="py-1.5 pr-2">${formatCents(it.unit_price_cents)}</td>
+                    <td class="py-1.5">${formatCents(it.line_total_cents)}</td>
+                  </tr>`
+              )
+              .join('')}</tbody></table></div>`
+        : '<p class="text-zinc-500 text-sm">No line items</p>';
+
+      const historyHtml = history.length
+        ? `<ul class="text-xs text-zinc-400 space-y-1">${history
+            .map(
+              (h) =>
+                `<li><span class="text-zinc-300">${escapeHtml(h.from_status || '—')}</span> → <span class="text-[#FDD700]">${escapeHtml(h.to_status)}</span>` +
+                ` <span class="text-zinc-600">· ${escapeHtml(h.actor || '')} · ${escapeHtml((h.created_at || '').slice(0, 19))}</span>` +
+                (h.note ? ` <span class="text-zinc-500">— ${escapeHtml(h.note)}</span>` : '') +
+                `</li>`
+            )
+            .join('')}</ul>`
+        : '<p class="text-zinc-500 text-sm">No history</p>';
+
+      orderDetail.innerHTML = `
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="ducks-font text-2xl text-[#FDD700]">${escapeHtml(o.order_number)}</h2>
+            <div class="mt-1">${statusBadge(o.status)}</div>
+          </div>
+          <button type="button" id="closeDetail"
+                  class="text-xs text-zinc-400 hover:text-white border border-zinc-700 px-3 py-1.5 rounded-xl">
+            Close
+          </button>
+        </div>
+        <p class="text-sm">${escapeHtml(o.customer_name)} · <a class="text-[#FDD700] hover:underline" href="mailto:${escapeAttr(o.customer_email)}">${escapeHtml(o.customer_email)}</a></p>
+        <p class="text-xs text-zinc-500">
+          Total ${formatCents(o.total_cents)}
+          · Subtotal ${formatCents(o.subtotal_cents)}
+          · Shipping ${formatCents(o.shipping_cents)}
+          · Email: ${escapeHtml(o.email_status || '—')}
+          ${o.paid_at ? ` · Paid ${escapeHtml(o.paid_at.slice(0, 19))}` : ''}
+        </p>
+        ${o.notes ? `<p class="text-sm text-zinc-400"><span class="text-zinc-500">Notes:</span> ${escapeHtml(o.notes)}</p>` : ''}
+        <div>
+          <h3 class="text-xs uppercase tracking-wide text-[#FDD700] mb-2">Shipping</h3>
+          <div class="text-sm text-zinc-300">${shipLines}</div>
+        </div>
+        ${
+          o.tracking_number || o.tracking_url || o.status === 'shipped'
+            ? `<div>
+          <h3 class="text-xs uppercase tracking-wide text-[#FDD700] mb-2">Package tracking</h3>
+          <div class="text-sm text-zinc-300 space-y-1">
+            ${o.tracking_number ? `<p><span class="text-zinc-500">Number:</span> <span class="font-mono text-[#FDD700]">${escapeHtml(o.tracking_number)}</span></p>` : '<p class="text-zinc-500">No tracking number yet</p>'}
+            ${o.tracking_carrier ? `<p><span class="text-zinc-500">Carrier:</span> ${escapeHtml(o.tracking_carrier)}</p>` : ''}
+            ${o.tracking_url ? `<p><a class="text-[#FDD700] hover:underline break-all" href="${escapeAttr(o.tracking_url)}" target="_blank" rel="noopener">Track package</a></p>` : ''}
+            ${o.shipped_at ? `<p class="text-xs text-zinc-500">Shipped ${escapeHtml(String(o.shipped_at).slice(0, 19))}</p>` : ''}
+          </div>
+        </div>`
+            : ''
+        }
+        <div>
+          <h3 class="text-xs uppercase tracking-wide text-[#FDD700] mb-2">Items</h3>
+          ${itemsHtml}
+        </div>
+        <div>
+          <h3 class="text-xs uppercase tracking-wide text-[#FDD700] mb-2">Status history</h3>
+          ${historyHtml}
+        </div>
+        ${emails.length ? `<div>
+          <h3 class="text-xs uppercase tracking-wide text-[#FDD700] mb-2">Email log</h3>
+          <pre class="text-[11px] bg-black border border-zinc-800 rounded-xl p-3 overflow-auto max-h-40">${escapeHtml(JSON.stringify(emails, null, 2))}</pre>
+        </div>` : ''}
+        <div id="orderActions" class="flex flex-wrap gap-2 pt-1"></div>
+      `;
+
+      document.getElementById('closeDetail').addEventListener('click', () => {
+        orderDetail.classList.add('hidden');
+        orderDetail.innerHTML = '';
+        selectedOrder = null;
+      });
+
+      const actions = document.getElementById('orderActions');
+      for (const s of next) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = '→ ' + s;
+        b.className =
+          s === 'cancelled'
+            ? 'px-4 py-2 rounded-xl text-sm font-bold bg-red-950 border border-red-700 text-red-300 hover:bg-red-900'
+            : 'px-4 py-2 rounded-xl text-sm font-bold bg-[#FDD700] text-black hover:bg-white';
+        b.addEventListener('click', () => patchOrderStatus(orderNumber, s, o));
+        actions.appendChild(b);
+      }
+      if (o.status === 'shipped') {
+        const tb = document.createElement('button');
+        tb.type = 'button';
+        tb.textContent = 'Update tracking + email';
+        tb.className =
+          'px-4 py-2 rounded-xl text-sm font-bold bg-sky-950 border border-sky-700 text-sky-200 hover:bg-sky-900';
+        tb.addEventListener('click', () =>
+          patchOrderStatus(orderNumber, 'shipped', o, true)
+        );
+        actions.appendChild(tb);
+      }
+      // Only after payment — hide until paid / shipped / complete
+      const canTelegram = ['paid', 'shipped', 'complete'].includes(o.status);
+      if (canTelegram) {
+        const tg = document.createElement('button');
+        tg.type = 'button';
+        tg.textContent = 'Telegram supplier';
+        tg.className =
+          'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-950 border border-emerald-700 text-emerald-200 hover:bg-emerald-900';
+        tg.addEventListener('click', () => notifySupplierTelegram(orderNumber));
+        actions.appendChild(tg);
+      } else if (o.status === 'pending_payment') {
+        const hint = document.createElement('p');
+        hint.className = 'w-full text-xs text-zinc-500 pt-1';
+        hint.textContent =
+          'Telegram supplier unlocks after you mark this order paid.';
+        actions.appendChild(hint);
+      }
+    }
+
+    async function notifySupplierTelegram(orderNumber) {
+      const note = prompt(
+        'Optional note to include for the supplier (Cancel = abort):',
+        ''
+      );
+      if (note === null) return;
+      const res = await fetch(
+        '/api/admin/orders/' +
+          encodeURIComponent(orderNumber) +
+          '/notify-supplier',
+        {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ note: note.trim() || undefined }),
+        }
+      );
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (data.error === 'payment_required') {
+          alert(
+            data.message ||
+              'Mark the order paid first, then you can Telegram the supplier.'
+          );
+          return;
+        }
+        alert(
+          data.message ||
+            data.error ||
+            'Telegram send failed. Set TELEGRAM_BOT_TOKEN + SUPPLIER_TELEGRAM_CHAT_ID on Cloudflare Pages.'
+        );
+        return;
+      }
+      alert('Supplier notified on Telegram for ' + (data.order_number || orderNumber));
+    }
+
+    function collectTracking(existing) {
+      const tracking_number = prompt(
+        'Tracking number (recommended — included in customer email):',
+        (existing && existing.tracking_number) || ''
+      );
+      if (tracking_number === null) return null;
+      const tracking_carrier = prompt(
+        'Carrier (USPS / UPS / FedEx / Other) — optional:',
+        (existing && existing.tracking_carrier) || ''
+      );
+      if (tracking_carrier === null) return null;
+      const tracking_url = prompt(
+        'Tracking URL (optional full link):',
+        (existing && existing.tracking_url) || ''
+      );
+      if (tracking_url === null) return null;
+      return {
+        tracking_number: tracking_number.trim() || undefined,
+        tracking_carrier: (tracking_carrier || '').trim() || undefined,
+        tracking_url: (tracking_url || '').trim() || undefined,
+      };
+    }
+
+    async function patchOrderStatus(orderNumber, status, existing, forceTracking) {
+      const body = { status, note: 'Site admin', send_email: true };
+      if (status === 'shipped' || forceTracking) {
+        const t = collectTracking(existing || {});
+        if (t === null) return; // cancelled prompts
+        if (!t.tracking_number && status === 'shipped' && !forceTracking) {
+          if (
+            !confirm(
+              'No tracking number entered. Mark shipped and email customer without tracking?'
+            )
+          ) {
+            return;
+          }
+        }
+        Object.assign(body, t);
+      } else {
+        if (
+          !confirm(
+            `Set ${orderNumber} → ${status}?\nCustomer will receive an email for this step.`
+          )
+        ) {
+          return;
+        }
+      }
+
+      const res = await fetch(
+        '/api/admin/orders/' + encodeURIComponent(orderNumber),
+        {
+          method: 'PATCH',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }
+      );
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.message || data.error || 'Update failed');
+        return;
+      }
+      if (data.email && data.email.sent === false) {
+        alert(
+          'Status saved, but customer email failed: ' +
+            (data.email.error || 'unknown')
+        );
+      } else if (data.email && data.email.sent) {
+        console.info('Customer email sent:', data.email.template);
+      }
+
+      // If marked paid: ensure Telegram (worker result and/or site fallback)
+      const becamePaid =
+        status === 'paid' &&
+        data.order &&
+        data.order.status === 'paid';
+      if (becamePaid) {
+        const sn = data.supplier_notify;
+        if (sn && sn.ok) {
+          console.info('Supplier Telegram OK via worker');
+        } else {
+          // Fallback: site → Render bot (same secret as bot)
+          try {
+            const tgRes = await fetch(
+              '/api/admin/orders/' +
+                encodeURIComponent(orderNumber) +
+                '/notify-supplier',
+              {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ note: 'Auto after mark paid' }),
+              }
+            );
+            const tgData = await tgRes.json().catch(() => ({}));
+            if (!tgRes.ok || !tgData.ok) {
+              alert(
+                'Order marked paid, but Telegram to supplier failed: ' +
+                  (tgData.message ||
+                    tgData.error ||
+                    sn?.error ||
+                    tgRes.status) +
+                  '\n\nCheck SUPPLIER_NOTIFY_SECRET on Pages matches Render NOTIFY_SECRET, and bot health.'
+              );
+            } else {
+              console.info('Supplier Telegram OK via site fallback');
+            }
+          } catch (e) {
+            alert(
+              'Order marked paid, but Telegram failed: ' +
+                (e && e.message ? e.message : String(e))
+            );
+          }
+        }
+      }
+
+      await loadOrders();
+      await showOrderDetail(orderNumber);
+    }
+
+    // ---------- Products ----------
+    async function loadProducts() {
+      productList.innerHTML = '<p class="text-zinc-500 text-sm">Loading…</p>';
+      if (!suppliersCache.length) await loadSuppliersCache();
+      const res = await fetch('/api/admin/products', { credentials: 'same-origin' });
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        productList.innerHTML = '<p class="text-red-400 text-sm">Failed to load products</p>';
+        return;
+      }
+      const data = await res.json();
+      renderProducts(data.products || []);
+    }
+
+    function renderProducts(products) {
+      if (!products.length) {
+        productList.innerHTML = '<p class="text-zinc-500 text-sm">No products yet. Add one.</p>';
+        return;
+      }
+      productList.innerHTML = '';
+      products.forEach((p) => productList.appendChild(productCard(p)));
+    }
+
+    function productCard(p) {
+      const card = document.createElement('article');
+      card.className = 'bg-zinc-900 border border-[#FDD700]/25 rounded-2xl p-4 space-y-3';
+      card.dataset.id = p.id;
+
+      card.innerHTML = `
+        <div>
+          <label class="block text-xs text-zinc-500 mb-1">Name</label>
+          <input data-field="name" value="${escapeAttr(p.name)}"
+                 class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-zinc-500 mb-1">Vial price</label>
+            <input data-field="vial_price" type="number" step="0.01" min="0"
+                   value="${escapeAttr(moneyVal(p.vial_price))}"
+                   ${p.kit_only ? 'disabled' : ''}
+                   class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+          </div>
+          <div>
+            <label class="block text-xs text-zinc-500 mb-1">10-pack / kit</label>
+            <input data-field="pack_price" type="number" step="0.01" min="0"
+                   value="${escapeAttr(moneyVal(p.pack_price))}"
+                   class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-500 mb-1">
+            Supplier <span class="text-amber-500/90">(admin only → Telegram)</span>
+          </label>
+          <select data-field="supplier_id"
+                  class="w-full bg-black border border-amber-700/50 rounded-xl px-3 py-2 text-sm text-amber-100">
+            ${supplierOptionsHtml(p.supplier_id)}
+          </select>
+          <p class="text-[11px] text-zinc-600 mt-1">Manage list under Suppliers tab. Used when bot notifies on paid.</p>
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-500 mb-1">
+            Notes / SKU <span class="text-zinc-600">(optional, admin only)</span>
+          </label>
+          <input data-field="source" value="${escapeAttr(p.source || '')}"
+                 placeholder="e.g. warehouse SKU, pack size notes"
+                 class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm placeholder:text-zinc-600">
+        </div>
+        <div class="flex flex-wrap items-center gap-4 text-sm">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input data-field="kit_only" type="checkbox" ${p.kit_only ? 'checked' : ''} class="accent-[#FDD700]">
+            <span class="text-zinc-300">Kit only</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input data-field="active" type="checkbox" ${p.active ? 'checked' : ''} class="accent-[#FDD700]">
+            <span class="text-zinc-300">Active (visible)</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <span class="text-zinc-500 text-xs">Sort</span>
+            <input data-field="sort_order" type="number" value="${p.sort_order ?? 0}"
+                   class="w-20 bg-black border border-zinc-700 rounded-xl px-2 py-1 text-sm">
+          </div>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button type="button" data-action="save"
+                  class="flex-1 bg-[#FDD700] hover:bg-white text-black font-bold py-2 rounded-xl text-sm">
+            Save
+          </button>
+          <button type="button" data-action="delete"
+                  class="px-4 bg-red-950 hover:bg-red-900 border border-red-700 text-red-300 font-semibold py-2 rounded-xl text-sm">
+            Delete
+          </button>
+        </div>
+      `;
+
+      const kitCb = card.querySelector('[data-field="kit_only"]');
+      const vialInput = card.querySelector('[data-field="vial_price"]');
+      kitCb.addEventListener('change', () => {
+        vialInput.disabled = kitCb.checked;
+        if (kitCb.checked) vialInput.value = '';
+      });
+
+      card.querySelector('[data-action="save"]').addEventListener('click', () => saveProduct(card));
+      card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteProduct(card));
+      return card;
+    }
+
+    function readCard(card) {
+      const kitOnly = card.querySelector('[data-field="kit_only"]').checked;
+      const vialRaw = card.querySelector('[data-field="vial_price"]').value;
+      const sourceRaw = card.querySelector('[data-field="source"]')?.value?.trim() || '';
+      const supplierRaw = card.querySelector('[data-field="supplier_id"]')?.value || '';
+      return {
+        name: card.querySelector('[data-field="name"]').value.trim(),
+        vial_price: kitOnly || vialRaw === '' ? null : Number(vialRaw),
+        pack_price: Number(card.querySelector('[data-field="pack_price"]').value),
+        kit_only: kitOnly,
+        active: card.querySelector('[data-field="active"]').checked,
+        sort_order: Number(card.querySelector('[data-field="sort_order"]').value) || 0,
+        source: sourceRaw || null,
+        supplier_id: supplierRaw ? Number(supplierRaw) : null,
+      };
+    }
+
+    async function saveProduct(card) {
+      const id = card.dataset.id;
+      const body = readCard(card);
+      if (!body.name) {
+        showMsg('Name is required', false);
+        return;
+      }
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showMsg(err.error || 'Save failed', false);
+        return;
+      }
+      showMsg('Saved');
+      await loadProducts();
+    }
+
+    async function deleteProduct(card) {
+      const name = card.querySelector('[data-field="name"]').value;
+      if (!confirm(`Delete “${name}”?`)) return;
+      const id = card.dataset.id;
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+      });
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        showMsg('Delete failed', false);
+        return;
+      }
+      showMsg('Deleted');
+      await loadProducts();
+    }
+
+    // ---------- Events ----------
+    document.getElementById('tabOrders').addEventListener('click', () => switchTab('orders'));
+    document.getElementById('tabProducts').addEventListener('click', () => switchTab('products'));
+    document.getElementById('tabSuppliers').addEventListener('click', () => switchTab('suppliers'));
+
+    document.getElementById('addSupplierBtn').addEventListener('click', async () => {
+      const name = prompt('Supplier display name (e.g. Unicorn or @unicornfartzz):');
+      if (!name || !name.trim()) return;
+      let username = prompt(
+        'Telegram @username (for auto chat ID lookup).\nLeave blank to skip.\nThey must Start your bot first.',
+        name.trim().startsWith('@') ? name.trim() : ''
+      );
+      if (username === null) return;
+      username = username.trim();
+
+      let telegram_chat_id = null;
+      if (username) {
+        try {
+          showSupplierMsg('Looking up Telegram…');
+          const data = await resolveTelegramUsername(username);
+          if (data?.telegram_chat_id) {
+            telegram_chat_id = String(data.telegram_chat_id);
+          }
+        } catch (e) {
+          // still create supplier; user can Lookup later
+          showSupplierMsg(
+            'Creating supplier; lookup failed: ' + (e.message || e),
+            false
+          );
+        }
+      }
+
+      const res = await fetch('/api/admin/suppliers', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim().replace(/^@/, '') || name.trim(),
+          telegram_chat_id,
+          active: true,
+        }),
+      });
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showSupplierMsg(err.error || 'Could not add supplier', false);
+        return;
+      }
+      showSupplierMsg(
+        telegram_chat_id
+          ? `Supplier added with chat ID ${telegram_chat_id}`
+          : 'Supplier added — use Lookup ID after they Start the bot'
+      );
+      await loadSuppliers();
+    });
+
+    document.getElementById('ordersRefreshBtn').addEventListener('click', () => {
+      ordersPage = 1;
+      loadOrders();
+    });
+    document.getElementById('orderStatus').addEventListener('change', () => {
+      ordersPage = 1;
+      loadOrders();
+    });
+    let qTimer;
+    document.getElementById('orderQ').addEventListener('input', () => {
+      clearTimeout(qTimer);
+      qTimer = setTimeout(() => {
+        ordersPage = 1;
+        loadOrders();
+      }, 350);
+    });
+    document.getElementById('orderFrom').addEventListener('change', () => {
+      ordersPage = 1;
+      loadOrders();
+    });
+    document.getElementById('orderTo').addEventListener('change', () => {
+      ordersPage = 1;
+      loadOrders();
+    });
+    document.getElementById('ordersPrev').addEventListener('click', () => {
+      if (ordersPage > 1) {
+        ordersPage--;
+        loadOrders();
+      }
+    });
+    document.getElementById('ordersNext').addEventListener('click', () => {
+      ordersPage++;
+      loadOrders();
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginError.classList.add('hidden');
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      if (!res.ok) {
+        loginError.textContent = 'Invalid username or password';
+        loginError.classList.remove('hidden');
+        return;
+      }
+      document.getElementById('password').value = '';
+      showApp();
+      await switchTab('orders');
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' });
+      showLogin();
+    });
+
+    document.getElementById('addBtn').addEventListener('click', async () => {
+      const name = prompt('New product name:');
+      if (!name || !name.trim()) return;
+      const pack = prompt('10-pack / kit price:', '0');
+      if (pack == null) return;
+      const res = await fetch('/api/admin/products', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          vial_price: null,
+          pack_price: Number(pack) || 0,
+          kit_only: false,
+          active: true,
+          sort_order: 999,
+        }),
+      });
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        showMsg('Could not add product', false);
+        return;
+      }
+      showMsg('Product added — set vial price and Save');
+      await loadProducts();
+    });
+
+    checkSession();
+  </script>
+</body>
+</html>
