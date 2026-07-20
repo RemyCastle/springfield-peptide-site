@@ -12,28 +12,15 @@
     window.matchMedia &&
     window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-  // ── Tilt (price + pillar only, max 6°) ────────────────────
+  // Product cards: no tilt / no move — CSS border highlight + glitch only
   function initTilt() {
-    if (reduced || !finePointer) return;
-    var max = 6;
-    document.querySelectorAll('.price-card, .pillar-card').forEach(function (el) {
-      if (el.dataset.tiltBound) return;
-      // Never tilt forms
-      if (el.closest('#orderForm, #coachForm, .flat-panel, .modal-sheet')) return;
-      el.dataset.tiltBound = '1';
-      el.classList.add('tilt-3d');
-      el.addEventListener('pointermove', function (e) {
-        var r = el.getBoundingClientRect();
-        var px = (e.clientX - r.left) / r.width - 0.5;
-        var py = (e.clientY - r.top) / r.height - 0.5;
-        el.classList.add('is-tilting');
-        el.style.transform =
-          'rotateY(' + (px * max * 2).toFixed(2) + 'deg) rotateX(' + (-py * max * 2).toFixed(2) + 'deg) translateZ(0)';
-      });
-      el.addEventListener('pointerleave', function () {
-        el.classList.remove('is-tilting');
-        el.style.transform = '';
-      });
+    document.querySelectorAll('.price-card, .tilt-3d').forEach(function (el) {
+      el.style.transform = '';
+      el.classList.remove('is-tilting');
+      // Strip any leftover pointer tilt handlers by cloning if already bound
+      if (el.dataset.tiltBound === '1') {
+        el.dataset.tiltBound = '0';
+      }
     });
   }
 

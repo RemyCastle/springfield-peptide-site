@@ -200,20 +200,47 @@ body.atmosphere .modal-sheet { z-index: var(--spbc-z-modal); position: relative;
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: none !important;
   transition:
-    transform var(--spbc-t-micro),
     box-shadow var(--spbc-t-micro),
-    border-color var(--spbc-t-micro);
+    border-color var(--spbc-t-micro),
+    background var(--spbc-t-micro);
+}
+
+/* Product menu cards: highlight only — no lift, no tilt */
+.price-card,
+.price-card.depth-card,
+.price-card.tilt-3d {
+  transform: none !important;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .depth-card:hover {
-    transform: translateY(-4px);
+  .depth-card:hover:not(.price-card) {
     box-shadow:
-      0 16px 48px rgba(0, 0, 0, 0.5),
-      0 0 0 1px rgba(253, 215, 0, 0.3);
+      0 12px 36px rgba(0, 0, 0, 0.45),
+      0 0 0 1px rgba(253, 215, 0, 0.28);
     border-color: rgba(253, 215, 0, 0.35);
   }
+
+  .price-card:hover,
+  .price-card.depth-card:hover {
+    transform: none !important;
+    border-color: rgba(253, 215, 0, 0.7);
+    background: rgba(24, 24, 27, 0.88) !important;
+    box-shadow:
+      0 0 0 1px rgba(253, 215, 0, 0.35),
+      0 0 18px rgba(253, 215, 0, 0.28),
+      inset 0 0 0 1px rgba(253, 215, 0, 0.12);
+    animation: product-glitch 0.28s steps(2, end) 1;
+  }
+}
+
+/* Minimal glitch — tiny 1px jitter, not tilt */
+@keyframes product-glitch {
+  0%   { filter: none; }
+  25%  { filter: drop-shadow(1px 0 0 rgba(253, 215, 0, 0.35)); }
+  50%  { filter: drop-shadow(-1px 0 0 rgba(0, 255, 140, 0.2)); }
+  100% { filter: none; }
 }
 
 /* Glass panels (legacy aliases) */
@@ -308,15 +335,18 @@ footer {
   border-color: var(--spbc-gold);
 }
 
-/* ── Tilt 3D (price + pillars only) ───────────────────────── */
+/* Tilt disabled on product cards; pillars keep optional static depth only via box-shadow */
 .tilt-3d {
-  transform-style: preserve-3d;
-  will-change: transform;
-  transition: transform var(--spbc-t-micro), box-shadow var(--spbc-t-micro);
+  transform: none !important;
+  transform-style: flat;
+  will-change: auto;
 }
-.tilt-3d.is-tilting { transition: transform 0.06s linear, box-shadow var(--spbc-t-micro); }
+.tilt-3d.is-tilting {
+  transform: none !important;
+  transition: none;
+}
 
-.perspective-root { perspective: 1000px; }
+.perspective-root { perspective: none; }
 
 /* ── Sticky cart / modals ─────────────────────────────────── */
 .sticky-order-inner {
@@ -423,12 +453,18 @@ textarea:focus-visible {
   .tilt-3d,
   .tilt-3d.is-tilting,
   .depth-card,
+  .price-card,
   .reveal,
   .btn-primary,
   .cart-badge {
     transition: none !important;
     animation: none !important;
     transform: none !important;
+    filter: none !important;
+  }
+  .price-card:hover,
+  .price-card.depth-card:hover {
+    animation: none !important;
   }
   .reveal {
     opacity: 1 !important;
