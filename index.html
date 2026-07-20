@@ -11,6 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="/shared/site-header.css?v=5">
+    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=1">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -72,41 +73,6 @@
             .price-row .price-controls { gap: 0.5rem; }
             .qty-select { min-width: 3.25rem; padding: 0.45rem 0.5rem; }
         }
-        /* Premium brand hero — no external images */
-        .hero-bg {
-            background:
-                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(253, 215, 0, 0.18) 0%, transparent 55%),
-                radial-gradient(ellipse 60% 50% at 100% 100%, rgba(0, 102, 0, 0.55) 0%, transparent 50%),
-                radial-gradient(ellipse 50% 40% at 0% 80%, rgba(0, 80, 0, 0.4) 0%, transparent 45%),
-                linear-gradient(165deg, #004d00 0%, #003300 40%, #001a00 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        .hero-bg::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image:
-                repeating-linear-gradient(
-                    -12deg,
-                    transparent,
-                    transparent 18px,
-                    rgba(253, 215, 0, 0.03) 18px,
-                    rgba(253, 215, 0, 0.03) 19px
-                );
-            pointer-events: none;
-        }
-        .hero-bg::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 48px;
-            background: linear-gradient(to top, #09090b, transparent);
-            pointer-events: none;
-        }
-        .hero-inner { position: relative; z-index: 1; }
         .skip-link {
             position: absolute;
             left: -9999px;
@@ -447,7 +413,7 @@
         }
     </style>
 </head>
-<body class="bg-black text-white overflow-x-hidden" data-page="index">
+<body class="atmosphere text-white overflow-x-hidden" data-page="index">
     <a href="#prices" class="skip-link">Skip to price list</a>
 
     <!-- PASSWORD SCREEN -->
@@ -487,8 +453,8 @@
             </div>
         </header>
 
-        <section class="hero-bg min-h-[32vh] sm:min-h-[40vh] flex items-center relative" aria-label="Welcome">
-            <div class="hero-inner max-w-screen-xl mx-auto px-4 sm:px-6 text-center py-10 sm:py-16">
+        <section class="page-hero min-h-[32vh] sm:min-h-[40vh] flex items-center relative" aria-label="Welcome">
+            <div class="page-hero-inner max-w-screen-xl mx-auto px-4 sm:px-6 text-center py-10 sm:py-16">
                 <p class="text-[#FDD700] text-xs tracking-[0.28em] uppercase font-semibold mb-3">Research club · members only</p>
                 <h1 class="ducks-font text-3xl sm:text-5xl md:text-6xl leading-tight sm:leading-none mb-3 text-white break-word">GAINS WITHOUT COMPROMISE</h1>
                 <p class="text-zinc-300 text-sm sm:text-base max-w-md mx-auto mb-6 leading-relaxed">Bulk-ready pricing, transparent discounts, and a dosage calculator — built for serious research buyers.</p>
@@ -963,6 +929,9 @@
             });
             applyProductFilter();
             updateOrder();
+            if (typeof window.spbcAtmosphereRefresh === 'function') {
+                window.spbcAtmosphereRefresh();
+            }
         }
 
         async function loadProducts() {
@@ -1615,6 +1584,8 @@
             unlockSite();
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
+    <script src="/shared/site-atmosphere.js?v=1" defer></script>
     <script src="/shared/site-header.js?v=5" defer></script>
 </body>
 </html>
