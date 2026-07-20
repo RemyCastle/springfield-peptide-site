@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="SPBC research coaching — $100/hr. Stack recommendations, solutions, consulting, and bloodwork guidance.">
+  <meta name="theme-color" content="#006600">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Coaching — Springfield Peptide Buyers Club</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/site-header.css?v=4">
+  <style>
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #000;
+      padding-left: env(safe-area-inset-left, 0);
+      padding-right: env(safe-area-inset-right, 0);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .ducks-font {
+      font-family: 'Bebas Neue', Impact, sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0.5rem;
+      z-index: 200;
+      background: #FDD700;
+      color: #000;
+      font-weight: 700;
+      padding: 0.6rem 1rem;
+      border-radius: 0.75rem;
+    }
+    .skip-link:focus {
+      left: 0.5rem;
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+    .coach-hero {
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 0%, rgba(253, 215, 0, 0.16) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 100% 80%, rgba(0, 102, 0, 0.45) 0%, transparent 50%),
+        linear-gradient(165deg, #004d00 0%, #001a00 100%);
+      border-bottom: 1px solid rgba(253, 215, 0, 0.25);
+    }
+    .pillar-card {
+      background: #18181b;
+      border: 1px solid rgba(253, 215, 0, 0.22);
+      border-radius: 1.25rem;
+      padding: 1.25rem 1.35rem;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .pillar-card:hover {
+      border-color: rgba(253, 215, 0, 0.55);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+      transform: translateY(-2px);
+    }
+    .pillar-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      background: linear-gradient(145deg, #14532d, #052e16);
+      border: 1px solid rgba(253, 215, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      margin-bottom: 0.85rem;
+    }
+    .price-pill {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.35rem;
+      background: linear-gradient(180deg, #ffe44d 0%, #FDD700 45%, #e6c200 100%);
+      color: #000;
+      font-weight: 800;
+      padding: 0.55rem 1.1rem;
+      border-radius: 999px;
+      box-shadow: 0 4px 18px rgba(253, 215, 0, 0.35);
+    }
+    .field {
+      width: 100%;
+      background: #000;
+      border: 1px solid #3f3f46;
+      border-radius: 1rem;
+      padding: 0.85rem 1.1rem;
+      color: #fff;
+      font-size: 16px;
+      min-height: 2.75rem;
+      touch-action: manipulation;
+    }
+    .field:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(253, 215, 0, 0.55);
+      border-color: #FDD700;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid rgba(253, 215, 0, 0.3);
+      color: #FDD700;
+      background: rgba(253, 215, 0, 0.08);
+    }
+    input, textarea, select, button {
+      font-size: 16px;
+      touch-action: manipulation;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pillar-card { transition: none !important; }
+      .pillar-card:hover { transform: none; }
+    }
+  </style>
+</head>
+<body class="text-white min-h-screen overflow-x-hidden" data-page="coaching">
+  <a href="#coach-main" class="skip-link">Skip to coaching</a>
+
+  <header class="site-header" data-site-header>
+    <div class="site-header__inner">
+      <a href="/" class="site-header__brand" aria-label="Springfield Peptide Buyers Club — home">
+        <span class="ducks-font site-header__brand-text">
+          <span class="site-header__brand-gold">SPRINGFIELD</span>
+          <span class="site-header__brand-white">PEPTIDE BUYERS CLUB</span>
+        </span>
+      </a>
+      <nav class="site-header__nav" aria-label="Main">
+        <span class="nav-pill" aria-hidden="true"></span>
+        <a href="/#prices" class="nav-link" data-nav="index">Prices</a>
+        <a href="/calculator.html" class="nav-link" data-nav="calculator">Calculator</a>
+        <a href="/coaching.html" class="nav-link" data-nav="coaching">Coaching</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="coach-hero px-4 py-10 sm:py-14 text-center">
+    <p class="text-[#FDD700] text-xs tracking-[0.28em] uppercase font-semibold mb-3">Members · 1:1 sessions</p>
+    <h1 class="ducks-font text-4xl sm:text-5xl md:text-6xl text-white mb-3">Research Coaching</h1>
+    <p class="text-zinc-300 text-sm sm:text-base max-w-lg mx-auto leading-relaxed mb-6">
+      Stack design, problem-solving, protocol consulting, and lab-marker guidance —
+      tailored for serious club members who want a clear plan.
+    </p>
+    <div class="price-pill ducks-font text-2xl sm:text-3xl tracking-wide mb-2">
+      <span>$100</span>
+      <span class="text-sm font-bold normal-case tracking-normal" style="font-family:Inter,system-ui,sans-serif">/ hour</span>
+    </div>
+    <p class="text-zinc-500 text-xs mt-2">Billed hourly · remote video or voice</p>
+    <a href="#book"
+       class="mt-6 inline-block bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold px-8 py-3.5 rounded-2xl min-h-[3rem] transition-colors">
+      Book a session
+    </a>
+  </section>
+
+  <main id="coach-main" class="max-w-3xl mx-auto px-4 py-10 sm:py-12" tabindex="-1">
+    <div class="flex flex-wrap gap-2 justify-center mb-10">
+      <span class="chip">Stacks</span>
+      <span class="chip">Solutions</span>
+      <span class="chip">Consulting</span>
+      <span class="chip">Bloodwork</span>
+    </div>
+
+    <h2 class="ducks-font text-3xl text-[#FDD700] text-center mb-6">What’s included</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
+      <article class="pillar-card" id="stacks">
+        <div class="pillar-icon" aria-hidden="true">◎</div>
+        <h3 class="font-bold text-lg text-white mb-2">Stack recommendations</h3>
+        <p class="text-zinc-400 text-sm leading-relaxed">
+          Goal-based research stack outlines: compound selection, sequencing, cycle length ideas,
+          and how club products can fit a coherent plan — without guesswork.
+        </p>
+        <ul class="mt-3 text-xs text-zinc-500 space-y-1.5 list-disc list-inside">
+          <li>Primary + support compound maps</li>
+          <li>Timing / reconstitution planning notes</li>
+          <li>Club SKU alignment to your goals</li>
+        </ul>
+      </article>
+
+      <article class="pillar-card" id="solutions">
+        <div class="pillar-icon" aria-hidden="true">✦</div>
+        <h3 class="font-bold text-lg text-white mb-2">Solutions</h3>
+        <p class="text-zinc-400 text-sm leading-relaxed">
+          Stuck on a research problem? We troubleshoot plateaus, logistics, storage, sourcing
+          timing, and “what changed” reviews so you leave with actionable next steps.
+        </p>
+        <ul class="mt-3 text-xs text-zinc-500 space-y-1.5 list-disc list-inside">
+          <li>Issue → hypothesis → test plan</li>
+          <li>Side-effect context &amp; risk framing*</li>
+          <li>When to pause vs adjust protocol</li>
+        </ul>
+      </article>
+
+      <article class="pillar-card" id="consulting">
+        <div class="pillar-icon" aria-hidden="true">◆</div>
+        <h3 class="font-bold text-lg text-white mb-2">Consulting</h3>
+        <p class="text-zinc-400 text-sm leading-relaxed">
+          Broader 1:1 consulting — long-horizon research planning, budget optimization with bulk
+          club pricing, and second opinions before you commit to a kit order.
+        </p>
+        <ul class="mt-3 text-xs text-zinc-500 space-y-1.5 list-disc list-inside">
+          <li>12-week / 6-month roadmaps</li>
+          <li>Budget vs bulk kit strategy</li>
+          <li>Literature &amp; RUO framing overview</li>
+        </ul>
+      </article>
+
+      <article class="pillar-card" id="bloodwork">
+        <div class="pillar-icon" aria-hidden="true">◈</div>
+        <h3 class="font-bold text-lg text-white mb-2">Bloodwork recommendations</h3>
+        <p class="text-zinc-400 text-sm leading-relaxed">
+          What panels to request and when — baseline, mid-protocol, and follow-up markers commonly
+          used to track metabolic, inflammatory, and hormone-related research context.
+        </p>
+        <ul class="mt-3 text-xs text-zinc-500 space-y-1.5 list-disc list-inside">
+          <li>Baseline vs follow-up panel lists</li>
+          <li>Timing relative to your protocol</li>
+          <li>How to read trends (not diagnose)</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="bg-zinc-900 border border-[#FDD700]/25 rounded-3xl p-5 sm:p-7 mb-10">
+      <h2 class="ducks-font text-2xl text-white mb-3">How sessions work</h2>
+      <ol class="space-y-3 text-sm text-zinc-300">
+        <li class="flex gap-3"><span class="text-[#FDD700] font-bold shrink-0">1</span><span>Submit the request form with goals + preferred times.</span></li>
+        <li class="flex gap-3"><span class="text-[#FDD700] font-bold shrink-0">2</span><span>We confirm a slot and send a payment link for the booked hours ($100/hr).</span></li>
+        <li class="flex gap-3"><span class="text-[#FDD700] font-bold shrink-0">3</span><span>Meet remotely. You get a short written summary of recommendations after.</span></li>
+      </ol>
+      <p class="text-[11px] text-zinc-500 mt-4 leading-relaxed">
+        *Educational / research-planning only. Not medical advice, not a doctor–patient relationship,
+        not a substitute for care from a licensed clinician. All compounds remain research-use only.
+      </p>
+    </div>
+
+    <section id="book" class="bg-zinc-900 border border-[#FDD700]/30 rounded-3xl p-5 sm:p-7 mb-8" aria-labelledby="book-heading">
+      <h2 id="book-heading" class="ducks-font text-3xl text-[#FDD700] mb-1">Book coaching</h2>
+      <p class="text-zinc-400 text-sm mb-5">$100 / hour · minimum 1 hour · same-week slots when available</p>
+
+      <form id="coachForm" class="space-y-4" onsubmit="return submitCoach(event)">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="cName">Name</label>
+            <input id="cName" class="field" required autocomplete="name" placeholder="Your name">
+          </div>
+          <div>
+            <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="cEmail">Email</label>
+            <input id="cEmail" type="email" class="field" required autocomplete="email" inputmode="email" placeholder="you@email.com">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="cHours">Hours to book</label>
+            <select id="cHours" class="field">
+              <option value="1">1 hour — $100</option>
+              <option value="1.5">1.5 hours — $150</option>
+              <option value="2">2 hours — $200</option>
+              <option value="3">3 hours — $300</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="cFocus">Primary focus</label>
+            <select id="cFocus" class="field">
+              <option value="Stack recommendations">Stack recommendations</option>
+              <option value="Solutions / troubleshooting">Solutions / troubleshooting</option>
+              <option value="Consulting / roadmap">Consulting / roadmap</option>
+              <option value="Bloodwork recommendations">Bloodwork recommendations</option>
+              <option value="Mixed (all of the above)">Mixed (all of the above)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="cGoals">Goals &amp; context</label>
+          <textarea id="cGoals" class="field" rows="4" required placeholder="What are you working on? Timeline? Any bloodwork already done?"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="cTimes">Preferred times (optional)</label>
+          <input id="cTimes" class="field" placeholder="e.g. weekday evenings PT, weekends">
+        </div>
+
+        <label class="flex items-start gap-3 text-sm cursor-pointer select-none">
+          <input type="checkbox" id="cAgree" class="w-6 h-6 mt-0.5 shrink-0 accent-[#FDD700]" required>
+          <span class="text-zinc-300 leading-snug text-xs sm:text-sm">
+            I understand this is educational research coaching only — not medical advice — and I’m 21+.
+          </span>
+        </label>
+
+        <p id="coachError" class="text-red-400 text-sm text-center hidden" role="alert"></p>
+        <p id="coachOk" class="text-emerald-400 text-sm text-center hidden" role="status"></p>
+
+        <button type="submit" id="coachSubmit"
+                class="w-full bg-[#FDD700] hover:bg-white text-black font-bold py-3.5 rounded-2xl min-h-[3rem] transition-colors">
+          Request session · $100/hr
+        </button>
+        <p class="text-[11px] text-zinc-500 text-center">
+          Opens your email client with a filled request to the club.
+          Or email <a class="text-[#FDD700] underline underline-offset-2" href="mailto:remycastle@outlook.com?subject=SPBC%20Coaching%20Request">remycastle@outlook.com</a> directly.
+        </p>
+      </form>
+    </section>
+
+    <p class="text-center text-zinc-500 text-xs">
+      <a href="/#prices" class="hover:text-[#FDD700] underline underline-offset-2">← Back to price list</a>
+      ·
+      <a href="/calculator.html" class="hover:text-[#FDD700] underline underline-offset-2">Dosage calculator</a>
+    </p>
+  </main>
+
+  <footer class="text-center py-6 text-xs text-zinc-500 bg-black border-t border-zinc-800 mt-6 px-3">
+    SPRINGFIELD PEPTIDE BUYERS CLUB · RESEARCH ONLY · COACHING $100/HR
+  </footer>
+
+  <script>
+    const AUTH_KEY = 'spbc_auth';
+    if (sessionStorage.getItem(AUTH_KEY) !== '1') {
+      window.location.href = '/';
+    }
+
+    const RATE = 100;
+
+    function submitCoach(e) {
+      e.preventDefault();
+      const err = document.getElementById('coachError');
+      const ok = document.getElementById('coachOk');
+      err.classList.add('hidden');
+      ok.classList.add('hidden');
+
+      if (!document.getElementById('cAgree').checked) {
+        err.textContent = 'Please confirm the educational-use agreement.';
+        err.classList.remove('hidden');
+        return false;
+      }
+
+      const name = document.getElementById('cName').value.trim();
+      const email = document.getElementById('cEmail').value.trim();
+      const hours = document.getElementById('cHours').value;
+      const focus = document.getElementById('cFocus').value;
+      const goals = document.getElementById('cGoals').value.trim();
+      const times = document.getElementById('cTimes').value.trim();
+      const total = (Number(hours) * RATE).toFixed(0);
+
+      const subject = `SPBC Coaching request — ${hours}h · $${total} · ${focus}`;
+      const body = [
+        'SPBC Research Coaching Request',
+        '--------------------------------',
+        `Name: ${name}`,
+        `Email: ${email}`,
+        `Hours: ${hours} ($${RATE}/hr → $${total})`,
+        `Focus: ${focus}`,
+        `Preferred times: ${times || '(not specified)'}`,
+        '',
+        'Goals / context:',
+        goals,
+        '',
+        'I understand this is educational research coaching only, not medical advice.',
+      ].join('\n');
+
+      const mailto = `mailto:remycastle@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = mailto;
+
+      ok.textContent = 'Email draft opened. Send it to complete your request — we’ll confirm your slot.';
+      ok.classList.remove('hidden');
+      return false;
+    }
+  </script>
+  <script src="/shared/site-header.js?v=4" defer></script>
+</body>
+</html>
