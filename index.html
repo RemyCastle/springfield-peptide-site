@@ -31,8 +31,8 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/site-header.css?v=10">
-    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=8">
+    <link rel="stylesheet" href="/shared/site-header.css?v=11">
+    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=9">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -427,6 +427,102 @@
         .copy-btn:hover { background: rgba(253, 215, 0, 0.12); }
         body.has-cart-bar { padding-bottom: 9.5rem; }
         body.has-cart-bar.sticky-expanded { padding-bottom: 16rem; }
+        /* ── Password gate: wrong = red flash; correct = explode ── */
+        #passwordScreen {
+            transition: background 0.15s ease, opacity 0.45s ease;
+            overflow: hidden;
+        }
+        #passwordScreen.gate-wrong {
+            animation: gate-bg-red 0.55s ease-out 1;
+        }
+        #passwordScreen.gate-wrong .gate-card {
+            animation: gate-shake 0.5s ease-out 1;
+        }
+        #passwordScreen.gate-wrong #passwordInput {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.55), 0 0 28px rgba(239, 68, 68, 0.45) !important;
+            animation: gate-input-red 0.55s ease-out 1;
+        }
+        #passwordScreen.gate-success {
+            pointer-events: none;
+        }
+        #passwordScreen.gate-success .gate-card {
+            animation: gate-explode 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        #passwordScreen.gate-success .gate-flash {
+            opacity: 1;
+            animation: gate-white-flash 0.55s ease-out forwards;
+        }
+        .gate-card {
+            position: relative;
+            z-index: 2;
+        }
+        .gate-flash {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background: radial-gradient(circle at center, rgba(253, 215, 0, 0.85) 0%, rgba(255,255,255,0.5) 35%, transparent 70%);
+            opacity: 0;
+        }
+        .gate-burst {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .gate-shard {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 10px;
+            height: 10px;
+            margin: -5px 0 0 -5px;
+            border-radius: 2px;
+            background: #FDD700;
+            opacity: 0;
+            will-change: transform, opacity;
+        }
+        .gate-shard.green { background: #22c55e; }
+        .gate-shard.white { background: #fff; }
+        #passwordScreen.gate-success .gate-shard {
+            animation: gate-shard-fly 0.75s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+        }
+        @keyframes gate-bg-red {
+            0% { background-color: #000; }
+            20% { background-color: #450a0a; }
+            45% { background-color: #7f1d1d; }
+            100% { background-color: #000; }
+        }
+        @keyframes gate-input-red {
+            0%, 100% { border-color: #ef4444; }
+            50% { border-color: #fca5a5; box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.7), 0 0 36px rgba(239, 68, 68, 0.6); }
+        }
+        @keyframes gate-shake {
+            0%, 100% { transform: translateX(0); }
+            15% { transform: translateX(-10px); }
+            30% { transform: translateX(10px); }
+            45% { transform: translateX(-8px); }
+            60% { transform: translateX(8px); }
+            75% { transform: translateX(-4px); }
+            90% { transform: translateX(4px); }
+        }
+        @keyframes gate-explode {
+            0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+            25% { transform: scale(1.08); filter: brightness(1.4); }
+            55% { transform: scale(1.35); opacity: 0.85; filter: brightness(2); }
+            100% { transform: scale(2.4); opacity: 0; filter: brightness(3); }
+        }
+        @keyframes gate-white-flash {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        @keyframes gate-shard-fly {
+            0% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+            100% { opacity: 0; transform: translate(var(--sx), var(--sy)) rotate(var(--rot)) scale(0.2); }
+        }
         @media (prefers-reduced-motion: reduce) {
             .sticky-order-bar, .sticky-lines, .progress-fill, .price-card, .filter-chip, .skeleton-card::after, .qty-float {
                 transition: none !important;
@@ -435,6 +531,21 @@
             .price-card.qty-flash { transform: none; }
             .progress-track.celebrate { animation: none !important; box-shadow: none; }
             .sticky-order-bar { transition: none !important; }
+            #passwordScreen.gate-wrong,
+            #passwordScreen.gate-wrong .gate-card,
+            #passwordScreen.gate-wrong #passwordInput,
+            #passwordScreen.gate-success .gate-card,
+            #passwordScreen.gate-success .gate-flash,
+            #passwordScreen.gate-success .gate-shard {
+                animation: none !important;
+            }
+            #passwordScreen.gate-wrong {
+                background-color: #450a0a !important;
+            }
+            #passwordScreen.gate-wrong #passwordInput {
+                border-color: #ef4444 !important;
+                box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.55) !important;
+            }
         }
     </style>
 </head>
@@ -443,7 +554,9 @@
 
     <!-- PASSWORD SCREEN -->
     <div id="passwordScreen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center p-4 safe-pad">
-        <div class="max-w-xs w-full text-center px-2 sm:px-4">
+        <div class="gate-flash" aria-hidden="true"></div>
+        <div class="gate-burst" id="gateBurst" aria-hidden="true"></div>
+        <div class="gate-card max-w-xs w-full text-center px-2 sm:px-4">
             <div class="ducks-font text-2xl sm:text-3xl mb-6 sm:mb-8 text-[#FDD700] leading-tight break-word">
                 SPRINGFIELD<br class="sm:hidden"> PEPTIDE BUYERS CLUB
             </div>
@@ -453,7 +566,7 @@
                    enterkeyhint="go"
                    inputmode="text"
                    aria-label="Club password">
-            <button type="button" onclick="checkPassword()"
+            <button type="button" id="passwordEnterBtn"
                     class="mt-6 w-full bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-4 rounded-2xl transition-colors min-h-[3rem]">ENTER</button>
             <p id="errorMsg" class="text-red-500 mt-4 text-sm hidden" role="alert">Incorrect password</p>
         </div>
@@ -997,30 +1110,91 @@
             }
         }
 
-        function unlockSite() {
+        function finishUnlock() {
             sessionStorage.setItem(AUTH_KEY, "1");
             setMemberCookie();
-            document.getElementById('passwordScreen').classList.add('hidden');
+            const screen = document.getElementById('passwordScreen');
+            screen.classList.add('hidden');
+            screen.classList.remove('gate-success');
             document.getElementById('mainContent').classList.remove('hidden');
             restoreContactDraft();
             loadProducts();
-            // Header was display:none behind gate — remeasure sliding pill
             if (typeof window.spbcHeaderRefresh === 'function') {
                 requestAnimationFrame(function () { window.spbcHeaderRefresh(); });
             }
+            if (typeof window.spbcAtmosphereRefresh === 'function') {
+                requestAnimationFrame(function () { window.spbcAtmosphereRefresh(); });
+            }
+        }
+
+        function spawnGateBurst() {
+            const root = document.getElementById('gateBurst');
+            if (!root) return;
+            root.innerHTML = '';
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduced) return;
+            const n = 28;
+            for (let i = 0; i < n; i++) {
+                const shard = document.createElement('span');
+                shard.className = 'gate-shard' + (i % 3 === 0 ? ' green' : (i % 5 === 0 ? ' white' : ''));
+                const angle = (Math.PI * 2 * i) / n + (Math.random() - 0.5) * 0.4;
+                const dist = 120 + Math.random() * 220;
+                const sx = Math.cos(angle) * dist;
+                const sy = Math.sin(angle) * dist;
+                const rot = (Math.random() * 720 - 360) + 'deg';
+                shard.style.setProperty('--sx', sx.toFixed(1) + 'px');
+                shard.style.setProperty('--sy', sy.toFixed(1) + 'px');
+                shard.style.setProperty('--rot', rot);
+                shard.style.animationDelay = (Math.random() * 0.08) + 's';
+                const size = 6 + Math.random() * 10;
+                shard.style.width = size + 'px';
+                shard.style.height = size + 'px';
+                root.appendChild(shard);
+            }
+        }
+
+        function unlockSite(animated) {
+            const screen = document.getElementById('passwordScreen');
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!animated || reduced) {
+                finishUnlock();
+                return;
+            }
+            if (screen.classList.contains('gate-success')) return;
+            spawnGateBurst();
+            screen.classList.remove('gate-wrong');
+            screen.classList.add('gate-success');
+            const btn = document.getElementById('passwordEnterBtn');
+            if (btn) btn.disabled = true;
+            window.setTimeout(finishUnlock, 720);
+        }
+
+        function flashWrongPassword() {
+            const screen = document.getElementById('passwordScreen');
+            const error = document.getElementById('errorMsg');
+            const input = document.getElementById('passwordInput');
+            screen.classList.remove('gate-wrong');
+            void screen.offsetWidth;
+            screen.classList.add('gate-wrong');
+            error.classList.remove('hidden');
+            input.focus();
+            input.select();
+            window.setTimeout(() => {
+                screen.classList.remove('gate-wrong');
+                error.classList.add('hidden');
+            }, 900);
         }
 
         function checkPassword() {
             const input = document.getElementById('passwordInput').value;
             if (input === correctPassword) {
-                unlockSite();
+                unlockSite(true);
             } else {
-                const error = document.getElementById('errorMsg');
-                error.classList.remove('hidden');
-                document.getElementById('passwordInput').focus();
-                setTimeout(() => error.classList.add('hidden'), 2500);
+                flashWrongPassword();
             }
         }
+
+        document.getElementById('passwordEnterBtn').addEventListener('click', checkPassword);
 
         function skuFrom(name, kind) {
             const base = String(name).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
@@ -1649,11 +1823,11 @@
         });
 
         if (sessionStorage.getItem(AUTH_KEY) === "1") {
-            unlockSite();
+            unlockSite(false); // already authed — no explode
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
-    <script src="/shared/site-atmosphere.js?v=8" defer></script>
-    <script src="/shared/site-header.js?v=10" defer></script>
+    <script src="/shared/site-atmosphere.js?v=9" defer></script>
+    <script src="/shared/site-header.js?v=11" defer></script>
 </body>
 </html>
