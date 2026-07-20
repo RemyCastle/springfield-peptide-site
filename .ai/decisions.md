@@ -23,3 +23,10 @@ Append-only log. Newest at bottom.
 - Features: sliding gold nav pill, scroll shrink + frosted glass, one-shot shimmer, hover preview, reduced-motion, `spbcHeaderRefresh()` after password unlock
 - Admin header left separate (auth surface)
 - No Motion/GSAP on SPBC (static, no bundler) per Claude
+
+### 2026-07-20 (later)
+- Decision: Layered-depth redesign — `shared/site-atmosphere.css|js` as single visual system for index/calc/coaching
+- Cache-busters: site-header ?v=6, site-atmosphere ?v=4
+- Deleted site-fx.* duplicates
+- Deploy: copy root HTML + shared/* → `.cf-pages/` then `wrangler pages deploy .cf-pages --branch=main`
+- Three.js CDN kept for particles only; no GSAP; reduced-motion gates all effects

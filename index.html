@@ -10,8 +10,8 @@
     <title>SPRINGFIELD PEPTIDE BUYERS CLUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="/shared/site-header.css?v=5">
-    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=3">
+        <link rel="stylesheet" href="/shared/site-header.css?v=6">
+    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=4">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -453,19 +453,26 @@
             </div>
         </header>
 
-        <section class="page-hero min-h-[32vh] sm:min-h-[40vh] flex items-center relative" aria-label="Welcome">
-            <div class="page-hero-inner max-w-screen-xl mx-auto px-4 sm:px-6 text-center py-10 sm:py-16">
-                <p class="text-[#FDD700] text-xs tracking-[0.28em] uppercase font-semibold mb-3">Research club · members only</p>
-                <h1 class="ducks-font text-3xl sm:text-5xl md:text-6xl leading-tight sm:leading-none mb-3 text-white break-word">GAINS WITHOUT COMPROMISE</h1>
-                <p class="text-zinc-300 text-sm sm:text-base max-w-md mx-auto mb-6 leading-relaxed">Bulk-ready pricing, transparent discounts, and a dosage calculator — built for serious research buyers.</p>
-                <a href="#prices" class="mt-2 inline-block bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold px-8 sm:px-10 py-4 sm:py-5 rounded-2xl text-base sm:text-lg transition-colors min-h-[3rem]">VIEW PRICES</a>
+        <section class="page-hero" aria-label="Welcome">
+            <div class="page-hero-orb page-hero-orb--green" aria-hidden="true"></div>
+            <div class="page-hero-orb page-hero-orb--gold" aria-hidden="true"></div>
+            <div class="page-hero-inner">
+                <p class="page-hero-eyebrow">Members-only research collective</p>
+                <h1 class="page-hero-title ducks-font">GAINS WITHOUT COMPROMISE</h1>
+                <p class="page-hero-sub">Bulk-ready pricing, transparent discounts, dosage tools, and protocol coaching — built for serious research buyers.</p>
+                <div class="page-hero-cta">
+                    <a href="#prices" class="btn-primary btn-magnetic">View prices</a>
+                    <a href="/coaching.html" class="btn-secondary">Coaching · $100/hr</a>
+                </div>
             </div>
         </section>
 
-        <section id="prices" class="bg-zinc-950 py-6 sm:py-8" tabindex="-1">
-            <div class="max-w-screen-md mx-auto px-3 sm:px-4">
-                <h2 class="ducks-font text-3xl sm:text-4xl md:text-5xl text-center mb-4 sm:mb-6 text-[#FDD700]">PRICE LIST</h2>
-                <div class="bg-zinc-900 border border-[#FDD700]/40 rounded-2xl px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5">
+        <hr class="section-rule" aria-hidden="true">
+
+        <section id="prices" class="spbc-section" tabindex="-1">
+            <div class="spbc-main max-w-screen-md">
+                <h2 class="ducks-font text-3xl sm:text-4xl md:text-5xl text-center mb-4 sm:mb-6 text-white reveal">PRICE LIST</h2>
+                <div class="depth-card px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5 reveal">
                     <p class="text-[#FDD700] font-semibold">Single vial rules</p>
                     <p class="text-zinc-300"><strong class="text-white">3 vial minimum</strong> when ordering single vials</p>
                     <p class="text-zinc-300"><strong class="text-white">5+ single vials</strong> → <span class="text-emerald-400 font-semibold">10% off</span> single-vial prices</p>
@@ -475,12 +482,12 @@
                 </div>
 
                 <!-- Search + filter -->
-                <div class="mb-4 space-y-3">
+                <div class="mb-4 space-y-3 reveal">
                     <div class="relative">
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" aria-hidden="true">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
                         </span>
-                        <input type="search" id="productSearch" class="search-field" placeholder="Search products…" autocomplete="off" enterkeyhint="search" aria-label="Search products">
+                        <input type="search" id="productSearch" class="search-field search-glass" placeholder="Search products…" autocomplete="off" enterkeyhint="search" aria-label="Search products">
                     </div>
                     <div class="flex flex-wrap gap-2 justify-center" role="group" aria-label="Filter products">
                         <button type="button" class="filter-chip active" data-filter="all" aria-pressed="true">All</button>
@@ -493,7 +500,7 @@
                     </p>
                 </div>
 
-                <div id="priceTable" class="flex flex-col gap-3" aria-live="polite">
+                <div id="priceTable" class="flex flex-col gap-3 perspective-root" aria-live="polite">
                     <div id="priceLoading" class="flex flex-col gap-3" aria-busy="true" aria-label="Loading prices">
                         <div class="skeleton-card"></div>
                         <div class="skeleton-card"></div>
@@ -505,21 +512,23 @@
             </div>
         </section>
 
-        <section class="py-8 sm:py-12 bg-black">
-            <div class="max-w-md mx-auto px-3 sm:px-6">
-                <div class="bg-emerald-950 border border-emerald-600 text-emerald-300 text-center py-4 px-4 sm:px-6 rounded-3xl mb-6 text-sm font-medium break-word">
+        <hr class="section-rule" aria-hidden="true">
+
+        <section class="spbc-section">
+            <div class="spbc-main max-w-md">
+                <div class="depth-card bg-emerald-950/80 border border-emerald-600 text-emerald-300 text-center py-4 px-4 sm:px-6 mb-6 text-sm font-medium break-word reveal">
                     ORDERS PLACED BY FRIDAY SHIP THE FOLLOWING MONDAY
                 </div>
 
-                <div class="bg-red-950 border border-red-600 text-red-300 text-center py-4 sm:py-5 px-4 sm:px-6 rounded-3xl mb-8 text-sm sm:text-base font-bold tracking-wider">
+                <div class="depth-card bg-red-950/80 border border-red-600 text-red-300 text-center py-4 sm:py-5 px-4 sm:px-6 mb-8 text-sm sm:text-base font-bold tracking-wider reveal">
                     FOR RESEARCH ONLY<br>NOT FOR HUMAN CONSUMPTION
                 </div>
 
-                <div class="mb-8">
+                <div class="mb-8 reveal">
                     <h3 class="text-[#FDD700] font-bold mb-3 text-center text-sm sm:text-base">
                         <a href="#terms-section" class="hover:underline">TERMS OF SERVICE &amp; PURCHASE AGREEMENT</a>
                     </h3>
-                    <div id="terms-section" class="terms-scroll bg-zinc-900 border border-zinc-700 rounded-3xl p-4 sm:p-6 text-xs leading-relaxed text-zinc-300">
+                    <div id="terms-section" class="terms-scroll depth-card p-4 sm:p-6 text-xs leading-relaxed text-zinc-300">
                         By placing an order you agree to all terms below. Please read carefully.<br><br>
                         <strong>All Sales Are Final.</strong> No refunds, returns, or exchanges after payment is confirmed.<br><br>
                         <strong>Payment.</strong> Payment instructions and accepted methods are provided at checkout after you place your order. Include your order number in the payment memo. We confirm payment manually before shipping.<br><br>
@@ -535,7 +544,9 @@
                     </div>
                 </div>
 
-                <form id="orderForm" class="space-y-4 sm:space-y-5 bg-zinc-900 p-4 sm:p-6 rounded-3xl border border-[#FDD700]/20">
+                <form id="orderForm" class="flat-panel space-y-4 sm:space-y-5 p-4 sm:p-6">
+                    <h3 class="ducks-font text-2xl text-white text-center">Place order</h3>
+                    <p class="text-xs text-zinc-500 text-center -mt-2">Contact details + review</p>
                     <input type="text" id="name" placeholder="Name" required autocomplete="name"
                            class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
                     <input type="email" id="email" placeholder="Your Email Address" required autocomplete="email" inputmode="email"
@@ -543,6 +554,7 @@
                     <textarea id="message" rows="6" placeholder="Your order summary will appear here..." readonly
                               class="w-full bg-black border border-zinc-700 rounded-3xl px-4 sm:px-5 py-3.5 text-sm sm:text-base leading-relaxed"></textarea>
                     <p id="orderRuleHint" class="text-xs text-zinc-500 text-center break-word px-1"></p>
+                    <p id="savingsLine" class="text-center text-sm tabular-gold hidden" aria-live="polite">Savings: $<span id="savingsAmount">0.00</span></p>
                     <button type="button" id="clearCartFormBtn" class="btn-clear-cart-form hidden" aria-label="Clear cart">
                         Clear cart
                     </button>
@@ -554,7 +566,7 @@
 
                     <p id="submitError" class="text-red-400 text-sm text-center hidden break-word"></p>
                     <p id="submitSuccess" class="text-emerald-400 text-sm text-center hidden"></p>
-                    <button type="submit" id="submitBtn" disabled class="w-full bg-zinc-600 text-zinc-400 font-bold py-4 rounded-2xl text-base sm:text-lg cursor-not-allowed min-h-[3.25rem]">
+                    <button type="submit" id="submitBtn" disabled class="btn-primary w-full text-base sm:text-lg cursor-not-allowed opacity-50">
                         PLACE ORDER &amp; PAY
                     </button>
                     <p class="text-xs text-zinc-500 text-center px-1">You'll get an order number and payment instructions after placing your order</p>
@@ -590,8 +602,11 @@
                     <div class="min-w-0">
                         <p class="text-[10px] uppercase tracking-wider text-emerald-300/90 font-semibold">Your order</p>
                         <button type="button" id="stickyCountBtn" class="sticky-count-btn" aria-expanded="false" aria-controls="stickyLines">
-                            <span id="stickyCount" class="text-sm text-white font-semibold truncate block">0 items</span>
-                            <span class="text-[10px] text-emerald-200/80 font-medium">Tap to expand · edit below</span>
+                            <span class="text-sm text-white font-semibold truncate inline-flex items-center">
+                                <span id="stickyCount">0 items</span>
+                                <span id="cartBadge" class="cart-badge" aria-hidden="true">0</span>
+                            </span>
+                            <span class="text-[10px] text-emerald-200/80 font-medium block">Tap to expand · edit below</span>
                         </button>
                     </div>
                     <div class="text-right shrink-0">
@@ -610,8 +625,7 @@
                     <button type="button" id="stickyClearBtn" class="btn-clear-cart" aria-label="Clear cart">
                         Clear cart
                     </button>
-                    <button type="button" id="stickyReviewBtn"
-                            class="w-full bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-3 rounded-xl text-sm min-h-[2.75rem] transition-colors">
+                    <button type="button" id="stickyReviewBtn" class="btn-primary w-full text-sm">
                         Review order →
                     </button>
                 </div>
@@ -637,8 +651,8 @@
             </div>
             <p id="reviewError" class="text-red-400 text-sm text-center hidden mb-3" role="alert"></p>
             <div class="flex flex-col gap-2">
-                <button type="button" id="reviewConfirmBtn" class="w-full bg-[#FDD700] hover:bg-white text-black font-bold py-3.5 rounded-2xl min-h-[3rem]">Confirm &amp; place order</button>
-                <button type="button" id="reviewCancelBtn" class="w-full border border-zinc-600 text-zinc-300 font-semibold py-3 rounded-2xl min-h-[2.75rem]">Go back</button>
+                <button type="button" id="reviewConfirmBtn" class="btn-primary w-full">Confirm &amp; place order</button>
+                <button type="button" id="reviewCancelBtn" class="btn-secondary w-full">Go back</button>
             </div>
         </div>
     </div>
@@ -894,7 +908,7 @@
                 const kitOnly = !!p.kit_only;
                 const saved = draft[name] || {};
                 const article = document.createElement('article');
-                article.className = 'price-card rounded-2xl border border-[#FDD700]/30 bg-zinc-900 p-3 sm:p-4';
+                article.className = 'price-card depth-card p-3 sm:p-4 reveal';
                 article.setAttribute('data-name', name);
                 if (kitOnly) {
                     article.setAttribute('data-kit', String(p.pack_price));
@@ -1124,10 +1138,37 @@
             }
 
             const itemCount = t.items.reduce((s, it) => s + it.qty, 0);
+            const prevCount = parseInt(document.getElementById('cartBadge')?.textContent || '0', 10) || 0;
             document.getElementById('stickyCount').textContent =
                 `${itemCount} item${itemCount === 1 ? '' : 's'}` +
                 (t.vialDiscount > 0 || t.kitDiscount > 0 ? ' · discounts applied' : '');
+            const badge = document.getElementById('cartBadge');
+            if (badge) {
+                badge.textContent = String(itemCount);
+                badge.style.display = itemCount > 0 ? 'inline-flex' : 'none';
+                if (itemCount !== prevCount && itemCount > 0 && typeof window.spbcPulseCartBadge === 'function') {
+                    window.spbcPulseCartBadge();
+                }
+            }
             document.getElementById('stickyTotal').textContent = `$${money(t.total)}`;
+
+            // Savings line + count-up
+            const savings = (t.vialDiscount || 0) + (t.kitDiscount || 0);
+            const savingsLine = document.getElementById('savingsLine');
+            const savingsAmount = document.getElementById('savingsAmount');
+            if (savingsLine && savingsAmount) {
+                if (savings > 0.005) {
+                    savingsLine.classList.remove('hidden');
+                    if (typeof window.spbcCountTo === 'function') {
+                        window.spbcCountTo(savingsAmount, savings, 500);
+                    } else {
+                        savingsAmount.textContent = money(savings);
+                    }
+                } else {
+                    savingsLine.classList.add('hidden');
+                    savingsAmount.textContent = '0.00';
+                }
+            }
 
             const linesEl = document.getElementById('stickyLines');
             if (linesEl) {
@@ -1286,13 +1327,8 @@
             const check = canSubmitOrder();
             const enable = agreed && check.ok && !placingOrder;
             submitBtn.disabled = !enable;
-            if (enable) {
-                submitBtn.classList.remove('bg-zinc-600', 'text-zinc-400', 'cursor-not-allowed');
-                submitBtn.classList.add('bg-[#FDD700]', 'text-black', 'hover:bg-white');
-            } else {
-                submitBtn.classList.add('bg-zinc-600', 'text-zinc-400', 'cursor-not-allowed');
-                submitBtn.classList.remove('bg-[#FDD700]', 'text-black', 'hover:bg-white');
-            }
+            submitBtn.classList.toggle('opacity-50', !enable);
+            submitBtn.classList.toggle('cursor-not-allowed', !enable);
         }
 
         function showSubmitError(msg, focusEl) {
@@ -1585,7 +1621,7 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
-    <script src="/shared/site-atmosphere.js?v=3" defer></script>
-    <script src="/shared/site-header.js?v=5" defer></script>
+    <script src="/shared/site-atmosphere.js?v=4" defer></script>
+    <script src="/shared/site-header.js?v=6" defer></script>
 </body>
 </html>

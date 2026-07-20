@@ -10,8 +10,8 @@
   <title>Coaching — Springfield Peptide Buyers Club</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shared/site-header.css?v=5">
-  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=3">
+  <link rel="stylesheet" href="/shared/site-header.css?v=6">
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=4">
   <style>
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
@@ -129,37 +129,38 @@
     </div>
   </header>
 
-  <section class="page-hero px-4 py-10 sm:py-14 text-center">
+  <section class="page-hero">
+    <div class="page-hero-orb page-hero-orb--green" aria-hidden="true"></div>
+    <div class="page-hero-orb page-hero-orb--gold" aria-hidden="true"></div>
     <div class="page-hero-inner">
-      <p class="text-[#FDD700] text-xs tracking-[0.28em] uppercase font-semibold mb-3">Members · 1:1 sessions</p>
-      <h1 class="ducks-font text-4xl sm:text-5xl md:text-6xl text-white mb-3">Research Coaching</h1>
-      <p class="text-zinc-300 text-sm sm:text-base max-w-lg mx-auto leading-relaxed mb-6">
+      <p class="page-hero-eyebrow">1-on-1 protocol coaching</p>
+      <h1 class="page-hero-title ducks-font">Research Coaching</h1>
+      <p class="page-hero-sub">
         Stack design, problem-solving, protocol consulting, and lab-marker guidance —
         tailored for serious club members who want a clear plan.
       </p>
-      <div class="price-pill ducks-font text-2xl sm:text-3xl tracking-wide mb-2">
-        <span>$100</span>
-        <span class="text-sm font-bold normal-case tracking-normal" style="font-family:Inter,system-ui,sans-serif">/ hour</span>
+      <p class="tabular-gold text-3xl sm:text-4xl font-extrabold mb-1">$100<span class="text-base text-zinc-300 font-semibold ml-1">/ hour</span></p>
+      <p class="text-zinc-500 text-xs mb-5">Billed hourly · remote video or voice</p>
+      <div class="page-hero-cta">
+        <a href="#book" class="btn-primary btn-magnetic">Book a session</a>
+        <a href="/#prices" class="btn-secondary">Price list</a>
       </div>
-      <p class="text-zinc-500 text-xs mt-2">Billed hourly · remote video or voice</p>
-      <a href="#book"
-         class="mt-6 inline-block bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold px-8 py-3.5 rounded-2xl min-h-[3rem] transition-colors">
-        Book a session
-      </a>
     </div>
   </section>
 
-  <main id="coach-main" class="max-w-3xl mx-auto px-4 py-10 sm:py-12 perspective-root" tabindex="-1">
-    <div class="flex flex-wrap gap-2 justify-center mb-10">
+  <hr class="section-rule" aria-hidden="true">
+
+  <main id="coach-main" class="spbc-main max-w-3xl mx-auto px-4 py-10 sm:py-12 perspective-root" tabindex="-1">
+    <div class="flex flex-wrap gap-2 justify-center mb-10 reveal">
       <span class="chip">Stacks</span>
       <span class="chip">Solutions</span>
       <span class="chip">Consulting</span>
       <span class="chip">Bloodwork</span>
     </div>
 
-    <h2 class="ducks-font text-3xl text-[#FDD700] text-center mb-6">What’s included</h2>
+    <h2 class="ducks-font text-3xl text-white text-center mb-6 reveal">What’s included</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
-      <article class="pillar-card tilt-3d" id="stacks">
+      <article class="pillar-card depth-card p-5 reveal" id="stacks">
         <div class="pillar-icon" aria-hidden="true">◎</div>
         <h3 class="font-bold text-lg text-white mb-2">Stack recommendations</h3>
         <p class="text-zinc-400 text-sm leading-relaxed">
@@ -173,7 +174,7 @@
         </ul>
       </article>
 
-      <article class="pillar-card tilt-3d" id="solutions">
+      <article class="pillar-card depth-card p-5 reveal" id="solutions">
         <div class="pillar-icon" aria-hidden="true">✦</div>
         <h3 class="font-bold text-lg text-white mb-2">Solutions</h3>
         <p class="text-zinc-400 text-sm leading-relaxed">
@@ -187,7 +188,7 @@
         </ul>
       </article>
 
-      <article class="pillar-card tilt-3d" id="consulting">
+      <article class="pillar-card depth-card p-5 reveal" id="consulting">
         <div class="pillar-icon" aria-hidden="true">◆</div>
         <h3 class="font-bold text-lg text-white mb-2">Consulting</h3>
         <p class="text-zinc-400 text-sm leading-relaxed">
@@ -201,7 +202,7 @@
         </ul>
       </article>
 
-      <article class="pillar-card tilt-3d" id="bloodwork">
+      <article class="pillar-card depth-card p-5 reveal" id="bloodwork">
         <div class="pillar-icon" aria-hidden="true">◈</div>
         <h3 class="font-bold text-lg text-white mb-2">Bloodwork recommendations</h3>
         <p class="text-zinc-400 text-sm leading-relaxed">
@@ -216,21 +217,32 @@
       </article>
     </div>
 
-    <div class="bg-zinc-900 border border-[#FDD700]/25 rounded-3xl p-5 sm:p-7 mb-10">
-      <h2 class="ducks-font text-2xl text-white mb-3">How sessions work</h2>
-      <ol class="space-y-3 text-sm text-zinc-300">
-        <li class="flex gap-3"><span class="text-[#FDD700] font-bold shrink-0">1</span><span>Submit the request form with goals + preferred times.</span></li>
-        <li class="flex gap-3"><span class="text-[#FDD700] font-bold shrink-0">2</span><span>We confirm a slot and send a payment link for the booked hours ($100/hr).</span></li>
-        <li class="flex gap-3"><span class="text-[#FDD700] font-bold shrink-0">3</span><span>Meet remotely. You get a short written summary of recommendations after.</span></li>
-      </ol>
-      <p class="text-[11px] text-zinc-500 mt-4 leading-relaxed">
+    <hr class="section-rule mb-10" aria-hidden="true">
+
+    <div class="depth-card p-5 sm:p-7 mb-10 reveal">
+      <h2 class="ducks-font text-2xl text-white mb-4 text-center">How it works</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-sm text-zinc-300 mb-4">
+        <div>
+          <p class="text-[#FDD700] font-extrabold text-lg mb-1">1 · Book</p>
+          <p>Submit the request form with goals + preferred times.</p>
+        </div>
+        <div>
+          <p class="text-[#FDD700] font-extrabold text-lg mb-1">2 · Meet</p>
+          <p>We confirm a slot and payment for the booked hours ($100/hr).</p>
+        </div>
+        <div>
+          <p class="text-[#FDD700] font-extrabold text-lg mb-1">3 · Protocol</p>
+          <p>Remote session + short written summary of recommendations after.</p>
+        </div>
+      </div>
+      <p class="text-[11px] text-zinc-500 mt-4 leading-relaxed text-center">
         *Educational / research-planning only. Not medical advice, not a doctor–patient relationship,
         not a substitute for care from a licensed clinician. All compounds remain research-use only.
       </p>
     </div>
 
-    <section id="book" class="bg-zinc-900 border border-[#FDD700]/30 rounded-3xl p-5 sm:p-7 mb-8" aria-labelledby="book-heading">
-      <h2 id="book-heading" class="ducks-font text-3xl text-[#FDD700] mb-1">Book coaching</h2>
+    <section id="book" class="flat-panel p-5 sm:p-7 mb-8" aria-labelledby="book-heading">
+      <h2 id="book-heading" class="ducks-font text-3xl text-white mb-1">Book coaching</h2>
       <p class="text-zinc-400 text-sm mb-5">$100 / hour · minimum 1 hour · same-week slots when available</p>
 
       <form id="coachForm" class="space-y-4" onsubmit="return submitCoach(event)">
@@ -287,8 +299,7 @@
         <p id="coachError" class="text-red-400 text-sm text-center hidden" role="alert"></p>
         <p id="coachOk" class="text-emerald-400 text-sm text-center hidden" role="status"></p>
 
-        <button type="submit" id="coachSubmit"
-                class="w-full bg-[#FDD700] hover:bg-white text-black font-bold py-3.5 rounded-2xl min-h-[3rem] transition-colors">
+        <button type="submit" id="coachSubmit" class="btn-primary btn-magnetic w-full">
           Request session · $100/hr
         </button>
         <p class="text-[11px] text-zinc-500 text-center">
@@ -363,7 +374,7 @@
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
-  <script src="/shared/site-atmosphere.js?v=3" defer></script>
-  <script src="/shared/site-header.js?v=5" defer></script>
+  <script src="/shared/site-atmosphere.js?v=4" defer></script>
+  <script src="/shared/site-header.js?v=6" defer></script>
 </body>
 </html>

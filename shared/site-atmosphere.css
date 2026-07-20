@@ -1,6 +1,6 @@
 /**
- * SPBC shared page atmosphere — one background system for all public pages.
- * Load after Tailwind; before page-specific CSS overrides.
+ * SPBC layered-depth atmosphere — single source for page bg, cards, motion.
+ * Brand tokens + shell shared by index / calculator / coaching.
  */
 :root {
   --spbc-green: #006600;
@@ -10,13 +10,22 @@
   --spbc-glass: rgba(24, 24, 27, 0.72);
   --spbc-glass-border: rgba(253, 215, 0, 0.22);
   --spbc-surface: #09090b;
+  --spbc-t-micro: 180ms ease-out;
+  --spbc-t-macro: 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* z-index scale */
+  --spbc-z-atmosphere: 0;
+  --spbc-z-content: 1;
+  --spbc-z-header: 50;
+  --spbc-z-sticky: 60;
+  --spbc-z-gate: 100;
+  --spbc-z-modal: 110;
 }
 
-/* ── Unified full-page background ─────────────────────────── */
 html {
   background: var(--spbc-green-deep);
 }
 
+/* ── Full-page atmosphere ─────────────────────────────────── */
 body.atmosphere {
   background:
     radial-gradient(ellipse 80% 55% at 50% -5%, rgba(253, 215, 0, 0.14) 0%, transparent 55%),
@@ -31,17 +40,14 @@ body.atmosphere {
 }
 
 @media (min-width: 769px) {
-  body.atmosphere {
-    background-attachment: fixed;
-  }
+  body.atmosphere { background-attachment: fixed; }
 }
 
-/* Subtle diagonal scan / lab texture */
 body.atmosphere::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: var(--spbc-z-atmosphere);
   pointer-events: none;
   background-image:
     repeating-linear-gradient(
@@ -51,95 +57,200 @@ body.atmosphere::before {
       rgba(253, 215, 0, 0.025) 18px,
       rgba(253, 215, 0, 0.025) 19px
     );
-  opacity: 0.9;
 }
 
-/* WebGL / canvas layer sits under content */
 #atmosphere-canvas {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
+  z-index: var(--spbc-z-atmosphere);
   pointer-events: none;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
-/* Content above canvas — do NOT force position:relative on sticky header */
 body.atmosphere > main,
 body.atmosphere > section,
 body.atmosphere > footer,
 body.atmosphere > #mainContent,
 body.atmosphere > .skip-link {
   position: relative;
-  z-index: 1;
+  z-index: var(--spbc-z-content);
 }
 
-body.atmosphere .site-header {
-  z-index: 50;
-}
-
-body.atmosphere #passwordScreen {
-  z-index: 100;
-}
-
+body.atmosphere .site-header { z-index: var(--spbc-z-header); }
 body.atmosphere .sticky-order-bar,
-body.atmosphere .modal-backdrop {
-  z-index: 60;
+body.atmosphere .modal-backdrop { z-index: var(--spbc-z-sticky); }
+body.atmosphere #passwordScreen { z-index: var(--spbc-z-gate); }
+body.atmosphere .modal-sheet { z-index: var(--spbc-z-modal); position: relative; }
+
+/* Content shell */
+.spbc-main {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+@media (min-width: 640px) {
+  .spbc-main { padding-inline: 1.5rem; }
+}
+.spbc-section {
+  padding-block: 2.5rem;
+}
+@media (min-width: 768px) {
+  .spbc-section { padding-block: 4rem; }
 }
 
-/* ── Shared page hero (home / calc / coaching) ────────────── */
+/* ── Shared page hero ─────────────────────────────────────── */
 .page-hero {
   position: relative;
   overflow: hidden;
+  padding: 4.5rem 1rem 3.5rem;
   background:
     radial-gradient(ellipse 80% 60% at 50% 0%, rgba(253, 215, 0, 0.16) 0%, transparent 55%),
     radial-gradient(ellipse 50% 40% at 100% 80%, rgba(0, 102, 0, 0.35) 0%, transparent 50%),
     linear-gradient(180deg, rgba(0, 40, 0, 0.35) 0%, rgba(0, 0, 0, 0.55) 100%);
   border-bottom: 1px solid rgba(253, 215, 0, 0.22);
 }
+@media (min-width: 768px) {
+  .page-hero { padding: 6rem 1.5rem 4.5rem; }
+}
 
 .page-hero::after {
   content: "";
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   height: 48px;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
   pointer-events: none;
+  z-index: 1;
+}
+
+.page-hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translateZ(0);
+  will-change: transform;
+}
+.page-hero-orb--green {
+  width: min(55vw, 420px);
+  height: min(55vw, 420px);
+  top: -12%;
+  right: -8%;
+  background: radial-gradient(circle, rgba(0, 102, 0, 0.55) 0%, transparent 70%);
+  filter: blur(28px);
+  opacity: 0.85;
+}
+.page-hero-orb--gold {
+  width: min(40vw, 280px);
+  height: min(40vw, 280px);
+  bottom: 5%;
+  left: -5%;
+  border: 2px solid rgba(253, 215, 0, 0.18);
+  background: radial-gradient(circle, rgba(253, 215, 0, 0.08) 0%, transparent 65%);
+  filter: blur(2px);
+  opacity: 0.7;
 }
 
 .page-hero-inner {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  max-width: 42rem;
+  margin-inline: auto;
+  text-align: center;
 }
 
-/* ── Glass / depth surfaces (3D-ready) ────────────────────── */
+.page-hero-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--spbc-gold);
+  margin-bottom: 0.75rem;
+}
+
+.page-hero-title {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  margin: 0 0 0.85rem;
+}
+
+.page-hero-sub {
+  max-width: 42rem;
+  margin: 0 auto 1.5rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+@media (min-width: 640px) {
+  .page-hero-sub { font-size: 1.05rem; }
+}
+
+.page-hero-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+
+/* ── Depth cards ──────────────────────────────────────────── */
+.depth-card {
+  border-radius: 1rem;
+  background: var(--spbc-glass);
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  border: 1px solid var(--spbc-glass-border);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition:
+    transform var(--spbc-t-micro),
+    box-shadow var(--spbc-t-micro),
+    border-color var(--spbc-t-micro);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .depth-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 16px 48px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(253, 215, 0, 0.3);
+    border-color: rgba(253, 215, 0, 0.35);
+  }
+}
+
+/* Glass panels (legacy aliases) */
 .glass-panel,
 .price-card,
 .result-card,
-.pillar-card,
-#orderForm,
-.bg-zinc-900 {
+.pillar-card {
   background: var(--spbc-glass) !important;
   backdrop-filter: blur(12px) saturate(1.15);
   -webkit-backdrop-filter: blur(12px) saturate(1.15);
   border-color: var(--spbc-glass-border) !important;
 }
 
-/* Sections that used solid black / zinc — blend into atmosphere */
+/* Flat form panels — NO glass blur/tilt (order + booking) */
+.flat-panel,
+#orderForm,
+#coachForm {
+  background: rgba(9, 9, 11, 0.92) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(253, 215, 0, 0.2) !important;
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  transform: none !important;
+}
+
 section.bg-zinc-950,
 section.bg-black,
-.bg-black,
+.bg-black:not(#passwordScreen),
 main.bg-black {
   background: transparent !important;
 }
 
-/* Keep password gate solid for privacy/focus */
 #passwordScreen {
   background: #000 !important;
   backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 footer {
@@ -149,50 +260,183 @@ footer {
   border-top: 1px solid rgba(253, 215, 0, 0.12);
 }
 
-/* ── CSS 3D card tilt ─────────────────────────────────────── */
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.7rem 1.35rem;
+  border-radius: 0.75rem;
+  font-weight: 800;
+  color: #000 !important;
+  background: linear-gradient(180deg, #ffe44d 0%, #FDD700 45%, #e6c200 100%);
+  border: 0;
+  box-shadow: 0 4px 16px rgba(253, 215, 0, 0.28);
+  transition: transform var(--spbc-t-micro), filter var(--spbc-t-micro), box-shadow var(--spbc-t-micro);
+  touch-action: manipulation;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn-primary:hover { filter: brightness(1.06); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.3);
+  box-shadow: none;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.7rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  color: #fff !important;
+  background: transparent;
+  border: 1px solid rgba(253, 215, 0, 0.45);
+  transition: background var(--spbc-t-micro), border-color var(--spbc-t-micro);
+  touch-action: manipulation;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background: rgba(253, 215, 0, 0.1);
+  border-color: var(--spbc-gold);
+}
+
+/* ── Tilt 3D (price + pillars only) ───────────────────────── */
 .tilt-3d {
   transform-style: preserve-3d;
   will-change: transform;
-  transition: transform 0.18s ease-out, box-shadow 0.18s ease;
+  transition: transform var(--spbc-t-micro), box-shadow var(--spbc-t-micro);
 }
+.tilt-3d.is-tilting { transition: transform 0.06s linear, box-shadow var(--spbc-t-micro); }
 
-.tilt-3d.is-tilting {
-  transition: transform 0.06s linear, box-shadow 0.18s ease;
-}
+.perspective-root { perspective: 1000px; }
 
-.tilt-3d:hover {
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(253, 215, 0, 0.28);
-}
-
-/* Depth on sticky cart / modals */
-.sticky-order-inner,
-.modal-sheet {
+/* ── Sticky cart / modals ─────────────────────────────────── */
+.sticky-order-inner {
   background: linear-gradient(180deg, rgba(20, 83, 45, 0.92) 0%, rgba(5, 46, 22, 0.96) 100%) !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
-
 .modal-sheet {
-  background: rgba(24, 24, 27, 0.94) !important;
+  background: rgba(24, 24, 27, 0.96) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: relative;
+  z-index: var(--spbc-z-modal);
 }
 
-/* Perspective root for 3D children */
-.perspective-root {
-  perspective: 1000px;
+.cart-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.35rem;
+  margin-left: 0.4rem;
+  border-radius: 999px;
+  background: var(--spbc-gold);
+  color: #000;
+  font-size: 0.7rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  vertical-align: middle;
+  transition: transform var(--spbc-t-micro);
+}
+.cart-badge.pulse {
+  animation: cart-badge-pulse 300ms ease-out;
+}
+@keyframes cart-badge-pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* ── Scroll reveal ────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity var(--spbc-t-macro), transform var(--spbc-t-macro);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Section divider ──────────────────────────────────────── */
+.section-rule {
+  height: 1px;
+  border: 0;
+  margin: 0 auto;
+  max-width: 72rem;
+  background: linear-gradient(90deg, transparent, rgba(253, 215, 0, 0.25), transparent);
+}
+
+/* ── Focus rings ──────────────────────────────────────────── */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--spbc-gold);
+  outline-offset: 2px;
+}
+
+/* ── Search glass pill ────────────────────────────────────── */
+.search-glass {
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(253, 215, 0, 0.22) !important;
+  border-radius: 999px !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ── Result number flash ──────────────────────────────────── */
+.num-flash {
+  animation: num-flash 150ms ease-out;
+}
+@keyframes num-flash {
+  0% { color: #fff; text-shadow: 0 0 12px rgba(253, 215, 0, 0.8); }
+  100% { color: var(--spbc-gold); text-shadow: none; }
+}
+
+.tabular-gold {
+  color: var(--spbc-gold);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* Filter chips polish */
+.filter-chip.active {
+  background: var(--spbc-gold) !important;
+  color: #000 !important;
+  border-color: var(--spbc-gold) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .tilt-3d,
-  .tilt-3d.is-tilting {
-    transform: none !important;
+  .tilt-3d.is-tilting,
+  .depth-card,
+  .reveal,
+  .btn-primary,
+  .cart-badge {
     transition: none !important;
+    animation: none !important;
+    transform: none !important;
   }
-  #atmosphere-canvas {
-    display: none !important;
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
   }
-  body.atmosphere {
-    background-attachment: scroll !important;
-  }
+  .cart-badge.pulse { animation: none !important; }
+  .num-flash { animation: none !important; }
+  #atmosphere-canvas { display: none !important; }
+  body.atmosphere { background-attachment: scroll !important; }
+  .page-hero-orb { display: none; }
 }
