@@ -14,3 +14,19 @@
 /shared/site-header.css
   Content-Type: text/css; charset=utf-8
   Cache-Control: public, max-age=300, must-revalidate
+
+/shared/site-fx.js
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=300, must-revalidate
+
+/shared/site-fx.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=300, must-revalidate
+
+/shared/site-atmosphere.js
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=300, must-revalidate
+
+/shared/site-atmosphere.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=300, must-revalidate

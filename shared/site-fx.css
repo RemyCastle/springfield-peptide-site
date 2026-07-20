@@ -1,0 +1,198 @@
+/**
+ * SPBC shared page atmosphere — one background system for all public pages.
+ * Load after Tailwind; before page-specific CSS overrides.
+ */
+:root {
+  --spbc-green: #006600;
+  --spbc-green-mid: #003300;
+  --spbc-green-deep: #001a00;
+  --spbc-gold: #FDD700;
+  --spbc-glass: rgba(24, 24, 27, 0.72);
+  --spbc-glass-border: rgba(253, 215, 0, 0.22);
+  --spbc-surface: #09090b;
+}
+
+/* ── Unified full-page background ─────────────────────────── */
+html {
+  background: var(--spbc-green-deep);
+}
+
+body.atmosphere {
+  background:
+    radial-gradient(ellipse 80% 55% at 50% -5%, rgba(253, 215, 0, 0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 100% 100%, rgba(0, 102, 0, 0.5) 0%, transparent 50%),
+    radial-gradient(ellipse 45% 40% at 0% 70%, rgba(0, 70, 0, 0.4) 0%, transparent 48%),
+    linear-gradient(165deg, #004d00 0%, #003300 42%, #001a00 100%);
+  background-color: #001a00;
+  background-attachment: scroll;
+  color: #fff;
+  min-height: 100%;
+  position: relative;
+}
+
+@media (min-width: 769px) {
+  body.atmosphere {
+    background-attachment: fixed;
+  }
+}
+
+/* Subtle diagonal scan / lab texture */
+body.atmosphere::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      -12deg,
+      transparent,
+      transparent 18px,
+      rgba(253, 215, 0, 0.025) 18px,
+      rgba(253, 215, 0, 0.025) 19px
+    );
+  opacity: 0.9;
+}
+
+/* WebGL / canvas layer sits under content */
+#atmosphere-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+/* Content above canvas — do NOT force position:relative on sticky header */
+body.atmosphere > main,
+body.atmosphere > section,
+body.atmosphere > footer,
+body.atmosphere > #mainContent,
+body.atmosphere > .skip-link {
+  position: relative;
+  z-index: 1;
+}
+
+body.atmosphere .site-header {
+  z-index: 50;
+}
+
+body.atmosphere #passwordScreen {
+  z-index: 100;
+}
+
+body.atmosphere .sticky-order-bar,
+body.atmosphere .modal-backdrop {
+  z-index: 60;
+}
+
+/* ── Shared page hero (home / calc / coaching) ────────────── */
+.page-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(253, 215, 0, 0.16) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 80%, rgba(0, 102, 0, 0.35) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(0, 40, 0, 0.35) 0%, rgba(0, 0, 0, 0.55) 100%);
+  border-bottom: 1px solid rgba(253, 215, 0, 0.22);
+}
+
+.page-hero::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+  pointer-events: none;
+}
+
+.page-hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Glass / depth surfaces (3D-ready) ────────────────────── */
+.glass-panel,
+.price-card,
+.result-card,
+.pillar-card,
+#orderForm,
+.bg-zinc-900 {
+  background: var(--spbc-glass) !important;
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  border-color: var(--spbc-glass-border) !important;
+}
+
+/* Sections that used solid black / zinc — blend into atmosphere */
+section.bg-zinc-950,
+section.bg-black,
+.bg-black,
+main.bg-black {
+  background: transparent !important;
+}
+
+/* Keep password gate solid for privacy/focus */
+#passwordScreen {
+  background: #000 !important;
+  backdrop-filter: none !important;
+}
+
+footer {
+  background: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(253, 215, 0, 0.12);
+}
+
+/* ── CSS 3D card tilt ─────────────────────────────────────── */
+.tilt-3d {
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease;
+}
+
+.tilt-3d.is-tilting {
+  transition: transform 0.06s linear, box-shadow 0.18s ease;
+}
+
+.tilt-3d:hover {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(253, 215, 0, 0.28);
+}
+
+/* Depth on sticky cart / modals */
+.sticky-order-inner,
+.modal-sheet {
+  background: linear-gradient(180deg, rgba(20, 83, 45, 0.92) 0%, rgba(5, 46, 22, 0.96) 100%) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.modal-sheet {
+  background: rgba(24, 24, 27, 0.94) !important;
+}
+
+/* Perspective root for 3D children */
+.perspective-root {
+  perspective: 1000px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt-3d,
+  .tilt-3d.is-tilting {
+    transform: none !important;
+    transition: none !important;
+  }
+  #atmosphere-canvas {
+    display: none !important;
+  }
+  body.atmosphere {
+    background-attachment: scroll !important;
+  }
+}
