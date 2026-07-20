@@ -11,7 +11,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared/site-header.css?v=8">
-  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=5">
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=7">
   <style>
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
@@ -72,19 +72,36 @@
     }
     .field {
       width: 100%;
-      background: #000;
+      background: #0a0a0a;
       border: 1px solid #3f3f46;
-      border-radius: 1rem;
+      border-radius: 0.85rem;
       padding: 0.85rem 1.1rem;
       color: #fff;
       font-size: 16px;
       min-height: 2.75rem;
       touch-action: manipulation;
+      box-shadow: none;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    select.field {
+      background-image: linear-gradient(45deg, transparent 50%, #a1a1aa 50%),
+        linear-gradient(135deg, #a1a1aa 50%, transparent 50%);
+      background-position: calc(100% - 18px) calc(50% - 3px), calc(100% - 12px) calc(50% - 3px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 2.25rem;
     }
     .field:focus {
       outline: none;
-      box-shadow: 0 0 0 2px rgba(253, 215, 0, 0.55);
       border-color: #FDD700;
+      box-shadow: 0 0 0 1px rgba(253, 215, 0, 0.45);
+    }
+    /* Kill browser / double-ring on focus inside coaching book panel */
+    #book .field:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 1px rgba(253, 215, 0, 0.45);
     }
     .chip {
       display: inline-flex;
@@ -245,7 +262,7 @@
       <h2 id="book-heading" class="ducks-font text-3xl text-white mb-1">Book coaching</h2>
       <p class="text-zinc-400 text-sm mb-5">$100 / hour · minimum 1 hour · same-week slots when available</p>
 
-      <form id="coachForm" class="space-y-4" onsubmit="return submitCoach(event)">
+      <form id="coachForm" class="coach-form space-y-4" onsubmit="return submitCoach(event)">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="cName">Name</label>
@@ -374,7 +391,7 @@
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
-  <script src="/shared/site-atmosphere.js?v=5" defer></script>
+  <script src="/shared/site-atmosphere.js?v=6" defer></script>
   <script src="/shared/site-header.js?v=8" defer></script>
 </body>
 </html>

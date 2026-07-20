@@ -256,8 +256,7 @@ body.atmosphere .modal-sheet { z-index: var(--spbc-z-modal); position: relative;
 
 /* Flat form panels — NO glass blur/tilt (order + booking) */
 .flat-panel,
-#orderForm,
-#coachForm {
+#orderForm {
   background: rgba(9, 9, 11, 0.92) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -265,6 +264,17 @@ body.atmosphere .modal-sheet { z-index: var(--spbc-z-modal); position: relative;
   border-radius: 1.25rem;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
   transform: none !important;
+}
+
+/* Nested form inside .flat-panel: no second outer border */
+.flat-panel #coachForm,
+.flat-panel #orderForm,
+#book #coachForm {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
 }
 
 section.bg-zinc-950,
