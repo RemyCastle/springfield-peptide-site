@@ -175,7 +175,7 @@
             bottom: 0;
             z-index: 60;
             transform: translateY(110%);
-            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
             padding: 0 0.75rem max(0.75rem, env(safe-area-inset-bottom));
             pointer-events: none;
         }
@@ -192,6 +192,82 @@
             box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.2);
             padding: 0.75rem 1rem;
         }
+        .sticky-lines {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.25s ease;
+            margin: 0;
+        }
+        .sticky-order-bar.expanded .sticky-lines {
+            max-height: 11rem;
+            opacity: 1;
+            margin: 0.35rem 0 0.65rem;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sticky-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.85);
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .sticky-line:last-child { border-bottom: 0; }
+        .sticky-count-btn {
+            background: none;
+            border: 0;
+            padding: 0;
+            text-align: left;
+            cursor: pointer;
+            color: inherit;
+            font: inherit;
+        }
+        .sticky-count-btn:hover { color: #FDD700; }
+        .sticky-actions {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem;
+        }
+        .btn-clear-cart {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #fca5a5;
+            border: 1px solid rgba(248, 113, 113, 0.45);
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 0.75rem;
+            padding: 0.65rem 0.75rem;
+            min-height: 2.75rem;
+            white-space: nowrap;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .btn-clear-cart:hover {
+            background: rgba(127, 29, 29, 0.45);
+            border-color: #f87171;
+            color: #fecaca;
+        }
+        .btn-clear-cart-form {
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #fca5a5;
+            border: 1px dashed rgba(248, 113, 113, 0.4);
+            background: transparent;
+            border-radius: 1rem;
+            padding: 0.7rem 1rem;
+            min-height: 2.75rem;
+        }
+        .btn-clear-cart-form:hover {
+            border-style: solid;
+            background: rgba(127, 29, 29, 0.25);
+        }
         .progress-track {
             height: 6px;
             background: rgba(0, 0, 0, 0.45);
@@ -204,6 +280,93 @@
             border-radius: 999px;
             width: 0%;
             transition: width 0.35s ease;
+        }
+        .progress-track.celebrate {
+            box-shadow: 0 0 0 0 rgba(253, 215, 0, 0.7);
+            animation: progress-celebrate 0.7s ease 2;
+        }
+        @keyframes progress-celebrate {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(253, 215, 0, 0); }
+            50% { box-shadow: 0 0 14px 3px rgba(253, 215, 0, 0.55); }
+        }
+        .qty-stepper {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            border: 1px solid #52525b;
+            border-radius: 0.65rem;
+            background: #000;
+            overflow: hidden;
+            min-height: 2.75rem;
+        }
+        .qty-stepper .qty-btn {
+            width: 2.4rem;
+            min-height: 2.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #FDD700;
+            background: transparent;
+            border: 0;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        .qty-stepper .qty-btn:active { background: rgba(253, 215, 0, 0.12); }
+        .qty-stepper .qty-btn:disabled { opacity: 0.35; color: #71717a; }
+        .qty-stepper .qty-display {
+            min-width: 1.75rem;
+            text-align: center;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .qty-stepper select.qty-select {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .price-controls { position: relative; }
+        .qty-float {
+            position: absolute;
+            right: 0.25rem;
+            top: -0.35rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #FDD700;
+            pointer-events: none;
+            animation: qty-float-up 0.55s ease forwards;
+            z-index: 5;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+        }
+        .qty-float.down { color: #a1a1aa; }
+        @keyframes qty-float-up {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-18px); }
+        }
+        .price-card.in-cart {
+            border-color: rgba(253, 215, 0, 0.55);
+            box-shadow: 0 0 0 1px rgba(253, 215, 0, 0.12);
+        }
+        .review-remove {
+            color: #f87171;
+            background: none;
+            border: 0;
+            font-size: 1.1rem;
+            line-height: 1;
+            padding: 0.15rem 0.4rem;
+            min-width: 2rem;
+            min-height: 2rem;
+            cursor: pointer;
+        }
+        .review-remove:hover { color: #fecaca; }
+        .sticky-progress-hint.unlocked {
+            color: #6ee7b7 !important;
+            font-weight: 600;
         }
         .skeleton-card {
             border-radius: 1rem;
@@ -271,13 +434,16 @@
             min-height: 2.25rem;
         }
         .copy-btn:hover { background: rgba(253, 215, 0, 0.12); }
-        body.has-cart-bar { padding-bottom: 7.5rem; }
+        body.has-cart-bar { padding-bottom: 9.5rem; }
+        body.has-cart-bar.sticky-expanded { padding-bottom: 16rem; }
         @media (prefers-reduced-motion: reduce) {
-            .sticky-order-bar, .progress-fill, .price-card, .filter-chip, .skeleton-card::after {
+            .sticky-order-bar, .sticky-lines, .progress-fill, .price-card, .filter-chip, .skeleton-card::after, .qty-float {
                 transition: none !important;
                 animation: none !important;
             }
             .price-card.qty-flash { transform: none; }
+            .progress-track.celebrate { animation: none !important; box-shadow: none; }
+            .sticky-order-bar { transition: none !important; }
         }
     </style>
 </head>
@@ -354,7 +520,10 @@
                         <button type="button" class="filter-chip" data-filter="vials" aria-pressed="false">Has vials</button>
                         <button type="button" class="filter-chip" data-filter="kit-only" aria-pressed="false">Kit-only</button>
                     </div>
-                    <p id="filterEmpty" class="hidden text-center text-zinc-500 text-sm py-2">No products match your search.</p>
+                    <p id="filterEmpty" class="hidden text-center text-zinc-500 text-sm py-2">
+                        No products match your search.
+                        <button type="button" id="clearSearchBtn" class="block mx-auto mt-2 text-[#FDD700] font-semibold underline underline-offset-2">Clear search &amp; filters</button>
+                    </p>
                 </div>
 
                 <div id="priceTable" class="flex flex-col gap-3" aria-live="polite">
@@ -407,6 +576,9 @@
                     <textarea id="message" rows="6" placeholder="Your order summary will appear here..." readonly
                               class="w-full bg-black border border-zinc-700 rounded-3xl px-4 sm:px-5 py-3.5 text-sm sm:text-base leading-relaxed"></textarea>
                     <p id="orderRuleHint" class="text-xs text-zinc-500 text-center break-word px-1"></p>
+                    <button type="button" id="clearCartFormBtn" class="btn-clear-cart-form hidden" aria-label="Clear cart">
+                        Clear cart
+                    </button>
 
                     <label class="flex items-start gap-3 text-sm cursor-pointer select-none">
                         <input type="checkbox" id="agree" class="w-6 h-6 mt-0.5 shrink-0 accent-[#FDD700]">
@@ -450,23 +622,32 @@
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="min-w-0">
                         <p class="text-[10px] uppercase tracking-wider text-emerald-300/90 font-semibold">Your order</p>
-                        <p id="stickyCount" class="text-sm text-white font-semibold truncate">0 items</p>
+                        <button type="button" id="stickyCountBtn" class="sticky-count-btn" aria-expanded="false" aria-controls="stickyLines">
+                            <span id="stickyCount" class="text-sm text-white font-semibold truncate block">0 items</span>
+                            <span class="text-[10px] text-emerald-200/80 font-medium">Tap to expand · edit below</span>
+                        </button>
                     </div>
                     <div class="text-right shrink-0">
                         <p class="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">Total</p>
                         <p id="stickyTotal" class="text-lg font-bold text-[#FDD700] tabular-nums" aria-live="polite">$0.00</p>
                     </div>
                 </div>
+                <div id="stickyLines" class="sticky-lines" role="region" aria-label="Cart items"></div>
                 <div class="mb-2.5">
                     <div class="progress-track" role="progressbar" id="discountProgress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Discount progress">
                         <div id="discountProgressFill" class="progress-fill"></div>
                     </div>
-                    <p id="stickyProgressHint" class="text-[11px] text-zinc-300 mt-1.5 leading-snug">Add items to unlock discounts</p>
+                    <p id="stickyProgressHint" class="text-[11px] text-zinc-300 mt-1.5 leading-snug sticky-progress-hint">Add items to unlock discounts</p>
                 </div>
-                <button type="button" id="stickyReviewBtn"
-                        class="w-full bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-3 rounded-xl text-sm min-h-[2.75rem] transition-colors">
-                    Review order →
-                </button>
+                <div class="sticky-actions">
+                    <button type="button" id="stickyClearBtn" class="btn-clear-cart" aria-label="Clear cart">
+                        Clear cart
+                    </button>
+                    <button type="button" id="stickyReviewBtn"
+                            class="w-full bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-3 rounded-xl text-sm min-h-[2.75rem] transition-colors">
+                        Review order →
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -516,6 +697,91 @@
 
         let activeFilter = 'all';
         let placingOrder = false;
+        let celebratedDiscountKey = '';
+        let stickyExpanded = false;
+
+        function prefersReducedMotion() {
+            return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+
+        function clearCart(opts) {
+            const skipConfirm = opts && opts.skipConfirm;
+            const t = tallyOrder();
+            if (!t.lines.length) return;
+            if (!skipConfirm && !window.confirm('Clear your entire cart?')) return;
+            document.querySelectorAll('#priceTable .price-card').forEach(card => {
+                card.querySelectorAll('select.qty-select').forEach(sel => {
+                    sel.value = '0';
+                    const display = sel.closest('.qty-stepper')?.querySelector('.qty-display');
+                    if (display) display.textContent = '0';
+                    const minus = sel.closest('.qty-stepper')?.querySelector('.qty-btn[data-dir="-1"]');
+                    const plus = sel.closest('.qty-stepper')?.querySelector('.qty-btn[data-dir="1"]');
+                    if (minus) minus.disabled = true;
+                    if (plus) plus.disabled = false;
+                });
+                card.classList.remove('in-cart');
+            });
+            clearCartDraft();
+            celebratedDiscountKey = '';
+            stickyExpanded = false;
+            const bar = document.getElementById('stickyOrderBar');
+            if (bar) bar.classList.remove('expanded');
+            const countBtn = document.getElementById('stickyCountBtn');
+            if (countBtn) countBtn.setAttribute('aria-expanded', 'false');
+            updateOrder();
+        }
+
+        function syncStepperFromSelect(sel) {
+            const wrap = sel.closest('.qty-stepper');
+            if (!wrap) return;
+            const val = parseInt(sel.value, 10) || 0;
+            const display = wrap.querySelector('.qty-display');
+            if (display) display.textContent = String(val);
+            const opts = [...sel.options].map(o => parseInt(o.value, 10));
+            const max = Math.max(...opts);
+            const min = Math.min(...opts);
+            const minus = wrap.querySelector('.qty-btn[data-dir="-1"]');
+            const plus = wrap.querySelector('.qty-btn[data-dir="1"]');
+            if (minus) minus.disabled = val <= min;
+            if (plus) plus.disabled = val >= max;
+        }
+
+        function stepQty(sel, dir) {
+            const opts = [...sel.options].map(o => parseInt(o.value, 10)).sort((a, b) => a - b);
+            let idx = opts.indexOf(parseInt(sel.value, 10) || 0);
+            if (idx < 0) idx = 0;
+            const next = opts[Math.max(0, Math.min(opts.length - 1, idx + dir))];
+            if (next === undefined || String(next) === sel.value) return;
+            const prev = parseInt(sel.value, 10) || 0;
+            sel.value = String(next);
+            syncStepperFromSelect(sel);
+            spawnQtyFloat(sel, (parseInt(sel.value, 10) || 0) - prev);
+            onQtyChange(sel);
+        }
+
+        function spawnQtyFloat(sel, delta) {
+            if (!delta || prefersReducedMotion()) return;
+            const wrap = sel.closest('.price-controls') || sel.closest('.qty-stepper');
+            if (!wrap) return;
+            const span = document.createElement('span');
+            span.className = 'qty-float' + (delta < 0 ? ' down' : '');
+            span.textContent = delta > 0 ? `+${delta}` : String(delta);
+            wrap.appendChild(span);
+            setTimeout(() => span.remove(), 560);
+        }
+
+        function buildStepper(kind, opts, selected, ariaLabel) {
+            const selVal = Number(selected) || 0;
+            return `
+                <div class="qty-stepper" data-stepper-kind="${kind}">
+                    <button type="button" class="qty-btn" data-dir="-1" aria-label="Decrease ${escapeHtml(ariaLabel)}">−</button>
+                    <select data-kind="${kind}" class="qty-select" aria-label="${escapeHtml(ariaLabel)}">
+                        ${optionHtml(opts, selVal)}
+                    </select>
+                    <span class="qty-display" aria-hidden="true">${selVal}</span>
+                    <button type="button" class="qty-btn" data-dir="1" aria-label="Increase ${escapeHtml(ariaLabel)}">+</button>
+                </div>`;
+        }
 
         function formatPrice(n) {
             const num = Number(n);
@@ -629,7 +895,23 @@
         function onQtyChange(selectEl) {
             const card = selectEl.closest('.price-card');
             flashCard(card);
+            syncStepperFromSelect(selectEl);
             updateOrder();
+        }
+
+        function wireStepper(article) {
+            article.querySelectorAll('.qty-stepper').forEach(stepper => {
+                const sel = stepper.querySelector('select.qty-select');
+                if (!sel) return;
+                syncStepperFromSelect(sel);
+                stepper.querySelectorAll('.qty-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const dir = parseInt(btn.getAttribute('data-dir'), 10) || 0;
+                        stepQty(sel, dir);
+                    });
+                });
+                sel.addEventListener('change', () => onQtyChange(sel));
+            });
         }
 
         function renderProducts(products) {
@@ -661,9 +943,7 @@
                             <span class="price-label text-sm text-zinc-400">Vial</span>
                             <div class="price-controls">
                                 <span class="font-bold text-[#FDD700] tabular-nums">$${formatPrice(p.vial_price)}</span>
-                                <select data-kind="vial" class="qty-select" aria-label="${escapeHtml(name)} vial qty">
-                                    ${optionHtml(VIAL_OPTS, saved.vial)}
-                                </select>
+                                ${buildStepper('vial', VIAL_OPTS, saved.vial, name + ' vial qty')}
                             </div>
                         </div>`;
                 }
@@ -672,16 +952,12 @@
                         <span class="price-label text-sm text-zinc-400">${kitOnly ? 'Kit' : '10-Pack / Kit'}</span>
                         <div class="price-controls">
                             <span class="font-bold text-[#FDD700] tabular-nums">$${formatPrice(p.pack_price)}</span>
-                            <select data-kind="pack" class="qty-select" aria-label="${escapeHtml(name)} kit qty">
-                                ${optionHtml(kitOnly ? VIAL_OPTS : PACK_OPTS, saved.pack)}
-                            </select>
+                            ${buildStepper('pack', kitOnly ? VIAL_OPTS : PACK_OPTS, saved.pack, name + ' kit qty')}
                         </div>
                     </div>
                 </div>`;
                 article.innerHTML = body;
-                article.querySelectorAll('select.qty-select').forEach(sel => {
-                    sel.addEventListener('change', () => onQtyChange(sel));
-                });
+                wireStepper(article);
                 root.appendChild(article);
             });
             applyProductFilter();
@@ -868,6 +1144,14 @@
             bar.classList.toggle('visible', hasItems);
             bar.setAttribute('aria-hidden', hasItems ? 'false' : 'true');
             document.body.classList.toggle('has-cart-bar', hasItems);
+            if (!hasItems) {
+                stickyExpanded = false;
+                bar.classList.remove('expanded');
+                document.body.classList.remove('sticky-expanded');
+            } else {
+                bar.classList.toggle('expanded', stickyExpanded);
+                document.body.classList.toggle('sticky-expanded', stickyExpanded);
+            }
 
             const itemCount = t.items.reduce((s, it) => s + it.qty, 0);
             document.getElementById('stickyCount').textContent =
@@ -875,12 +1159,54 @@
                 (t.vialDiscount > 0 || t.kitDiscount > 0 ? ' · discounts applied' : '');
             document.getElementById('stickyTotal').textContent = `$${money(t.total)}`;
 
+            const linesEl = document.getElementById('stickyLines');
+            if (linesEl) {
+                linesEl.innerHTML = t.lines.map(l => {
+                    const parts = l.text.split(' — ');
+                    return `<div class="sticky-line"><span class="break-word min-w-0">${escapeHtml(parts[0] || '')}</span><span class="text-[#FDD700] tabular-nums shrink-0">${escapeHtml(parts[1] || '')}</span></div>`;
+                }).join('');
+            }
+
+            const formClear = document.getElementById('clearCartFormBtn');
+            if (formClear) formClear.classList.toggle('hidden', !hasItems);
+
+            // In-cart card highlight
+            document.querySelectorAll('#priceTable .price-card').forEach(card => {
+                const hasQty = [...card.querySelectorAll('select.qty-select')].some(s => (parseInt(s.value, 10) || 0) > 0);
+                card.classList.toggle('in-cart', hasQty);
+            });
+
             const meta = discountProgressMeta(t);
             const fill = document.getElementById('discountProgressFill');
             const prog = document.getElementById('discountProgress');
+            const hint = document.getElementById('stickyProgressHint');
             fill.style.width = `${Math.max(0, Math.min(100, meta.pct))}%`;
             prog.setAttribute('aria-valuenow', String(meta.pct));
-            document.getElementById('stickyProgressHint').textContent = meta.hint;
+            hint.textContent = meta.hint;
+
+            // Celebrate newly unlocked discount tier once
+            const discKey = [
+                t.vialDiscountEligible ? 'v10' : '',
+                t.kitRate >= KIT_DISCOUNT_TIER2_RATE ? 'k15' : (t.kitRate >= KIT_DISCOUNT_TIER1_RATE ? 'k10' : ''),
+            ].filter(Boolean).join('|');
+            if (discKey && discKey !== celebratedDiscountKey && (t.vialDiscount > 0 || t.kitDiscount > 0)) {
+                celebratedDiscountKey = discKey;
+                hint.classList.add('unlocked');
+                if (!prefersReducedMotion()) {
+                    prog.classList.remove('celebrate');
+                    void prog.offsetWidth;
+                    prog.classList.add('celebrate');
+                    setTimeout(() => prog.classList.remove('celebrate'), 1500);
+                }
+            } else if (!discKey) {
+                celebratedDiscountKey = '';
+                hint.classList.remove('unlocked');
+            } else {
+                hint.classList.toggle('unlocked', meta.pct >= 100 || t.vialDiscount > 0 || t.kitDiscount > 0);
+            }
+
+            const countBtn = document.getElementById('stickyCountBtn');
+            if (countBtn) countBtn.setAttribute('aria-expanded', stickyExpanded ? 'true' : 'false');
         }
 
         function updateOrder() {
@@ -1029,15 +1355,66 @@
             const name = document.getElementById('name').value.trim() || 'Customer';
             const t = tallyOrder();
             const linesEl = document.getElementById('reviewLines');
-            linesEl.innerHTML = t.lines.map(l =>
-                `<div class="flex justify-between gap-2 border-b border-zinc-800 pb-2"><span class="break-word">${escapeHtml(l.text.split(' — ')[0])}</span><span class="text-[#FDD700] tabular-nums shrink-0">${escapeHtml((l.text.split(' — ')[1] || ''))}</span></div>`
-            ).join('');
+            // Map raw lines with product name for remove
+            linesEl.innerHTML = '';
+            document.querySelectorAll('#priceTable .price-card').forEach(card => {
+                const pname = card.getAttribute('data-name') || '';
+                const vialSel = card.querySelector('select[data-kind="vial"]');
+                const packSel = card.querySelector('select[data-kind="pack"]');
+                const vialQty = parseInt(vialSel ? vialSel.value : 0, 10) || 0;
+                const packQty = parseInt(packSel ? packSel.value : 0, 10) || 0;
+                if (vialQty > 0) {
+                    const line = t.lines.find(l => l.kind === 'vial' && l.text.includes(pname));
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center justify-between gap-2 border-b border-zinc-800 pb-2';
+                    row.innerHTML = `<span class="break-word min-w-0 flex-1">${escapeHtml(line ? line.text.split(' — ')[0] : vialQty + 'x ' + pname + ' (Vial)')}</span>
+                        <span class="text-[#FDD700] tabular-nums shrink-0">${escapeHtml(line ? (line.text.split(' — ')[1] || '') : '')}</span>
+                        <button type="button" class="review-remove" data-name="${escapeHtml(pname)}" data-kind="vial" aria-label="Remove ${escapeHtml(pname)} vials">&times;</button>`;
+                    linesEl.appendChild(row);
+                }
+                if (packQty > 0) {
+                    const line = t.lines.find(l => l.kind === 'pack' && l.text.includes(pname));
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center justify-between gap-2 border-b border-zinc-800 pb-2';
+                    row.innerHTML = `<span class="break-word min-w-0 flex-1">${escapeHtml(line ? line.text.split(' — ')[0] : packQty + 'x ' + pname)}</span>
+                        <span class="text-[#FDD700] tabular-nums shrink-0">${escapeHtml(line ? (line.text.split(' — ')[1] || '') : '')}</span>
+                        <button type="button" class="review-remove" data-name="${escapeHtml(pname)}" data-kind="pack" aria-label="Remove ${escapeHtml(pname)} kits">&times;</button>`;
+                    linesEl.appendChild(row);
+                }
+            });
             if (t.vialDiscount > 0) {
-                linesEl.innerHTML += `<div class="flex justify-between text-emerald-400 text-xs"><span>5+ vial discount (10%)</span><span>−$${money(t.vialDiscount)}</span></div>`;
+                const d = document.createElement('div');
+                d.className = 'flex justify-between text-emerald-400 text-xs';
+                d.innerHTML = `<span>5+ vial discount (10%)</span><span>−$${money(t.vialDiscount)}</span>`;
+                linesEl.appendChild(d);
             }
             if (t.kitDiscount > 0) {
-                linesEl.innerHTML += `<div class="flex justify-between text-emerald-400 text-xs"><span>Kit discount (${t.kitDiscountPct}%)</span><span>−$${money(t.kitDiscount)}</span></div>`;
+                const d = document.createElement('div');
+                d.className = 'flex justify-between text-emerald-400 text-xs';
+                d.innerHTML = `<span>Kit discount (${t.kitDiscountPct}%)</span><span>−$${money(t.kitDiscount)}</span>`;
+                linesEl.appendChild(d);
             }
+            linesEl.querySelectorAll('.review-remove').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const pname = btn.getAttribute('data-name');
+                    const kind = btn.getAttribute('data-kind');
+                    const card = [...document.querySelectorAll('#priceTable .price-card')].find(c => c.getAttribute('data-name') === pname);
+                    if (!card) return;
+                    const sel = card.querySelector(`select[data-kind="${kind}"]`);
+                    if (sel) {
+                        sel.value = '0';
+                        syncStepperFromSelect(sel);
+                    }
+                    updateOrder();
+                    const check = canSubmitOrder();
+                    if (!check.ok || !tallyOrder().lines.length) {
+                        closeReviewModal();
+                        showSubmitError(check.ok ? 'Cart is empty.' : check.reason, document.getElementById('orderForm'));
+                        return;
+                    }
+                    openReviewModal();
+                });
+            });
             document.getElementById('reviewEmail').textContent = email;
             document.getElementById('reviewName').textContent = name;
             document.getElementById('reviewTotal').textContent = `$${money(t.total)}`;
@@ -1170,7 +1547,32 @@
             }
         });
 
+        function onClearCartClick() {
+            clearCart({ skipConfirm: false });
+        }
+        document.getElementById('stickyClearBtn').addEventListener('click', onClearCartClick);
+        document.getElementById('clearCartFormBtn').addEventListener('click', onClearCartClick);
+
+        document.getElementById('stickyCountBtn').addEventListener('click', () => {
+            if (!tallyOrder().lines.length) return;
+            stickyExpanded = !stickyExpanded;
+            document.getElementById('stickyOrderBar').classList.toggle('expanded', stickyExpanded);
+            document.body.classList.toggle('sticky-expanded', stickyExpanded);
+            document.getElementById('stickyCountBtn').setAttribute('aria-expanded', stickyExpanded ? 'true' : 'false');
+        });
+
         document.getElementById('productSearch').addEventListener('input', applyProductFilter);
+        document.getElementById('clearSearchBtn').addEventListener('click', () => {
+            document.getElementById('productSearch').value = '';
+            activeFilter = 'all';
+            document.querySelectorAll('.filter-chip').forEach(c => {
+                const on = (c.getAttribute('data-filter') || '') === 'all';
+                c.classList.toggle('active', on);
+                c.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
+            applyProductFilter();
+            document.getElementById('productSearch').focus();
+        });
         document.querySelectorAll('.filter-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 activeFilter = chip.getAttribute('data-filter') || 'all';
