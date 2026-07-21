@@ -8,11 +8,15 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>Admin — Springfield Peptide Buyers Club</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/shared/site-header.css?v=12">
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=10">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
       font-family: 'Inter', system-ui, sans-serif;
+      background: #000;
+      color: #fff;
       padding-left: env(safe-area-inset-left, 0);
       padding-right: env(safe-area-inset-right, 0);
       padding-bottom: env(safe-area-inset-bottom, 0);
@@ -21,6 +25,61 @@
       font-family: 'Bebas Neue', Impact, sans-serif;
       letter-spacing: 0.02em;
       text-transform: uppercase;
+    }
+    .admin-shell {
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 102, 0, 0.35), transparent 55%),
+        radial-gradient(ellipse 40% 30% at 100% 20%, rgba(253, 215, 0, 0.06), transparent 50%),
+        #000;
+    }
+    .admin-card {
+      background: rgba(9, 9, 11, 0.92);
+      border: 1px solid rgba(253, 215, 0, 0.28);
+      border-radius: 1.25rem;
+      box-shadow: 0 0 0 1px rgba(0, 102, 0, 0.25), 0 16px 40px rgba(0, 0, 0, 0.55);
+    }
+    .admin-input {
+      width: 100%;
+      background: #000;
+      border: 1px solid #3f3f46;
+      border-radius: 1rem;
+      padding: 0.85rem 1rem;
+      font-size: 16px;
+      color: #fff;
+    }
+    .admin-input:focus {
+      outline: none;
+      border-color: rgba(253, 215, 0, 0.65);
+      box-shadow: 0 0 0 2px rgba(253, 215, 0, 0.2);
+    }
+    .btn-primary-admin {
+      width: 100%;
+      background: #FDD700;
+      color: #000;
+      font-weight: 700;
+      padding: 0.9rem 1rem;
+      border-radius: 1rem;
+      min-height: 3rem;
+      transition: background 0.15s;
+    }
+    .btn-primary-admin:hover { background: #fff; }
+    .btn-ghost-admin {
+      font-size: 0.875rem;
+      font-weight: 600;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(253, 215, 0, 0.45);
+      color: #FDD700;
+      padding: 0.5rem 0.85rem;
+      border-radius: 0.75rem;
+    }
+    .btn-ghost-admin:hover { background: rgba(0, 0, 0, 0.55); }
+    .section-rule {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #FDD700 20%, #FDD700 80%, transparent);
+      opacity: 0.55;
+      border: 0;
+      margin: 0;
     }
     input, select, textarea, button {
       color-scheme: dark;
@@ -37,45 +96,43 @@
     .break-word { overflow-wrap: anywhere; word-break: break-word; }
   </style>
 </head>
-<body class="bg-black text-white min-h-screen overflow-x-hidden">
-  <header class="bg-[#006600] border-b-4 border-[#FDD700] py-3 sm:py-4" style="padding-top: max(0.75rem, env(safe-area-inset-top));">
-    <div class="max-w-5xl mx-auto px-3 sm:px-4 flex items-center justify-between gap-2 sm:gap-3">
-      <div class="ducks-font text-xl sm:text-3xl leading-none">
-        <span class="text-[#FDD700]">SPBC</span>
-        <span class="text-white"> Admin</span>
-      </div>
-      <div id="headerActions" class="hidden">
-        <button id="logoutBtn" type="button"
-                class="text-sm font-semibold bg-black/30 hover:bg-black/50 border border-[#FDD700]/50 text-[#FDD700] px-3 py-2 rounded-xl">
-          Log out
-        </button>
+<body class="admin-shell text-white overflow-x-hidden atmosphere">
+  <header class="site-header" data-site-header>
+    <div class="site-header__inner" style="flex-direction:row;justify-content:space-between;max-width:64rem;">
+      <a href="/" class="site-header__brand" aria-label="SPBC home">
+        <span class="ducks-font site-header__brand-text">
+          <span class="site-header__brand-gold">SPBC</span>
+          <span class="site-header__brand-white">Admin</span>
+        </span>
+      </a>
+      <div id="headerActions" class="hidden flex items-center gap-2">
+        <span id="adminWho" class="text-xs text-emerald-200/90 hidden sm:inline"></span>
+        <button id="logoutBtn" type="button" class="btn-ghost-admin">Log out</button>
       </div>
     </div>
   </header>
+  <hr class="section-rule" aria-hidden="true">
 
   <main class="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
     <!-- LOGIN -->
     <section id="loginSection" class="max-w-sm mx-auto">
-      <h1 class="ducks-font text-2xl sm:text-3xl text-[#FDD700] text-center mb-6">Admin login</h1>
-      <form id="loginForm" class="space-y-4 bg-zinc-900 border border-[#FDD700]/30 rounded-3xl p-5 sm:p-6">
+      <p class="text-center text-[10px] uppercase tracking-[0.22em] text-emerald-300/80 mb-2">Members ops</p>
+      <h1 class="ducks-font text-3xl sm:text-4xl text-[#FDD700] text-center mb-2">Admin login</h1>
+      <p class="text-center text-zinc-500 text-xs mb-6">Remy master · same password as Patriotic</p>
+      <form id="loginForm" class="admin-card space-y-4 p-5 sm:p-6">
         <div>
           <label class="block text-xs text-zinc-400 mb-1" for="username">Username</label>
-          <input id="username" name="username" autocomplete="username" required
-                 class="w-full bg-black border border-zinc-700 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#FDD700]/50">
+          <input id="username" name="username" autocomplete="username" required class="admin-input" placeholder="remy">
         </div>
         <div>
           <label class="block text-xs text-zinc-400 mb-1" for="password">Password</label>
-          <input id="password" name="password" type="password" autocomplete="current-password" required
-                 class="w-full bg-black border border-zinc-700 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#FDD700]/50">
+          <input id="password" name="password" type="password" autocomplete="current-password" required class="admin-input">
         </div>
         <p id="loginError" class="text-red-500 text-sm hidden break-word"></p>
-        <button type="submit"
-                class="w-full bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-3.5 rounded-2xl transition-colors min-h-[3rem]">
-          Sign in
-        </button>
+        <button type="submit" class="btn-primary-admin">Sign in</button>
       </form>
       <p class="text-center text-zinc-600 text-xs mt-6">
-        <a href="/" class="hover:text-zinc-400">← Back to store</a>
+        <a href="/" class="hover:text-[#FDD700]">← Back to store</a>
       </p>
     </section>
 
@@ -565,6 +622,12 @@
       try {
         const res = await fetch('/api/admin/session', { credentials: 'same-origin' });
         if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          const who = document.getElementById('adminWho');
+          if (who && data.user) {
+            who.textContent =
+              (data.user.display_name || data.user.username || 'Remy') + ' · master';
+          }
           showApp();
           await switchTab(activeTab);
           return;
@@ -1255,12 +1318,17 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        loginError.textContent = 'Invalid username or password';
+        loginError.textContent = data.error || 'Invalid username or password';
         loginError.classList.remove('hidden');
         return;
       }
       document.getElementById('password').value = '';
+      const who = document.getElementById('adminWho');
+      if (who && data.user) {
+        who.textContent = (data.user.display_name || data.user.username) + ' · master';
+      }
       showApp();
       await switchTab('orders');
     });
