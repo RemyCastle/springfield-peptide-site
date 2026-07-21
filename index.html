@@ -26,7 +26,14 @@
       "name": "Springfield Peptide Buyers Club",
       "url": "https://springfieldpbc.com/",
       "description": "Members research collective for research-use peptides. Not medical advice.",
-      "logo": "https://springfieldpbc.com/favicon.svg"
+      "logo": "https://springfieldpbc.com/favicon.svg",
+      "email": "springfieldpeps@proton.me",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "springfieldpeps@proton.me",
+        "contactType": "customer service",
+        "availableLanguage": "English"
+      }
     }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -587,6 +594,7 @@
                     <a href="/" class="nav-link" data-nav="index">Home</a>
                     <a href="/calculator.html" class="nav-link" data-nav="calculator">Calculator</a>
                     <a href="/coaching.html" class="nav-link" data-nav="coaching">Coaching</a>
+                    <a href="#contact" class="nav-link" data-nav="contact">Contact</a>
                 </nav>
             </div>
         </header>
@@ -795,8 +803,47 @@
         </div>
     </div>
 
-    <footer class="text-center py-6 text-xs text-zinc-500 bg-black px-3 break-word">
-        SPRINGFIELD PEPTIDE BUYERS CLUB • RESEARCH ONLY
+    <section id="contact" class="py-12 px-4 sm:px-6 bg-black border-t border-zinc-800" style="scroll-margin-top: 88px;">
+        <div class="max-w-lg mx-auto text-center">
+            <p class="text-[10px] tracking-[0.28em] uppercase text-zinc-500 mb-2">Get in touch</p>
+            <h2 class="ducks-font text-3xl sm:text-4xl text-white mb-3">Contact SPBC</h2>
+            <p class="text-sm text-zinc-400 mb-6 leading-relaxed">
+                Questions about orders, payment, tracking, or the club?
+                Email us — we typically reply within one business day.
+            </p>
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5 sm:p-6 space-y-4 text-left">
+                <div>
+                    <p class="text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Email</p>
+                    <a href="mailto:springfieldpeps@proton.me?subject=SPBC%20question"
+                       class="text-lg sm:text-xl font-bold text-[#FDD700] hover:underline break-all">
+                        springfieldpeps@proton.me
+                    </a>
+                </div>
+                <div class="border-t border-zinc-800 pt-4">
+                    <ul class="text-sm text-zinc-400 space-y-2 leading-relaxed">
+                        <li><strong class="text-zinc-200">Orders &amp; payment</strong> — include your order number if you have one</li>
+                        <li><strong class="text-zinc-200">Tracking / shipping</strong> — name + order code helps us find you fast</li>
+                        <li><strong class="text-zinc-200">Coaching</strong> — use the
+                          <a href="/coaching.html" class="text-[#FDD700] underline underline-offset-2">coaching page</a>
+                          or email with subject “Coaching”</li>
+                    </ul>
+                </div>
+                <a href="mailto:springfieldpeps@proton.me?subject=SPBC%20question"
+                   class="btn-primary inline-flex w-full justify-center py-3 rounded-xl text-sm font-bold">
+                    Email SPBC
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="text-center py-6 text-xs text-zinc-500 bg-black px-3 break-word border-t border-zinc-900">
+        <p>SPRINGFIELD PEPTIDE BUYERS CLUB • RESEARCH ONLY</p>
+        <p class="mt-2 text-sm">
+            <a href="mailto:springfieldpeps@proton.me" class="text-[#FDD700] hover:underline">springfieldpeps@proton.me</a>
+        </p>
+        <p class="mt-1">
+            <a href="#contact" class="hover:text-[#FDD700] underline underline-offset-2">Contact</a>
+        </p>
     </footer>
 
     <script>
