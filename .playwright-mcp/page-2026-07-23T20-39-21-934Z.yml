@@ -1,0 +1,123 @@
+- generic [ref=f2e2]:
+  - link "Skip to calculator" [ref=f2e3] [cursor=pointer]:
+    - /url: "#calc-main"
+  - banner [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - link "Springfield Peptide Buyers Club — home" [ref=f2e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f2e7]: SPRINGFIELD PEPTIDE BUYERS CLUB
+      - navigation "Main" [ref=f2e8]:
+        - link "Home" [ref=f2e9] [cursor=pointer]:
+          - /url: /
+        - link "Calculator" [ref=f2e10] [cursor=pointer]:
+          - /url: /calculator.html
+        - link "Coaching" [ref=f2e11] [cursor=pointer]:
+          - /url: /coaching.html
+        - link "Contact" [ref=f2e12] [cursor=pointer]:
+          - /url: /#contact
+  - region "Calculator intro" [ref=f2e13]:
+    - generic [ref=f2e14]:
+      - paragraph [ref=f2e15]: Dosage tools
+      - heading "Dosage Calculator" [level=1] [ref=f2e16]
+      - paragraph [ref=f2e17]:
+        - text: Reconstitution math for U-100 insulin syringes (100 units = 1 mL). BAC water max
+        - strong [ref=f2e18]: 3 mL
+        - text: per vial. For research planning only — not medical advice.
+      - generic [ref=f2e19]:
+        - link "Open calculator" [ref=f2e20] [cursor=pointer]:
+          - /url: "#calc-main"
+        - link "Price list" [ref=f2e21] [cursor=pointer]:
+          - /url: /#prices
+  - separator [ref=f2e22]
+  - main [ref=f2e23]:
+    - generic [ref=f2e24]:
+      - form [ref=f2e25]:
+        - heading "Inputs" [level=2] [ref=f2e26]
+        - generic [ref=f2e27]:
+          - generic [ref=f2e28] [cursor=pointer]: Peptide (optional)
+          - combobox "Peptide (optional)" [ref=f2e29] [cursor=pointer]:
+            - option "Custom / other" [selected]
+            - option "RETA 30 MG"
+            - option "RETA 66 MG"
+            - option "GHK-CU 34MG"
+            - option "NAD +1000MG"
+            - option "TIRZ 30MG"
+            - option "MOTS-C 40MG"
+            - option "KLOW 80MG"
+            - option "CJC/IPA NO DAC 10MG"
+            - option "CAGRILINTIDE 5MG"
+            - option "MELANOTAN II 10 MG"
+            - option "SS-31 10 MG"
+        - generic [ref=f2e30]:
+          - generic [ref=f2e31]:
+            - generic [ref=f2e32] [cursor=pointer]: Vial size (mg)
+            - spinbutton "Vial size (mg)" [ref=f2e33]: "10"
+            - paragraph [ref=f2e34]: Total peptide in the vial
+          - generic [ref=f2e35]:
+            - generic [ref=f2e36] [cursor=pointer]: BAC water (mL)
+            - spinbutton "BAC water (mL)" [ref=f2e37]: "2"
+            - paragraph [ref=f2e38]: Max 3.0 mL
+        - generic [ref=f2e39]:
+          - generic [ref=f2e40]:
+            - generic [ref=f2e41] [cursor=pointer]: Desired dose
+            - spinbutton "Desired dose" [ref=f2e42]: "250"
+          - generic [ref=f2e43]:
+            - generic [ref=f2e44] [cursor=pointer]: Dose unit
+            - combobox "Dose unit" [ref=f2e45] [cursor=pointer]:
+              - option "mcg" [selected]
+              - option "mg"
+        - button "Calculate" [ref=f2e46] [cursor=pointer]
+      - generic [ref=f2e47]:
+        - region [ref=f2e48]:
+          - generic [ref=f2e49]:
+            - heading "U-100 Insulin Syringe" [level=2] [ref=f2e50]
+            - paragraph [ref=f2e51]: 5 units
+          - img "Insulin syringe fill indicator Syringe shows 5 units of 0.05 milliliters." [ref=f2e52]:
+            - generic [ref=f2e63]:
+              - generic [ref=f2e64]: "10"
+              - generic [ref=f2e65]: "20"
+              - generic [ref=f2e66]: "30"
+              - generic [ref=f2e67]: "40"
+              - generic [ref=f2e68]: "50"
+              - generic [ref=f2e69]: "60"
+              - generic [ref=f2e70]: "70"
+              - generic [ref=f2e71]: "80"
+              - generic [ref=f2e72]: "90"
+          - generic [ref=f2e77]:
+            - generic [ref=f2e78]: Needle
+            - generic [ref=f2e79]: 0 u
+            - generic [ref=f2e80]: 50 u
+            - generic [ref=f2e81]: 100 u
+            - generic [ref=f2e82]: Handle
+          - paragraph [ref=f2e83]: Draw to 5 units · 0.05 mL on the barrel
+        - region [ref=f2e84]:
+          - heading "Results" [level=2] [ref=f2e85]
+          - generic [ref=f2e89]:
+            - generic [ref=f2e90]:
+              - term [ref=f2e91]: Concentration
+              - definition [ref=f2e92]: 5000 mcg/mL · 5 mg/mL
+            - generic [ref=f2e93]:
+              - term [ref=f2e94]: Draw on U-100 syringe
+              - definition [ref=f2e95]: 5 units
+            - generic [ref=f2e96]:
+              - term [ref=f2e97]: Volume per dose
+              - definition [ref=f2e98]: 0.05 mL
+            - generic [ref=f2e99]:
+              - term [ref=f2e100]: Doses per vial
+              - definition [ref=f2e101]: "40"
+            - generic [ref=f2e102]:
+              - term [ref=f2e103]: Total peptide used / dose
+              - definition [ref=f2e104]: 0.25 mg (250 mcg)
+          - generic [ref=f2e105]:
+            - button "Copy shareable link" [ref=f2e106] [cursor=pointer]
+            - button "Copy results text" [ref=f2e107] [cursor=pointer]
+          - paragraph [ref=f2e108]: "Formula: concentration (mcg/mL) = (vial mg × 1000) ÷ BAC mL. Units to draw = (dose mcg ÷ concentration) × 100. BAC water capped at 3 mL."
+    - paragraph [ref=f2e109]:
+      - link "← Back to price list" [ref=f2e110] [cursor=pointer]:
+        - /url: /#prices
+  - contentinfo [ref=f2e111]:
+    - paragraph [ref=f2e112]: SPRINGFIELD PEPTIDE BUYERS CLUB · RESEARCH ONLY
+    - paragraph [ref=f2e113]:
+      - text: Contact ·
+      - link "springfieldpeps@proton.me" [ref=f2e114] [cursor=pointer]:
+        - /url: mailto:springfieldpeps@proton.me

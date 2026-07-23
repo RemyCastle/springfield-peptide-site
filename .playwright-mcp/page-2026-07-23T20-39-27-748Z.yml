@@ -1,0 +1,136 @@
+- generic [ref=f3e2]:
+  - link "Skip to coaching" [ref=f3e3] [cursor=pointer]:
+    - /url: "#coach-main"
+  - banner [ref=f3e4]:
+    - generic [ref=f3e5]:
+      - link "Springfield Peptide Buyers Club — home" [ref=f3e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f3e7]: SPRINGFIELD PEPTIDE BUYERS CLUB
+      - navigation "Main" [ref=f3e8]:
+        - link "Home" [ref=f3e9] [cursor=pointer]:
+          - /url: /
+        - link "Calculator" [ref=f3e10] [cursor=pointer]:
+          - /url: /calculator.html
+        - link "Coaching" [ref=f3e11] [cursor=pointer]:
+          - /url: /coaching.html
+        - link "Contact" [ref=f3e12] [cursor=pointer]:
+          - /url: /#contact
+  - generic [ref=f3e14]:
+    - paragraph [ref=f3e15]: 1-on-1 protocol coaching
+    - heading "Research Coaching" [level=1] [ref=f3e16]
+    - paragraph [ref=f3e17]: Stack design, problem-solving, protocol consulting, and lab-marker guidance — tailored for serious club members who want a clear plan.
+    - paragraph [ref=f3e18]: $100/ hour
+    - paragraph [ref=f3e19]: Billed hourly · remote video or voice
+    - generic [ref=f3e20]:
+      - link "Book a session" [ref=f3e21] [cursor=pointer]:
+        - /url: "#book"
+      - link "Price list" [ref=f3e22] [cursor=pointer]:
+        - /url: /#prices
+  - separator [ref=f3e23]
+  - main [ref=f3e24]:
+    - generic [ref=f3e25]:
+      - generic [ref=f3e26]: Stacks
+      - generic [ref=f3e27]: Solutions
+      - generic [ref=f3e28]: Consulting
+      - generic [ref=f3e29]: Bloodwork
+    - heading "What’s included" [level=2] [ref=f3e30]
+    - generic [ref=f3e31]:
+      - article [ref=f3e32]:
+        - heading "Stack recommendations" [level=3] [ref=f3e37]
+        - paragraph [ref=f3e38]: "Goal-based research stack outlines: compound selection, sequencing, cycle length ideas, and how club products can fit a coherent plan — without guesswork."
+        - list [ref=f3e39]:
+          - listitem [ref=f3e40]: Primary + support compound maps
+          - listitem [ref=f3e41]: Timing / reconstitution planning notes
+          - listitem [ref=f3e42]: Club SKU alignment to your goals
+      - article [ref=f3e43]:
+        - heading "Solutions" [level=3] [ref=f3e47]
+        - paragraph [ref=f3e48]: Stuck on a research problem? We troubleshoot plateaus, logistics, storage, sourcing timing, and “what changed” reviews so you leave with actionable next steps.
+        - list [ref=f3e49]:
+          - listitem [ref=f3e50]: Issue → hypothesis → test plan
+          - listitem [ref=f3e51]: Side-effect context & risk framing*
+          - listitem [ref=f3e52]: When to pause vs adjust protocol
+      - article [ref=f3e53]:
+        - heading "Consulting" [level=3] [ref=f3e57]
+        - paragraph [ref=f3e58]: Broader 1:1 consulting — long-horizon research planning, budget optimization with bulk club pricing, and second opinions before you commit to a kit order.
+        - list [ref=f3e59]:
+          - listitem [ref=f3e60]: 12-week / 6-month roadmaps
+          - listitem [ref=f3e61]: Budget vs bulk kit strategy
+          - listitem [ref=f3e62]: Literature & RUO framing overview
+      - article [ref=f3e63]:
+        - heading "Bloodwork recommendations" [level=3] [ref=f3e68]
+        - paragraph [ref=f3e69]: What panels to request and when — baseline, mid-protocol, and follow-up markers commonly used to track metabolic, inflammatory, and hormone-related research context.
+        - list [ref=f3e70]:
+          - listitem [ref=f3e71]: Baseline vs follow-up panel lists
+          - listitem [ref=f3e72]: Timing relative to your protocol
+          - listitem [ref=f3e73]: How to read trends (not diagnose)
+    - separator [ref=f3e74]
+    - generic [ref=f3e75]:
+      - heading "How it works" [level=2] [ref=f3e76]
+      - generic [ref=f3e77]:
+        - generic [ref=f3e78]:
+          - paragraph [ref=f3e79]: 1 · Book
+          - paragraph [ref=f3e80]: Submit the request form with goals + preferred times.
+        - generic [ref=f3e81]:
+          - paragraph [ref=f3e82]: 2 · Meet
+          - paragraph [ref=f3e83]: We confirm a slot and payment for the booked hours ($100/hr).
+        - generic [ref=f3e84]:
+          - paragraph [ref=f3e85]: 3 · Protocol
+          - paragraph [ref=f3e86]: Remote session + short written summary of recommendations after.
+      - paragraph [ref=f3e87]: "*Educational / research-planning only. Not medical advice, not a doctor–patient relationship, not a substitute for care from a licensed clinician. All compounds remain research-use only."
+    - region [ref=f3e88]:
+      - heading "Book coaching" [level=2] [ref=f3e89]
+      - paragraph [ref=f3e90]: $100 / hour · minimum 1 hour · same-week slots when available
+      - generic [ref=f3e91]:
+        - generic [ref=f3e92]:
+          - generic [ref=f3e93]:
+            - generic [ref=f3e94] [cursor=pointer]: Name
+            - textbox "Name" [ref=f3e95]:
+              - /placeholder: Your name
+          - generic [ref=f3e96]:
+            - generic [ref=f3e97] [cursor=pointer]: Email
+            - textbox "Email" [ref=f3e98]:
+              - /placeholder: you@email.com
+        - generic [ref=f3e99]:
+          - generic [ref=f3e100]:
+            - generic [ref=f3e101] [cursor=pointer]: Hours to book
+            - combobox "Hours to book" [ref=f3e102] [cursor=pointer]:
+              - option "1 hour — $100" [selected]
+              - option "1.5 hours — $150"
+              - option "2 hours — $200"
+              - option "3 hours — $300"
+          - generic [ref=f3e103]:
+            - generic [ref=f3e104] [cursor=pointer]: Primary focus
+            - combobox "Primary focus" [ref=f3e105] [cursor=pointer]:
+              - option "Stack recommendations" [selected]
+              - option "Solutions / troubleshooting"
+              - option "Consulting / roadmap"
+              - option "Bloodwork recommendations"
+              - option "Mixed (all of the above)"
+        - generic [ref=f3e106]:
+          - generic [ref=f3e107] [cursor=pointer]: Goals & context
+          - textbox "Goals & context" [ref=f3e108]:
+            - /placeholder: What are you working on? Timeline? Any bloodwork already done?
+        - generic [ref=f3e109]:
+          - generic [ref=f3e110] [cursor=pointer]: Preferred times (optional)
+          - textbox "Preferred times (optional)" [ref=f3e111]:
+            - /placeholder: e.g. weekday evenings PT, weekends
+        - generic [ref=f3e112] [cursor=pointer]:
+          - checkbox "I understand this is educational research coaching only — not medical advice — and I’m 21+." [ref=f3e113]
+          - generic [ref=f3e114]: I understand this is educational research coaching only — not medical advice — and I’m 21+.
+        - button "Request session · $100/hr" [ref=f3e115] [cursor=pointer]
+        - paragraph [ref=f3e116]:
+          - text: Opens your email client with a filled request to the club. Or email
+          - link "springfieldpeps@proton.me" [ref=f3e117] [cursor=pointer]:
+            - /url: mailto:springfieldpeps@proton.me?subject=SPBC%20Coaching%20Request
+          - text: directly.
+    - paragraph [ref=f3e118]:
+      - link "← Back to price list" [ref=f3e119] [cursor=pointer]:
+        - /url: /#prices
+      - text: ·
+      - link "Dosage calculator" [ref=f3e120] [cursor=pointer]:
+        - /url: /calculator.html
+  - contentinfo [ref=f3e121]:
+    - paragraph [ref=f3e122]: SPRINGFIELD PEPTIDE BUYERS CLUB · RESEARCH ONLY · COACHING $100/HR
+    - paragraph [ref=f3e123]:
+      - link "springfieldpeps@proton.me" [ref=f3e124] [cursor=pointer]:
+        - /url: mailto:springfieldpeps@proton.me

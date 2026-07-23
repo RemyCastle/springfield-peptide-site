@@ -1,0 +1,11 @@
+- generic [ref=f5e2]:
+  - heading "SPRINGFIELD PEPTIDE BUYERS CLUB" [level=1] [ref=f5e3]
+  - paragraph [ref=f5e4]: Scan to open the price list
+  - img "QR code" [ref=f5e6]
+  - paragraph [ref=f5e7]: http://localhost:8080/
+  - generic [ref=f5e8]:
+    - link "Download QR image" [ref=f5e9] [cursor=pointer]:
+      - /url: https://api.qrserver.com/v1/create-qr-code/?size=512x512&margin=10&color=0-0-0&bgcolor=255-255-255&data=http%3A%2F%2Flocalhost%3A8080%2F
+    - link "← Back to site" [ref=f5e10] [cursor=pointer]:
+      - /url: /
+  - paragraph [ref=f5e11]: Print this QR code on flyers, business cards, or display it at events. Once deployed to your server, it always points to your live site.

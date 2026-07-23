@@ -1,0 +1,161 @@
+- generic [active] [ref=f1e1]:
+  - link "Skip to price list" [ref=f1e2] [cursor=pointer]:
+    - /url: "#prices"
+  - generic [ref=f1e3]:
+    - banner [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "Springfield Peptide Buyers Club — home" [ref=f1e6] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f1e7]: SPRINGFIELD PEPTIDE BUYERS CLUB
+        - navigation "Main" [ref=f1e8]:
+          - link "Home" [ref=f1e9] [cursor=pointer]:
+            - /url: /
+          - link "Calculator" [ref=f1e10] [cursor=pointer]:
+            - /url: /calculator.html
+          - link "Coaching" [ref=f1e11] [cursor=pointer]:
+            - /url: /coaching.html
+          - link "Contact" [ref=f1e12] [cursor=pointer]:
+            - /url: "#contact"
+    - region "Welcome" [ref=f1e13]:
+      - generic [ref=f1e14]:
+        - paragraph [ref=f1e15]: Members-only research collective
+        - heading "GAINS WITHOUT COMPROMISE" [level=1] [ref=f1e16]
+        - paragraph [ref=f1e17]: Bulk-ready pricing, transparent discounts, dosage tools, and protocol coaching — built for serious research buyers.
+        - generic [ref=f1e18]:
+          - link "View prices" [ref=f1e19] [cursor=pointer]:
+            - /url: "#prices"
+          - link "Coaching · $100/hr" [ref=f1e20] [cursor=pointer]:
+            - /url: /coaching.html
+        - list [ref=f1e21]:
+          - listitem [ref=f1e22]: Research only
+          - listitem [ref=f1e26]: Bulk pricing
+          - listitem [ref=f1e29]: Dosage tools
+    - separator [ref=f1e35]
+    - generic [ref=f1e37]:
+      - heading "PRICE LIST" [level=2] [ref=f1e38]
+      - generic [ref=f1e39]:
+        - paragraph [ref=f1e40]: Single vial rules
+        - paragraph [ref=f1e41]:
+          - strong [ref=f1e42]: 3 vial minimum
+          - text: when ordering single vials
+        - paragraph [ref=f1e43]:
+          - strong [ref=f1e44]: 5+ single vials
+          - text: → 10% off single-vial prices
+        - paragraph [ref=f1e45]: 10-pack / kit rules
+        - paragraph [ref=f1e46]:
+          - strong [ref=f1e47]: 2+ kits
+          - text: → 10% off kit subtotal
+        - paragraph [ref=f1e48]:
+          - strong [ref=f1e49]: 5+ kits
+          - text: → 15% off kit subtotal
+      - generic [ref=f1e50]:
+        - searchbox "Search products" [ref=f1e52]
+        - group "Filter products" [ref=f1e53]:
+          - button "All" [pressed] [ref=f1e54] [cursor=pointer]
+          - button "Has vials" [ref=f1e55] [cursor=pointer]
+          - button "Kit-only" [ref=f1e56] [cursor=pointer]
+      - paragraph [ref=f1e58]: Could not load prices. Please refresh.
+      - paragraph
+      - paragraph
+    - separator [ref=f1e59]
+    - generic [ref=f1e61]:
+      - generic [ref=f1e62]: ORDERS PLACED BY FRIDAY SHIP THE FOLLOWING MONDAY
+      - generic [ref=f1e63]: FOR RESEARCH ONLYNOT FOR HUMAN CONSUMPTION
+      - generic [ref=f1e64]:
+        - heading [level=3] [ref=f1e65]:
+          - link "TERMS OF SERVICE & PURCHASE AGREEMENT" [ref=f1e66] [cursor=pointer]:
+            - /url: "#terms-section"
+        - generic [ref=f1e67]:
+          - text: By placing an order you agree to all terms below. Please read carefully.
+          - strong [ref=f1e68]: All Sales Are Final.
+          - text: No refunds, returns, or exchanges after payment is confirmed.
+          - strong [ref=f1e69]: Payment.
+          - text: Payment instructions and accepted methods are provided at checkout after you place your order. Include your order number in the payment memo. We confirm payment manually before shipping.
+          - strong [ref=f1e70]: Bulk Pricing.
+          - text: Every complete set of 10 units qualifies for the bulk (10-pack) rate.
+          - strong [ref=f1e71]: Single Vial Minimum.
+          - text: Single-vial orders require a minimum of 3 single vials (can be mixed products).
+          - strong [ref=f1e72]: 5+ Single Vial Discount.
+          - text: Orders of 5 or more single vials receive 10% off the single-vial subtotal (does not apply to 10-packs/kits).
+          - strong [ref=f1e73]: Kit / 10-Pack Discounts.
+          - text: "2 or more kits/10-packs: 10% off the kit subtotal. 5 or more kits/10-packs: 15% off the kit subtotal (mixed products count toward the total kit count)."
+          - strong [ref=f1e74]: Shipping & Lost Packages.
+          - text: US addresses only. Carrier issues are the carrier's responsibility.
+          - strong [ref=f1e75]: Legal Disclaimer.
+          - text: ALL products are strictly for research and educational purposes only. NOT for human or animal consumption.
+          - strong [ref=f1e76]: Age Requirement.
+          - text: You must be 21+. By submitting this form you confirm you have read and agree to all terms.
+      - generic [ref=f1e77]:
+        - heading "Place order" [level=3] [ref=f1e78]
+        - paragraph [ref=f1e79]: Contact, shipping address, then review
+        - textbox "Name" [ref=f1e80]
+        - textbox "Your Email Address" [ref=f1e81]
+        - textbox "Your order summary will appear here..." [ref=f1e82]
+        - paragraph
+        - group "Shipping address (US only)" [ref=f1e83]:
+          - textbox "Street address" [ref=f1e85]
+          - textbox "Apt, suite, unit (optional)" [ref=f1e86]
+          - generic [ref=f1e87]:
+            - textbox "City" [ref=f1e88]
+            - textbox "2-letter state code" [ref=f1e89]:
+              - /placeholder: State
+            - textbox "5-digit ZIP or ZIP+4" [ref=f1e90]:
+              - /placeholder: ZIP
+          - textbox "Phone (optional)" [ref=f1e91]
+          - paragraph [ref=f1e92]: US addresses only · browser may offer to autofill saved address
+        - generic [ref=f1e93] [cursor=pointer]:
+          - checkbox "I AGREE TO ALL TERMS" [ref=f1e94]
+          - generic [ref=f1e95]: I AGREE TO ALL TERMS
+        - button "PLACE ORDER & PAY" [disabled] [ref=f1e96]
+        - paragraph [ref=f1e97]: You'll get an order number and payment instructions after placing your order
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - paragraph: Your order
+            - button:
+              - generic:
+                - generic: 0 items
+                - generic: "0"
+              - generic: Tap to expand · edit below
+          - generic:
+            - paragraph: Total
+            - paragraph: $0.00
+        - generic:
+          - progressbar
+          - paragraph: Add items to unlock discounts
+        - generic:
+          - button: Clear cart
+          - button: Review order →
+  - generic [ref=f1e99]:
+    - paragraph [ref=f1e100]: Get in touch
+    - heading "Contact SPBC" [level=2] [ref=f1e101]
+    - paragraph [ref=f1e102]: Questions about orders, payment, tracking, or the club? Email us — we typically reply within one business day.
+    - generic [ref=f1e103]:
+      - generic [ref=f1e104]:
+        - paragraph [ref=f1e105]: Email
+        - link "springfieldpeps@proton.me" [ref=f1e106] [cursor=pointer]:
+          - /url: mailto:springfieldpeps@proton.me?subject=SPBC%20question
+      - list [ref=f1e108]:
+        - listitem [ref=f1e109]:
+          - strong [ref=f1e110]: Orders & payment
+          - text: — include your order number if you have one
+        - listitem [ref=f1e111]:
+          - strong [ref=f1e112]: Tracking / shipping
+          - text: — name + order code helps us find you fast
+        - listitem [ref=f1e113]:
+          - strong [ref=f1e114]: Coaching
+          - text: — use the
+          - link "coaching page" [ref=f1e115] [cursor=pointer]:
+            - /url: /coaching.html
+          - text: or email with subject “Coaching”
+      - link "Email SPBC" [ref=f1e116] [cursor=pointer]:
+        - /url: mailto:springfieldpeps@proton.me?subject=SPBC%20question
+  - contentinfo [ref=f1e117]:
+    - paragraph [ref=f1e118]: SPRINGFIELD PEPTIDE BUYERS CLUB • RESEARCH ONLY
+    - paragraph [ref=f1e119]:
+      - link "springfieldpeps@proton.me" [ref=f1e120] [cursor=pointer]:
+        - /url: mailto:springfieldpeps@proton.me
+    - paragraph [ref=f1e121]:
+      - link "Contact" [ref=f1e122] [cursor=pointer]:
+        - /url: "#contact"

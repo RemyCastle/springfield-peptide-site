@@ -1,0 +1,40 @@
+- generic [active] [ref=e1]:
+  - link "Skip to price list" [ref=e2] [cursor=pointer]:
+    - /url: "#prices"
+  - generic [ref=e4]:
+    - generic [ref=e5]: SPRINGFIELD PEPTIDE BUYERS CLUB
+    - textbox "Club password" [ref=e6]:
+      - /placeholder: ENTER PASSWORD
+    - button "ENTER" [ref=e7] [cursor=pointer]
+  - generic [ref=e9]:
+    - paragraph [ref=e10]: Get in touch
+    - heading "Contact SPBC" [level=2] [ref=e11]
+    - paragraph [ref=e12]: Questions about orders, payment, tracking, or the club? Email us — we typically reply within one business day.
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - paragraph [ref=e15]: Email
+        - link "springfieldpeps@proton.me" [ref=e16] [cursor=pointer]:
+          - /url: mailto:springfieldpeps@proton.me?subject=SPBC%20question
+      - list [ref=e18]:
+        - listitem [ref=e19]:
+          - strong [ref=e20]: Orders & payment
+          - text: — include your order number if you have one
+        - listitem [ref=e21]:
+          - strong [ref=e22]: Tracking / shipping
+          - text: — name + order code helps us find you fast
+        - listitem [ref=e23]:
+          - strong [ref=e24]: Coaching
+          - text: — use the
+          - link "coaching page" [ref=e25] [cursor=pointer]:
+            - /url: /coaching.html
+          - text: or email with subject “Coaching”
+      - link "Email SPBC" [ref=e26] [cursor=pointer]:
+        - /url: mailto:springfieldpeps@proton.me?subject=SPBC%20question
+  - contentinfo [ref=e27]:
+    - paragraph [ref=e28]: SPRINGFIELD PEPTIDE BUYERS CLUB • RESEARCH ONLY
+    - paragraph [ref=e29]:
+      - link "springfieldpeps@proton.me" [ref=e30] [cursor=pointer]:
+        - /url: mailto:springfieldpeps@proton.me
+    - paragraph [ref=e31]:
+      - link "Contact" [ref=e32] [cursor=pointer]:
+        - /url: "#contact"

@@ -163,7 +163,45 @@
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Franchisees
         </button>
+        <button type="button" data-tab="report" id="tabReport"
+                class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+          Sales &amp; Profit
+        </button>
       </nav>
+
+      <!-- SALES & PROFIT -->
+      <div id="reportPanel" class="hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Sales &amp; Profit</h1>
+          <div class="flex flex-wrap gap-2">
+            <select id="reportScope" class="admin-input text-sm">
+              <option value="">SPBC — my books</option>
+            </select>
+            <select id="reportRange" class="admin-input text-sm">
+              <option value="30">Last 30 days</option>
+              <option value="7">Last 7 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="365">Last 12 months</option>
+              <option value="0">All time</option>
+            </select>
+            <button id="reportRefreshBtn" type="button"
+                    class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
+              Refresh
+            </button>
+          </div>
+        </div>
+        <p class="text-xs text-zinc-500 mb-4">
+          Counts orders that are paid, shipped or complete — cancelled orders never count.
+          Pick a franchisee above to see <strong class="text-white">their</strong> full profit picture.
+        </p>
+
+        <div id="reportTotals" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5"></div>
+        <div id="reportChannels" class="mb-5"></div>
+        <div id="reportNotes" class="mb-5"></div>
+        <div id="reportProducts" class="admin-card overflow-x-auto">
+          <p class="text-zinc-500 text-sm p-4">Loading…</p>
+        </div>
+      </div>
 
       <!-- ORDERS -->
       <div id="ordersPanel" class="hidden">
@@ -401,6 +439,7 @@
     const productsPanel = document.getElementById('productsPanel');
     const suppliersPanel = document.getElementById('suppliersPanel');
     const franchiseesPanel = document.getElementById('franchiseesPanel');
+    const reportPanel = document.getElementById('reportPanel');
     const supplierList = document.getElementById('supplierList');
     const supplierMsg = document.getElementById('supplierMsg');
     const franchiseeMsg = document.getElementById('franchiseeMsg');
@@ -478,6 +517,7 @@
       productsPanel.classList.toggle('hidden', activeTab !== 'products');
       suppliersPanel.classList.toggle('hidden', activeTab !== 'suppliers');
       franchiseesPanel.classList.toggle('hidden', activeTab !== 'franchisees');
+      if (reportPanel) reportPanel.classList.toggle('hidden', activeTab !== 'report');
     }
 
     async function switchTab(tab) {
@@ -491,6 +531,161 @@
       }
       if (tab === 'suppliers') await loadSuppliers();
       if (tab === 'franchisees') await loadFranchisees();
+      if (tab === 'report') await loadReport();
+    }
+
+    /* ---------- Sales & profit report ---------- */
+
+    let reportScopeLoaded = false;
+
+    function reportRangeQuery() {
+      const days = parseInt(document.getElementById('reportRange')?.value ?? '30', 10);
+      const slug = document.getElementById('reportScope')?.value || '';
+      const qs = new URLSearchParams();
+      if (slug) qs.set('partner_slug', slug);
+      if (days) qs.set('from', new Date(Date.now() - days * 86400000).toISOString());
+      return qs.toString() ? '?' + qs.toString() : '';
+    }
+
+    /** Fill the scope picker with franchisees once, so their P&L is one click away. */
+    async function ensureReportScopeOptions() {
+      if (reportScopeLoaded) return;
+      const sel = document.getElementById('reportScope');
+      if (!sel) return;
+      try {
+        const res = await fetch('/api/admin/franchisees', { credentials: 'same-origin' });
+        if (!res.ok) return;
+        const data = await res.json();
+        for (const p of data.partners || []) {
+          const o = document.createElement('option');
+          o.value = p.slug;
+          o.textContent = `${p.name} — their books`;
+          sel.appendChild(o);
+        }
+        reportScopeLoaded = true;
+      } catch {
+        /* picker just stays SPBC-only */
+      }
+    }
+
+    function reportStatCard(label, value, sub, tone) {
+      const toneCls =
+        tone === 'good' ? 'text-emerald-300' : tone === 'bad' ? 'text-red-400' : 'text-zinc-100';
+      return (
+        '<div class="admin-card p-4">' +
+        '<p class="text-[11px] uppercase tracking-wide text-zinc-500 mb-1">' + label + '</p>' +
+        '<p class="text-2xl font-bold ' + toneCls + '">' + value + '</p>' +
+        (sub ? '<p class="text-[11px] text-zinc-500 mt-0.5">' + sub + '</p>' : '') +
+        '</div>'
+      );
+    }
+
+    async function loadReport() {
+      await ensureReportScopeOptions();
+      const wrap = document.getElementById('reportProducts');
+      const totals = document.getElementById('reportTotals');
+      const channels = document.getElementById('reportChannels');
+      const notesEl = document.getElementById('reportNotes');
+      if (wrap) wrap.innerHTML = '<p class="text-zinc-500 text-sm p-4">Loading…</p>';
+      for (const el of [totals, channels, notesEl]) if (el) el.innerHTML = '';
+
+      const res = await fetch('/api/admin/reports/sales' + reportRangeQuery(), {
+        credentials: 'same-origin',
+      });
+      if (res.status === 401) { showLogin(); return; }
+      if (!res.ok) {
+        if (wrap) wrap.innerHTML = '<p class="text-red-400 text-sm p-4">Failed to load report</p>';
+        return;
+      }
+      const d = await res.json();
+      const usd = (c) => (c == null ? '—' : '$' + (Number(c) / 100).toFixed(2));
+      const isPartner = d.scope === 'partner';
+
+      if (totals) {
+        const tone = d.profit_cents == null ? '' : d.profit_cents > 0 ? 'good' : 'bad';
+        totals.innerHTML = isPartner
+          ? reportStatCard('Their revenue', usd(d.revenue_cents), d.orders + ' orders · ' + d.units + ' units') +
+            reportStatCard('They paid SPBC', usd(d.cost_cents), 'cost of these goods') +
+            reportStatCard('Their profit', usd(d.profit_cents), 'revenue minus cost', tone) +
+            reportStatCard('Their margin', d.margin_pct == null ? '—' : d.margin_pct + '%', '', tone)
+          : reportStatCard('Revenue', usd(d.revenue_cents), d.orders + ' orders · ' + d.units + ' units') +
+            reportStatCard('Units sold', String(d.units), 'vials + packs') +
+            reportStatCard('Orders', String(d.orders), 'paid, shipped or complete') +
+            reportStatCard('Net profit', '—', 'needs a supplier cost per product');
+      }
+
+      if (channels && d.channels && d.channels.length) {
+        const rows = d.channels
+          .map(
+            (c) =>
+              '<tr class="border-t border-zinc-800">' +
+              '<td class="px-3 py-2 text-zinc-100">' + escapeHtml(c.label) + '</td>' +
+              '<td class="px-3 py-2 text-center text-zinc-300">' + c.orders + '</td>' +
+              '<td class="px-3 py-2 text-center text-zinc-300">' + c.units + '</td>' +
+              '<td class="px-3 py-2 text-right text-zinc-100">' + usd(c.revenue_cents) + '</td>' +
+              '<td class="px-3 py-2 text-right text-zinc-500">' +
+              (c.list_value_cents == null ? '—' : usd(c.list_value_cents)) + '</td>' +
+              '<td class="px-3 py-2 text-right text-amber-400">' +
+              (c.discount_cents == null ? '—' : usd(c.discount_cents)) + '</td>' +
+              '</tr>'
+          )
+          .join('');
+        channels.innerHTML =
+          '<div class="admin-card overflow-x-auto">' +
+          '<p class="text-[11px] uppercase tracking-wide text-zinc-500 px-3 pt-3">Where the money came from</p>' +
+          '<table class="w-full text-sm min-w-[640px] mt-1"><thead class="text-left text-zinc-400 text-xs uppercase tracking-wide"><tr>' +
+          '<th class="px-3 py-2">Channel</th><th class="px-3 py-2 text-center">Orders</th>' +
+          '<th class="px-3 py-2 text-center">Units</th><th class="px-3 py-2 text-right">Revenue</th>' +
+          '<th class="px-3 py-2 text-right">At list</th><th class="px-3 py-2 text-right">Discount given</th>' +
+          '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+      }
+
+      if (notesEl && Array.isArray(d.notes) && d.notes.length) {
+        notesEl.innerHTML = d.notes
+          .map(
+            (n) =>
+              '<p class="text-xs text-amber-400/90 bg-amber-950/20 border border-amber-900/40 rounded-xl px-3 py-2 mb-2">' +
+              escapeHtml(n) + '</p>'
+          )
+          .join('');
+      }
+
+      if (!wrap) return;
+      if (!d.products.length) {
+        wrap.innerHTML = '<p class="text-zinc-500 text-sm p-4">No sales in this period.</p>';
+        return;
+      }
+      const rows = d.products
+        .map((p) => {
+          const tone =
+            p.profit_cents == null ? 'text-zinc-500'
+              : p.profit_cents <= 0 ? 'text-red-400'
+                : p.margin_pct != null && p.margin_pct < 20 ? 'text-amber-400'
+                  : 'text-emerald-300';
+          return (
+            '<tr class="border-t border-zinc-800">' +
+            '<td class="px-3 py-2 text-zinc-100">' + escapeHtml(p.product) + '</td>' +
+            '<td class="px-3 py-2 text-center text-zinc-300">' + p.units + '</td>' +
+            '<td class="px-3 py-2 text-right text-zinc-100">' + usd(p.revenue_cents) + '</td>' +
+            (isPartner
+              ? '<td class="px-3 py-2 text-right text-zinc-400">' + usd(p.cost_cents) + '</td>' +
+                '<td class="px-3 py-2 text-right font-semibold ' + tone + '">' + usd(p.profit_cents) + '</td>' +
+                '<td class="px-3 py-2 text-right ' + tone + '">' +
+                (p.margin_pct == null ? '—' : p.margin_pct + '%') + '</td>'
+              : '') +
+            '</tr>'
+          );
+        })
+        .join('');
+      wrap.innerHTML =
+        '<table class="w-full text-sm min-w-[520px]">' +
+        '<thead class="text-left text-zinc-400 text-xs uppercase tracking-wide"><tr>' +
+        '<th class="px-3 py-2">Product</th><th class="px-3 py-2 text-center">Units</th>' +
+        '<th class="px-3 py-2 text-right">Revenue</th>' +
+        (isPartner
+          ? '<th class="px-3 py-2 text-right">Cost</th><th class="px-3 py-2 text-right">Profit</th><th class="px-3 py-2 text-right">Margin</th>'
+          : '') +
+        '</tr></thead><tbody>' + rows + '</tbody></table>';
     }
 
     function showFranMsg(text, ok = true) {
@@ -2054,6 +2249,10 @@
     document.getElementById('tabProducts').addEventListener('click', () => switchTab('products'));
     document.getElementById('tabSuppliers').addEventListener('click', () => switchTab('suppliers'));
     document.getElementById('tabFranchisees').addEventListener('click', () => switchTab('franchisees'));
+    document.getElementById('tabReport')?.addEventListener('click', () => switchTab('report'));
+    document.getElementById('reportRefreshBtn')?.addEventListener('click', () => loadReport());
+    document.getElementById('reportRange')?.addEventListener('change', () => loadReport());
+    document.getElementById('reportScope')?.addEventListener('change', () => loadReport());
     document.getElementById('franchiseesRefreshBtn').addEventListener('click', () => loadFranchisees());
     document.getElementById('franSelect').addEventListener('change', () => renderFranPrices());
     document.getElementById('franSavePricesBtn').addEventListener('click', () => saveFranPrices());
