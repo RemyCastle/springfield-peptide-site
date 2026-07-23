@@ -13,7 +13,7 @@ export async function onRequestGet({ request, env }) {
 
   const url = new URL(request.url);
   const params = new URLSearchParams();
-  for (const key of ['status', 'from', 'to', 'q', 'page', 'limit']) {
+  for (const key of ['status', 'from', 'to', 'q', 'page', 'limit', 'archived']) {
     const v = url.searchParams.get(key);
     if (v != null && v !== '') params.set(key, v);
   }

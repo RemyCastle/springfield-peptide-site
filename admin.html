@@ -164,7 +164,7 @@
           </button>
         </div>
 
-        <div class="flex flex-wrap gap-2 mb-4">
+        <div class="flex flex-wrap gap-2 mb-4 items-center">
           <select id="orderStatus"
                   class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
             <option value="">All statuses</option>
@@ -180,6 +180,10 @@
                  class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
           <input id="orderTo" type="date"
                  class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
+          <label class="inline-flex items-center gap-2 text-sm text-zinc-400 cursor-pointer select-none px-1">
+            <input id="orderShowCleared" type="checkbox" class="rounded border-zinc-600 bg-zinc-900 text-violet-500 focus:ring-violet-500">
+            Show cleared
+          </label>
         </div>
 
         <p id="ordersMeta" class="text-xs text-zinc-500 mb-2"></p>
@@ -647,6 +651,14 @@
       ordersError.classList.remove('hidden');
     }
 
+    function isWholesaleOrder(o) {
+      return String(o && o.order_kind || '').toLowerCase() === 'wholesale';
+    }
+
+    function paySpbcChip() {
+      return '<span class="inline-block ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-violet-950 border border-violet-500 text-[#a855f7] align-middle">PAY SPBC</span>';
+    }
+
     async function loadOrders() {
       showOrdersError(null);
       ordersTbody.innerHTML = '<tr><td colspan="6" class="px-3 py-6 text-zinc-500 text-center">Loading…</td></tr>';
@@ -658,10 +670,12 @@
       const q = document.getElementById('orderQ').value.trim();
       const from = document.getElementById('orderFrom').value;
       const to = document.getElementById('orderTo').value;
+      const showCleared = document.getElementById('orderShowCleared')?.checked;
       if (status) params.set('status', status);
       if (q) params.set('q', q);
       if (from) params.set('from', from);
       if (to) params.set('to', to);
+      if (showCleared) params.set('archived', '1');
 
       const res = await fetch('/api/admin/orders?' + params.toString(), {
         credentials: 'same-origin',
@@ -682,7 +696,8 @@
 
       const data = await res.json();
       const orders = data.orders || [];
-      ordersMeta.textContent = `${data.total ?? orders.length} orders · page ${data.page ?? ordersPage} / ${data.total_pages ?? 1}`;
+      const clearedNote = showCleared ? ' · cleared only' : '';
+      ordersMeta.textContent = `${data.total ?? orders.length} orders · page ${data.page ?? ordersPage} / ${data.total_pages ?? 1}${clearedNote}`;
       ordersTbody.innerHTML = '';
 
       if (!orders.length) {
@@ -694,8 +709,11 @@
       for (const o of orders) {
         const tr = document.createElement('tr');
         tr.className = 'order-row border-b border-zinc-800/80 cursor-pointer';
+        const wholesale = isWholesaleOrder(o);
+        const numClass = wholesale ? 'text-[#a855f7]' : 'text-[#FDD700]';
+        const chip = wholesale ? paySpbcChip() : '';
         tr.innerHTML =
-          `<td class="px-3 py-2.5 font-semibold text-[#FDD700]">${escapeHtml(o.order_number)}</td>` +
+          `<td class="px-3 py-2.5 font-semibold ${numClass}">${escapeHtml(o.order_number)}${chip}</td>` +
           `<td class="px-3 py-2.5">${statusBadge(o.status)}</td>` +
           `<td class="px-3 py-2.5">${escapeHtml(o.customer_name)}<br><span class="text-xs text-zinc-500">${escapeHtml(o.customer_email)}</span></td>` +
           `<td class="px-3 py-2.5">${formatCents(o.total_cents)}</td>` +
@@ -777,10 +795,19 @@
             .join('')}</ul>`
         : '<p class="text-zinc-500 text-sm">No history</p>';
 
+      const wholesale = isWholesaleOrder(o);
+      const titleColor = wholesale ? 'text-[#a855f7]' : 'text-[#FDD700]';
+      const wholesaleBanner = wholesale
+        ? `<div class="rounded-xl border border-violet-500 bg-violet-950/50 px-3 py-2.5 text-sm text-[#e9d5ff]">
+            <strong class="text-[#a855f7]">Franchisee pays SPBC</strong>
+            · wholesale / pay-SPBC ticket (partner dropship or batch)
+          </div>`
+        : '';
+
       orderDetail.innerHTML = `
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 class="ducks-font text-2xl text-[#FDD700]">${escapeHtml(o.order_number)}</h2>
+            <h2 class="ducks-font text-2xl ${titleColor}">${escapeHtml(o.order_number)}${wholesale ? paySpbcChip() : ''}</h2>
             <div class="mt-1">${statusBadge(o.status)}</div>
           </div>
           <button type="button" id="closeDetail"
@@ -788,6 +815,7 @@
             Close
           </button>
         </div>
+        ${wholesaleBanner}
         <p class="text-sm">${escapeHtml(o.customer_name)} · <a class="text-[#FDD700] hover:underline" href="mailto:${escapeAttr(o.customer_email)}">${escapeHtml(o.customer_email)}</a></p>
         <p class="text-xs text-zinc-500">
           Total ${formatCents(o.total_cents)}
@@ -875,6 +903,81 @@
           'Telegram supplier unlocks after you mark this order paid.';
         actions.appendChild(hint);
       }
+      if (!o.archived_at) {
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.textContent = 'Clear';
+        clearBtn.className =
+          'px-4 py-2 rounded-xl text-sm font-bold bg-zinc-900 border border-zinc-600 text-zinc-300 hover:bg-zinc-800';
+        clearBtn.addEventListener('click', () => clearOrder(orderNumber));
+        actions.appendChild(clearBtn);
+      } else {
+        const unBtn = document.createElement('button');
+        unBtn.type = 'button';
+        unBtn.textContent = 'Restore';
+        unBtn.className =
+          'px-4 py-2 rounded-xl text-sm font-bold bg-violet-950 border border-violet-600 text-violet-200 hover:bg-violet-900';
+        unBtn.addEventListener('click', () => restoreOrder(orderNumber));
+        actions.appendChild(unBtn);
+      }
+    }
+
+    async function clearOrder(orderNumber) {
+      if (
+        !confirm(
+          'Clear ' +
+            orderNumber +
+            ' from this list?\nNon-terminal orders will be cancelled first (no email). You can restore via Show cleared.'
+        )
+      ) {
+        return;
+      }
+      const res = await fetch(
+        '/api/admin/orders/' + encodeURIComponent(orderNumber) + '/archive',
+        {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}',
+        }
+      );
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || err.error || 'Clear failed');
+        return;
+      }
+      orderDetail.classList.add('hidden');
+      orderDetail.innerHTML = '';
+      selectedOrder = null;
+      await loadOrders();
+    }
+
+    async function restoreOrder(orderNumber) {
+      if (!confirm('Restore ' + orderNumber + ' to the active list?')) return;
+      const res = await fetch(
+        '/api/admin/orders/' + encodeURIComponent(orderNumber) + '/unarchive',
+        {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}',
+        }
+      );
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || err.error || 'Restore failed');
+        return;
+      }
+      await loadOrders();
+      await showOrderDetail(orderNumber);
     }
 
     async function notifySupplierTelegram(orderNumber) {
@@ -1277,6 +1380,10 @@
       loadOrders();
     });
     document.getElementById('orderStatus').addEventListener('change', () => {
+      ordersPage = 1;
+      loadOrders();
+    });
+    document.getElementById('orderShowCleared')?.addEventListener('change', () => {
       ordersPage = 1;
       loadOrders();
     });
