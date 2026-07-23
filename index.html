@@ -977,7 +977,10 @@
         function formatPrice(n) {
             const num = Number(n);
             if (!Number.isFinite(num)) return '';
-            return Number.isInteger(num) ? String(num) : num.toFixed(2);
+            // API returns customer whole-dollar prices; keep cents only if present.
+            const rounded = Math.round(num);
+            if (Math.abs(num - rounded) < 1e-9) return String(rounded);
+            return num.toFixed(2);
         }
 
         function money(n) {
