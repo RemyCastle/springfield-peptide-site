@@ -1342,10 +1342,17 @@
         const archiveCls = `${btnBase} bg-zinc-900 border-emerald-700/70 text-emerald-200 hover:bg-zinc-800`;
         const clearCls = `${btnBase} bg-zinc-900 border-zinc-600 text-zinc-300 hover:bg-zinc-800`;
         // Archive = file away, keep status. Clear = cancel then file away.
+        // Void = the only way out of 'complete', which the status machine cannot leave.
+        const voidCls = `${btnBase} bg-red-950 border-red-700 text-red-300 hover:bg-red-900`;
+        const voidBtn =
+          o.status === 'complete'
+            ? ` <button type="button" class="row-void-btn ${voidCls}" title="Undo this sale — it stops counting as revenue">Void</button>`
+            : '';
         const actionsHtml = isArchived
-          ? `<button type="button" class="row-restore-btn ${restoreCls}">Restore</button>`
+          ? `<button type="button" class="row-restore-btn ${restoreCls}">Restore</button>` + voidBtn
           : `<button type="button" class="row-archive-btn ${archiveCls}" title="File away — keeps status">Archive</button>` +
-            ` <button type="button" class="row-action-btn ${clearCls}" title="Cancel, then file away">Clear</button>`;
+            ` <button type="button" class="row-action-btn ${clearCls}" title="Cancel, then file away">Clear</button>` +
+            voidBtn;
         tr.innerHTML =
           `<td class="px-3 py-2.5 font-semibold ${numClass}">${escapeHtml(o.order_number)}${chip}</td>` +
           `<td class="px-3 py-2.5">${statusBadge(o.status)}</td>` +
@@ -1365,6 +1372,10 @@
         tr.querySelector('.row-action-btn')?.addEventListener('click', (e) => {
           e.stopPropagation();
           clearOrder(o.order_number);
+        });
+        tr.querySelector('.row-void-btn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          voidOrder(o.order_number);
         });
         tr.addEventListener('click', () => {
           pinOrderRow(tr, true);
@@ -1590,6 +1601,31 @@
     }
 
     /** Archive: file away WITHOUT cancelling — status is preserved. */
+    /**
+     * Void: the only way back out of a 'complete' order. Reverses the sale so it
+     * stops counting as revenue in Sales & Profit. No customer email.
+     */
+    async function voidOrder(orderNumber) {
+      if (
+        !confirm(
+          `Void ${orderNumber}?\n\nThis undoes the sale so it stops counting as revenue in Sales & Profit.\nThe customer is not emailed.`
+        )
+      ) {
+        return;
+      }
+      const res = await fetch(
+        '/api/admin/orders/' + encodeURIComponent(orderNumber) + '/void',
+        { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } }
+      );
+      if (res.status === 401) { showLogin(); return; }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.message || data.error || 'Void failed');
+        return;
+      }
+      await loadOrders();
+    }
+
     async function archiveOrderKeepStatus(orderNumber) {
       if (
         !confirm(
