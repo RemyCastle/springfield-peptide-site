@@ -1527,33 +1527,94 @@
       alert('Supplier notified on Telegram for ' + (data.order_number || orderNumber));
     }
 
+    const TRACKING_CARRIERS = [
+      { name: 'USPS', url: 'https://tools.usps.com/go/TrackConfirmAction?tLabels={N}' },
+      { name: 'UPS', url: 'https://www.ups.com/track?tracknum={N}' },
+      { name: 'FedEx', url: 'https://www.fedex.com/fedextrack/?trknbr={N}' },
+      { name: 'DHL', url: 'https://www.dhl.com/us-en/home/tracking.html?tracking-id={N}' },
+      { name: 'OnTrac', url: 'https://www.ontrac.com/tracking?number={N}' },
+      { name: 'Amazon', url: 'https://track.amazon.com/tracking/{N}' },
+      { name: 'Other', url: '' },
+    ];
+
+    /** Modal: pick carrier (dropdown) + tracking number; auto-builds the link.
+     * Resolves to tracking fields, or null if cancelled. */
     function collectTracking(existing) {
-      const tracking_number = prompt(
-        'Tracking number (recommended — included in customer email):',
-        (existing && existing.tracking_number) || ''
-      );
-      if (tracking_number === null) return null;
-      const tracking_carrier = prompt(
-        'Carrier (USPS / UPS / FedEx / Other) — optional:',
-        (existing && existing.tracking_carrier) || ''
-      );
-      if (tracking_carrier === null) return null;
-      const tracking_url = prompt(
-        'Tracking URL (optional full link):',
-        (existing && existing.tracking_url) || ''
-      );
-      if (tracking_url === null) return null;
-      return {
-        tracking_number: tracking_number.trim() || undefined,
-        tracking_carrier: (tracking_carrier || '').trim() || undefined,
-        tracking_url: (tracking_url || '').trim() || undefined,
-      };
+      return new Promise((resolve) => {
+        const ex = existing || {};
+        const overlay = document.createElement('div');
+        overlay.className =
+          'fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-4';
+        overlay.innerHTML =
+          '<div class="w-full max-w-md bg-zinc-900 border border-[#FDD700]/40 rounded-2xl p-5 space-y-4">' +
+          '<h3 class="text-lg font-bold text-[#FDD700]">Mark shipped — add tracking</h3>' +
+          '<div><label class="block text-xs text-zinc-400 mb-1">Carrier</label>' +
+          '<select id="tkCarrier" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">' +
+          TRACKING_CARRIERS.map(
+            (c) =>
+              '<option value="' +
+              c.name +
+              '"' +
+              (String(ex.tracking_carrier || '') === c.name ? ' selected' : '') +
+              '>' +
+              c.name +
+              '</option>'
+          ).join('') +
+          '</select></div>' +
+          '<div><label class="block text-xs text-zinc-400 mb-1">Tracking number</label>' +
+          '<input id="tkNumber" value="' +
+          escapeAttr(ex.tracking_number || '') +
+          '" placeholder="e.g. 9400 1000 0000 0000 0000 00" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm"></div>' +
+          '<div><label class="block text-xs text-zinc-400 mb-1">Tracking link <span class="text-zinc-600">(auto-filled — editable)</span></label>' +
+          '<input id="tkUrl" value="' +
+          escapeAttr(ex.tracking_url || '') +
+          '" placeholder="https://…" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-xs"></div>' +
+          '<p class="text-[11px] text-zinc-500">Customer gets a shipped email with this tracking. Leave the number blank to ship without tracking.</p>' +
+          '<div class="flex gap-2 pt-1">' +
+          '<button id="tkSave" type="button" class="flex-1 bg-[#FDD700] hover:bg-white text-black font-bold py-2.5 rounded-xl text-sm">Ship &amp; email customer</button>' +
+          '<button id="tkCancel" type="button" class="px-4 bg-zinc-800 border border-zinc-600 text-zinc-300 py-2.5 rounded-xl text-sm">Cancel</button>' +
+          '</div></div>';
+        document.body.appendChild(overlay);
+        const carrierEl = overlay.querySelector('#tkCarrier');
+        const numberEl = overlay.querySelector('#tkNumber');
+        const urlEl = overlay.querySelector('#tkUrl');
+        let urlEdited = !!ex.tracking_url;
+        urlEl.addEventListener('input', () => {
+          urlEdited = true;
+        });
+        function autofillUrl() {
+          if (urlEdited) return;
+          const c = TRACKING_CARRIERS.find((x) => x.name === carrierEl.value);
+          const num = numberEl.value.trim();
+          urlEl.value =
+            c && c.url && num ? c.url.replace('{N}', encodeURIComponent(num)) : '';
+        }
+        carrierEl.addEventListener('change', autofillUrl);
+        numberEl.addEventListener('input', autofillUrl);
+        if (!ex.tracking_url) autofillUrl();
+        function close(val) {
+          overlay.remove();
+          resolve(val);
+        }
+        overlay.querySelector('#tkCancel').addEventListener('click', () => close(null));
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) close(null);
+        });
+        overlay.querySelector('#tkSave').addEventListener('click', () =>
+          close({
+            tracking_number: numberEl.value.trim() || undefined,
+            tracking_carrier: carrierEl.value.trim() || undefined,
+            tracking_url: urlEl.value.trim() || undefined,
+          })
+        );
+        numberEl.focus();
+      });
     }
 
     async function patchOrderStatus(orderNumber, status, existing, forceTracking) {
       const body = { status, note: 'Site admin', send_email: true };
       if (status === 'shipped' || forceTracking) {
-        const t = collectTracking(existing || {});
+        const t = await collectTracking(existing || {});
         if (t === null) return; // cancelled prompts
         if (!t.tracking_number && status === 'shipped' && !forceTracking) {
           if (
