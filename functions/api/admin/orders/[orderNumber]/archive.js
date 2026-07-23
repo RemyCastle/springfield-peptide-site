@@ -14,10 +14,20 @@ export async function onRequestPost({ request, env, params }) {
     return json({ error: 'order_number required' }, 400);
   }
 
+  // Forward { cancel: false } so "Archive" keeps the order's status while
+  // "Clear" (no body / cancel: true) cancels it first.
+  let forward = {};
+  try {
+    const body = await request.json();
+    if (body && body.cancel === false) forward = { cancel: false };
+  } catch {
+    /* no body = Clear */
+  }
+
   const result = await proxyOrdersAdmin(
     env,
     `/admin/orders/${encodeURIComponent(orderNumber)}/archive`,
-    { method: 'POST', body: '{}' }
+    { method: 'POST', body: JSON.stringify(forward) }
   );
   return json(result.data, result.status);
 }

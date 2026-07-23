@@ -1142,10 +1142,15 @@
         const numClass = wholesale ? 'text-[#a855f7]' : 'text-[#FDD700]';
         const chip = wholesale ? paySpbcChip() : '';
         const isArchived = !!o.archived_at;
-        const actionLabel = isArchived ? 'Restore' : 'Clear';
-        const actionCls = isArchived
-          ? 'px-2 py-1 rounded-lg text-xs font-bold bg-violet-950 border border-violet-600 text-violet-200 hover:bg-violet-900'
-          : 'px-2 py-1 rounded-lg text-xs font-bold bg-zinc-900 border border-zinc-600 text-zinc-300 hover:bg-zinc-800';
+        const btnBase = 'px-2 py-1 rounded-lg text-xs font-bold border';
+        const restoreCls = `${btnBase} bg-violet-950 border-violet-600 text-violet-200 hover:bg-violet-900`;
+        const archiveCls = `${btnBase} bg-zinc-900 border-emerald-700/70 text-emerald-200 hover:bg-zinc-800`;
+        const clearCls = `${btnBase} bg-zinc-900 border-zinc-600 text-zinc-300 hover:bg-zinc-800`;
+        // Archive = file away, keep status. Clear = cancel then file away.
+        const actionsHtml = isArchived
+          ? `<button type="button" class="row-restore-btn ${restoreCls}">Restore</button>`
+          : `<button type="button" class="row-archive-btn ${archiveCls}" title="File away — keeps status">Archive</button>` +
+            ` <button type="button" class="row-action-btn ${clearCls}" title="Cancel, then file away">Clear</button>`;
         tr.innerHTML =
           `<td class="px-3 py-2.5 font-semibold ${numClass}">${escapeHtml(o.order_number)}${chip}</td>` +
           `<td class="px-3 py-2.5">${statusBadge(o.status)}</td>` +
@@ -1153,12 +1158,18 @@
           `<td class="px-3 py-2.5">${formatCents(o.total_cents)}</td>` +
           `<td class="px-3 py-2.5">${o.shipping_complete ? '✓' : '—'}</td>` +
           `<td class="px-3 py-2.5 text-xs text-zinc-500">${escapeHtml((o.created_at || '').slice(0, 19).replace('T', ' '))}</td>` +
-          `<td class="px-3 py-2.5 whitespace-nowrap"><button type="button" class="row-action-btn ${actionCls}">${actionLabel}</button></td>`;
-        const actionBtn = tr.querySelector('.row-action-btn');
-        actionBtn.addEventListener('click', (e) => {
+          `<td class="px-3 py-2.5 whitespace-nowrap">${actionsHtml}</td>`;
+        tr.querySelector('.row-restore-btn')?.addEventListener('click', (e) => {
           e.stopPropagation();
-          if (isArchived) restoreOrder(o.order_number);
-          else clearOrder(o.order_number);
+          restoreOrder(o.order_number);
+        });
+        tr.querySelector('.row-archive-btn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          archiveOrderKeepStatus(o.order_number);
+        });
+        tr.querySelector('.row-action-btn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          clearOrder(o.order_number);
         });
         tr.addEventListener('click', () => {
           pinOrderRow(tr, true);
@@ -1355,9 +1366,19 @@
         actions.appendChild(hint);
       }
       if (!o.archived_at) {
+        const archiveBtn = document.createElement('button');
+        archiveBtn.type = 'button';
+        archiveBtn.textContent = 'Archive';
+        archiveBtn.title = 'File away — keeps its status, not deleted';
+        archiveBtn.className =
+          'px-4 py-2 rounded-xl text-sm font-bold bg-zinc-900 border border-emerald-700/70 text-emerald-200 hover:bg-zinc-800';
+        archiveBtn.addEventListener('click', () => archiveOrderKeepStatus(orderNumber));
+        actions.appendChild(archiveBtn);
+
         const clearBtn = document.createElement('button');
         clearBtn.type = 'button';
         clearBtn.textContent = 'Clear';
+        clearBtn.title = 'Cancel, then file away';
         clearBtn.className =
           'px-4 py-2 rounded-xl text-sm font-bold bg-zinc-900 border border-zinc-600 text-zinc-300 hover:bg-zinc-800';
         clearBtn.addEventListener('click', () => clearOrder(orderNumber));
@@ -1371,6 +1392,41 @@
         unBtn.addEventListener('click', () => restoreOrder(orderNumber));
         actions.appendChild(unBtn);
       }
+    }
+
+    /** Archive: file away WITHOUT cancelling — status is preserved. */
+    async function archiveOrderKeepStatus(orderNumber) {
+      if (
+        !confirm(
+          'Archive ' +
+            orderNumber +
+            '?\nIt keeps its current status and is not deleted — just hidden from the active list. Restore any time via Show cleared.'
+        )
+      ) {
+        return;
+      }
+      const res = await fetch(
+        '/api/admin/orders/' + encodeURIComponent(orderNumber) + '/archive',
+        {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cancel: false }),
+        }
+      );
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || err.error || 'Archive failed');
+        return;
+      }
+      orderDetail.classList.add('hidden');
+      orderDetail.innerHTML = '';
+      selectedOrder = null;
+      await loadOrders();
     }
 
     async function clearOrder(orderNumber) {
