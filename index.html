@@ -563,19 +563,6 @@
                 box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.55) !important;
             }
         }
-        /* ── Hero 3D layer (vial + particles) ── */
-        .page-hero { position: relative; }
-        .hero-3d-canvas {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 1; display: block;
-        }
-        .page-hero-inner { position: relative; z-index: 2; }
-        @media (max-width: 767px) {
-            .hero-3d-canvas { opacity: 0.45; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .hero-3d-canvas { display: none; }
-        }
     </style>
 </head>
 <body class="atmosphere text-white overflow-x-hidden" data-page="index">
@@ -645,7 +632,6 @@
             </div>
             <div class="page-hero-orb page-hero-orb--green" aria-hidden="true"></div>
             <div class="page-hero-orb page-hero-orb--gold" aria-hidden="true"></div>
-            <canvas id="hero3d" class="hero-3d-canvas" aria-hidden="true"></canvas>
             <div class="page-hero-inner">
                 <p class="page-hero-eyebrow">Members-only research collective</p>
                 <h1 class="page-hero-title ducks-font hero-gold-underline">GAINS WITHOUT COMPROMISE</h1>
@@ -2042,7 +2028,6 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
     <script src="/shared/site-atmosphere.js?v=9" defer></script>
     <script src="/shared/site-header.js?v=11" defer></script>
-    <script src="/shared/hero-3d.js?v=1" defer></script>
     <script>
     (function () {
       function prefersReduced() {
