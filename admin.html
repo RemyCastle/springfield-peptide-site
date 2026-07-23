@@ -244,6 +244,18 @@
         <p class="text-xs text-zinc-500 mb-3">
           Assign a <strong class="text-amber-400">Supplier</strong> per product (admin only). That name is sent to Telegram when an order is paid — never shown to customers.
         </p>
+        <div class="flex flex-wrap gap-3 items-end mb-4 p-3 sm:p-4 rounded-2xl border border-violet-500/30 bg-violet-950/20">
+          <div class="min-w-[200px] flex-1">
+            <label class="block text-[11px] text-violet-300 mb-1 font-semibold uppercase tracking-wide" for="productsFranSelect">
+              Franchisee pricing for
+            </label>
+            <select id="productsFranSelect" class="admin-input border-violet-500/40"></select>
+          </div>
+          <p class="text-[11px] text-zinc-500 max-w-md leading-relaxed">
+            <strong class="text-violet-300">Violet fields</strong> = what this franchisee pays you (override).
+            Blank = SPBC customer price. Same backend as the Franchisees tab.
+          </p>
+        </div>
         <p id="editorMsg" class="text-sm mb-4 hidden"></p>
         <div id="productList" class="flex flex-col gap-3"></div>
       </div>
@@ -360,6 +372,10 @@
     let suppliersCache = [];
     /** @type {any[]} */
     let franchiseesCache = [];
+    /** @type {any[]} SPBC catalog rows for Products tab re-render */
+    let productsCache = [];
+    /** @type {any[]} product_links for the franchisee selected on Products tab */
+    let productsFranLinks = [];
     const ordersTbody = document.getElementById('ordersTbody');
     const ordersMeta = document.getElementById('ordersMeta');
     const ordersError = document.getElementById('ordersError');
@@ -434,6 +450,7 @@
       if (tab === 'orders') await loadOrders();
       if (tab === 'products') {
         await loadSuppliersCache();
+        await loadProductsFranSelector();
         await loadProducts();
       }
       if (tab === 'suppliers') await loadSuppliers();
@@ -1494,6 +1511,61 @@
     }
 
     // ---------- Products ----------
+    async function loadProductsFranSelector() {
+      const sel = document.getElementById('productsFranSelect');
+      if (!sel) return;
+      try {
+        const res = await fetch('/api/admin/franchisees', { credentials: 'same-origin' });
+        if (res.status === 401) {
+          showLogin();
+          return;
+        }
+        if (!res.ok) {
+          sel.innerHTML = '<option value="">(failed to load franchisees)</option>';
+          productsFranLinks = [];
+          return;
+        }
+        const data = await res.json();
+        franchiseesCache = data.partners || [];
+        fillProductsFranSelect();
+        syncProductsFranLinks();
+      } catch {
+        sel.innerHTML = '<option value="">(failed to load franchisees)</option>';
+        productsFranLinks = [];
+      }
+    }
+
+    function fillProductsFranSelect() {
+      const sel = document.getElementById('productsFranSelect');
+      if (!sel) return;
+      const prev = sel.value;
+      if (!franchiseesCache.length) {
+        sel.innerHTML = '<option value="">No franchisees yet</option>';
+        return;
+      }
+      sel.innerHTML = franchiseesCache
+        .map((p) => {
+          const label = `${p.name} (${p.slug})${p.active ? '' : ' · inactive'}`;
+          return `<option value="${escapeAttr(p.slug)}">${escapeHtml(label)}</option>`;
+        })
+        .join('');
+      if (prev && franchiseesCache.some((p) => p.slug === prev)) {
+        sel.value = prev;
+      }
+      // default: first franchisee (only one is common)
+    }
+
+    function syncProductsFranLinks() {
+      const slug = document.getElementById('productsFranSelect')?.value || '';
+      const partner = franchiseesCache.find((p) => p.slug === slug);
+      productsFranLinks = partner?.product_links || [];
+    }
+
+    function franLinkForProductName(productName) {
+      const name = String(productName || '');
+      return productsFranLinks.find((l) => l.spbc_name === name) || null;
+    }
+
     async function loadProducts() {
       productList.innerHTML = '<p class="text-zinc-500 text-sm">Loading…</p>';
       if (!suppliersCache.length) await loadSuppliersCache();
@@ -1507,7 +1579,8 @@
         return;
       }
       const data = await res.json();
-      renderProducts(data.products || []);
+      productsCache = data.products || [];
+      renderProducts(productsCache);
     }
 
     function renderProducts(products) {
@@ -1517,6 +1590,54 @@
       }
       productList.innerHTML = '';
       products.forEach((p) => productList.appendChild(productCard(p)));
+    }
+
+    function productsFranPricingHtml(p) {
+      const slug = document.getElementById('productsFranSelect')?.value || '';
+      if (!slug) {
+        return `
+          <div class="border border-violet-500/30 rounded-xl p-3 bg-violet-950/15">
+            <p class="text-[11px] font-semibold text-violet-300 uppercase tracking-wide mb-1">Franchisee price</p>
+            <p class="text-xs text-zinc-500">Select a franchisee above.</p>
+          </div>`;
+      }
+      const link = franLinkForProductName(p.name);
+      if (!link) {
+        return `
+          <div class="border border-violet-500/30 rounded-xl p-3 bg-violet-950/15">
+            <p class="text-[11px] font-semibold text-violet-300 uppercase tracking-wide mb-1">Franchisee price</p>
+            <p class="text-xs text-zinc-500">Not mapped for this franchisee (no product link).</p>
+          </div>`;
+      }
+      return `
+        <div class="border border-violet-500/40 rounded-xl p-3 space-y-2 bg-violet-950/25"
+             data-fran-block
+             data-partner-name="${escapeAttr(link.partner_name)}"
+             data-spbc-name="${escapeAttr(link.spbc_name)}">
+          <p class="text-[11px] font-semibold text-violet-300 uppercase tracking-wide">
+            Franchisee price <span class="text-zinc-500 font-normal normal-case">(blank = SPBC price)</span>
+          </p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-violet-200/80 mb-1">Fran vial $</label>
+              <input data-fran-field="vial" type="number" step="0.01" min="0" inputmode="decimal"
+                     placeholder="base"
+                     value="${escapeAttr(centsToDollarInput(link.franchisee_vial_cents))}"
+                     class="w-full bg-black border border-violet-500/50 rounded-xl px-3 py-2 text-sm text-violet-100">
+            </div>
+            <div>
+              <label class="block text-xs text-violet-200/80 mb-1">Fran pack $</label>
+              <input data-fran-field="pack" type="number" step="0.01" min="0" inputmode="decimal"
+                     placeholder="base"
+                     value="${escapeAttr(centsToDollarInput(link.franchisee_pack_cents))}"
+                     class="w-full bg-black border border-violet-500/50 rounded-xl px-3 py-2 text-sm text-violet-100">
+            </div>
+          </div>
+          <button type="button" data-action="save-fran-price"
+                  class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-2 rounded-xl text-sm">
+            Save franchisee price
+          </button>
+        </div>`;
     }
 
     function productCard(p) {
@@ -1545,6 +1666,7 @@
                    class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">
           </div>
         </div>
+        ${productsFranPricingHtml(p)}
         <div>
           <label class="block text-xs text-zinc-500 mb-1">
             Supplier <span class="text-amber-500/90">(admin only → Telegram)</span>
@@ -1599,7 +1721,67 @@
 
       card.querySelector('[data-action="save"]').addEventListener('click', () => saveProduct(card));
       card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteProduct(card));
+      const franSave = card.querySelector('[data-action="save-fran-price"]');
+      if (franSave) {
+        franSave.addEventListener('click', () => saveProductFranPrice(card));
+      }
       return card;
+    }
+
+    async function saveProductFranPrice(card) {
+      const slug = document.getElementById('productsFranSelect')?.value;
+      const block = card.querySelector('[data-fran-block]');
+      if (!slug || !block) {
+        showMsg('Select a franchisee first', false);
+        return;
+      }
+      const partner_name = block.getAttribute('data-partner-name');
+      if (!partner_name) {
+        showMsg('No franchisee product link for this item', false);
+        return;
+      }
+      const vial = dollarInputToCents(block.querySelector('[data-fran-field="vial"]')?.value);
+      const pack = dollarInputToCents(block.querySelector('[data-fran-field="pack"]')?.value);
+      if (vial === undefined || pack === undefined) {
+        showMsg('Invalid franchisee price (use dollars, e.g. 12.50)', false);
+        return;
+      }
+      const res = await fetch(
+        `/api/admin/franchisees/${encodeURIComponent(slug)}/prices`,
+        {
+          method: 'PATCH',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            partner_name,
+            franchisee_vial_cents: vial,
+            franchisee_pack_cents: pack,
+          }),
+        }
+      );
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showMsg(err.message || err.error || 'Franchisee price save failed', false);
+        return;
+      }
+      showMsg('Franchisee price saved');
+      // Refresh franchisee links (same backend as Franchisees tab) and re-render cards
+      await loadProductsFranSelector();
+      const sel = document.getElementById('productsFranSelect');
+      if (sel && slug && franchiseesCache.some((p) => p.slug === slug)) {
+        sel.value = slug;
+        syncProductsFranLinks();
+      }
+      renderProducts(productsCache);
+    }
+
+    function onProductsFranSelectChange() {
+      syncProductsFranLinks();
+      renderProducts(productsCache);
     }
 
     function readCard(card) {
@@ -1675,6 +1857,7 @@
     document.getElementById('franSavePricesBtn').addEventListener('click', () => saveFranPrices());
     document.getElementById('franSetupLinkBtn').addEventListener('click', () => rotateFranSetupLink());
     document.getElementById('newFranCreateBtn').addEventListener('click', () => createFranchisee());
+    document.getElementById('productsFranSelect').addEventListener('change', () => onProductsFranSelectChange());
 
     document.getElementById('addSupplierBtn').addEventListener('click', async () => {
       const name = prompt('Supplier display name (e.g. Unicorn or @unicornfartzz):');
