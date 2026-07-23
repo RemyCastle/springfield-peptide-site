@@ -87,12 +87,19 @@
       touch-action: manipulation;
     }
     tr.order-row:hover td { background: #18181b; }
+    tr.order-row-flash td {
+      animation: order-row-flash 0.7s ease-out;
+    }
+    @keyframes order-row-flash {
+      0% { background: rgba(253, 215, 0, 0.35); }
+      100% { background: transparent; }
+    }
     .table-scroll {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       max-width: 100%;
     }
-    .table-scroll table { min-width: 640px; }
+    .table-scroll table { min-width: 720px; }
     .break-word { overflow-wrap: anywhere; word-break: break-word; }
   </style>
 </head>
@@ -199,6 +206,7 @@
                 <th class="px-3 py-2.5">Total</th>
                 <th class="px-3 py-2.5">Ship</th>
                 <th class="px-3 py-2.5">Created</th>
+                <th class="px-3 py-2.5">Actions</th>
               </tr>
             </thead>
             <tbody id="ordersTbody"></tbody>
@@ -659,9 +667,19 @@
       return '<span class="inline-block ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-violet-950 border border-violet-500 text-[#a855f7] align-middle">PAY SPBC</span>';
     }
 
+    function pinOrderRow(tr, flash) {
+      if (!tr || !ordersTbody.contains(tr)) return;
+      ordersTbody.prepend(tr);
+      if (flash) {
+        tr.classList.remove('order-row-flash');
+        void tr.offsetWidth;
+        tr.classList.add('order-row-flash');
+      }
+    }
+
     async function loadOrders() {
       showOrdersError(null);
-      ordersTbody.innerHTML = '<tr><td colspan="6" class="px-3 py-6 text-zinc-500 text-center">Loading…</td></tr>';
+      ordersTbody.innerHTML = '<tr><td colspan="7" class="px-3 py-6 text-zinc-500 text-center">Loading…</td></tr>';
       const params = new URLSearchParams({
         page: String(ordersPage),
         limit: String(ordersLimit),
@@ -702,25 +720,48 @@
 
       if (!orders.length) {
         ordersTbody.innerHTML =
-          '<tr><td colspan="6" class="px-3 py-6 text-zinc-500 text-center">No orders found</td></tr>';
+          '<tr><td colspan="7" class="px-3 py-6 text-zinc-500 text-center">No orders found</td></tr>';
         return;
       }
 
       for (const o of orders) {
         const tr = document.createElement('tr');
         tr.className = 'order-row border-b border-zinc-800/80 cursor-pointer';
+        tr.dataset.order = o.order_number;
         const wholesale = isWholesaleOrder(o);
         const numClass = wholesale ? 'text-[#a855f7]' : 'text-[#FDD700]';
         const chip = wholesale ? paySpbcChip() : '';
+        const isArchived = !!o.archived_at;
+        const actionLabel = isArchived ? 'Restore' : 'Clear';
+        const actionCls = isArchived
+          ? 'px-2 py-1 rounded-lg text-xs font-bold bg-violet-950 border border-violet-600 text-violet-200 hover:bg-violet-900'
+          : 'px-2 py-1 rounded-lg text-xs font-bold bg-zinc-900 border border-zinc-600 text-zinc-300 hover:bg-zinc-800';
         tr.innerHTML =
           `<td class="px-3 py-2.5 font-semibold ${numClass}">${escapeHtml(o.order_number)}${chip}</td>` +
           `<td class="px-3 py-2.5">${statusBadge(o.status)}</td>` +
           `<td class="px-3 py-2.5">${escapeHtml(o.customer_name)}<br><span class="text-xs text-zinc-500">${escapeHtml(o.customer_email)}</span></td>` +
           `<td class="px-3 py-2.5">${formatCents(o.total_cents)}</td>` +
           `<td class="px-3 py-2.5">${o.shipping_complete ? '✓' : '—'}</td>` +
-          `<td class="px-3 py-2.5 text-xs text-zinc-500">${escapeHtml((o.created_at || '').slice(0, 19).replace('T', ' '))}</td>`;
-        tr.addEventListener('click', () => showOrderDetail(o.order_number));
+          `<td class="px-3 py-2.5 text-xs text-zinc-500">${escapeHtml((o.created_at || '').slice(0, 19).replace('T', ' '))}</td>` +
+          `<td class="px-3 py-2.5 whitespace-nowrap"><button type="button" class="row-action-btn ${actionCls}">${actionLabel}</button></td>`;
+        const actionBtn = tr.querySelector('.row-action-btn');
+        actionBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (isArchived) restoreOrder(o.order_number);
+          else clearOrder(o.order_number);
+        });
+        tr.addEventListener('click', () => {
+          pinOrderRow(tr, true);
+          showOrderDetail(o.order_number);
+        });
         ordersTbody.appendChild(tr);
+      }
+
+      if (selectedOrder) {
+        const pinned = ordersTbody.querySelector(
+          'tr[data-order="' + CSS.escape(selectedOrder) + '"]'
+        );
+        if (pinned) pinOrderRow(pinned, false);
       }
     }
 
