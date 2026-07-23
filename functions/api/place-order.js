@@ -190,6 +190,55 @@ export async function onRequestPost({ request, env }) {
   }
 
   const orderNumber = data.order_number;
+
+  // Forward shipping address server-side (no browser→worker CORS).
+  // On failure still return order success; client shows shipping link fallback.
+  let shipping_saved = false;
+  const shipIn = body.shipping || body.address || {};
+  const ship_name = String(shipIn.ship_name || name).trim();
+  const ship_line1 = String(shipIn.ship_line1 || '').trim();
+  const ship_line2 = String(shipIn.ship_line2 || '').trim();
+  const ship_city = String(shipIn.ship_city || '').trim();
+  const ship_state = String(shipIn.ship_state || '').trim().toUpperCase();
+  const ship_postal = String(shipIn.ship_postal || '').trim();
+  const ship_phone = String(shipIn.ship_phone || '').trim();
+  const ship_country = 'US';
+  const hasShip =
+    orderNumber &&
+    ship_name &&
+    ship_line1 &&
+    ship_city &&
+    ship_state &&
+    ship_postal;
+
+  if (hasShip) {
+    try {
+      const shipRes = await fetch(
+        `${publicBase}/shipping/${encodeURIComponent(orderNumber)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            ship_name,
+            ship_line1,
+            ship_line2: ship_line2 || undefined,
+            ship_city,
+            ship_state,
+            ship_postal,
+            ship_country,
+            ship_phone: ship_phone || undefined,
+          }),
+        }
+      );
+      shipping_saved = shipRes.ok;
+    } catch {
+      shipping_saved = false;
+    }
+  }
+
   return json({
     ok: true,
     duplicate: Boolean(data.duplicate),
@@ -197,6 +246,7 @@ export async function onRequestPost({ request, env }) {
     status: data.status || 'pending_payment',
     total_cents: data.total_cents ?? total,
     currency: data.currency || payload.currency,
+    shipping_saved,
     pay_url: orderNumber ? `${publicBase}/pay/${encodeURIComponent(orderNumber)}` : null,
     shipping_url: orderNumber
       ? `${publicBase}/shipping/${encodeURIComponent(orderNumber)}`

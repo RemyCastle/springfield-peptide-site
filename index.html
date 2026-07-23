@@ -689,12 +689,12 @@
                     </div>
                 </div>
 
-                <form id="orderForm" class="flat-panel space-y-4 sm:space-y-5 p-4 sm:p-6">
+                <form id="orderForm" class="flat-panel space-y-4 sm:space-y-5 p-4 sm:p-6" autocomplete="on">
                     <h3 class="ducks-font text-2xl text-white text-center">Place order</h3>
-                    <p class="text-xs text-zinc-500 text-center -mt-2">Contact details + review</p>
-                    <input type="text" id="name" placeholder="Name" required autocomplete="name"
+                    <p class="text-xs text-zinc-500 text-center -mt-2">Contact, shipping address, then review</p>
+                    <input type="text" id="name" name="name" placeholder="Name" required autocomplete="name"
                            class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
-                    <input type="email" id="email" placeholder="Your Email Address" required autocomplete="email" inputmode="email"
+                    <input type="email" id="email" name="email" placeholder="Your Email Address" required autocomplete="email" inputmode="email"
                            class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
                     <textarea id="message" rows="6" placeholder="Your order summary will appear here..." readonly
                               class="w-full bg-black border border-zinc-700 rounded-3xl px-4 sm:px-5 py-3.5 text-sm sm:text-base leading-relaxed"></textarea>
@@ -703,6 +703,26 @@
                     <button type="button" id="clearCartFormBtn" class="btn-clear-cart-form hidden" aria-label="Clear cart">
                         Clear cart
                     </button>
+
+                    <fieldset class="space-y-3 pt-1">
+                        <legend class="text-[10px] uppercase tracking-[0.2em] text-[#FDD700]/80 font-semibold w-full text-center mb-1">Shipping address (US only)</legend>
+                        <input type="text" id="shipLine1" name="ship_line1" placeholder="Street address" required autocomplete="address-line1"
+                               class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                        <input type="text" id="shipLine2" name="ship_line2" placeholder="Apt, suite, unit (optional)" autocomplete="address-line2"
+                               class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input type="text" id="shipCity" name="ship_city" placeholder="City" required autocomplete="address-level2"
+                                   class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                            <input type="text" id="shipState" name="ship_state" placeholder="State" required maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" autocomplete="address-level1"
+                                   class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base uppercase" style="text-transform:uppercase;">
+                            <input type="text" id="shipPostal" name="ship_postal" placeholder="ZIP" required pattern="\d{5}(-\d{4})?" title="5-digit ZIP or ZIP+4" autocomplete="postal-code" inputmode="numeric"
+                                   class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                        </div>
+                        <input type="tel" id="shipPhone" name="ship_phone" placeholder="Phone (optional)" autocomplete="tel" inputmode="tel"
+                               class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                        <input type="hidden" id="shipCountry" name="ship_country" value="US" autocomplete="country">
+                        <p class="text-[11px] text-zinc-500 text-center">US addresses only · browser may offer to autofill saved address</p>
+                    </fieldset>
 
                     <label class="flex items-start gap-3 text-sm cursor-pointer select-none">
                         <input type="checkbox" id="agree" class="w-6 h-6 mt-0.5 shrink-0 accent-[#FDD700]">
@@ -729,11 +749,11 @@
                     <p class="text-zinc-300 text-sm break-word">
                         Next: pay <span id="successTotal" class="text-white font-semibold"></span> on the payment page
                         (Friends &amp; Family · memo = <strong>code only</strong>).
-                        You can enter your shipping address before or after paying.
+                        <span id="successShipNote">Shipping address is on file.</span>
                     </p>
                     <div class="flex flex-col gap-2 pt-2">
                         <a id="successPayLink" href="#" class="bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Open payment page</a>
-                        <a id="successShipLink" href="#" class="border border-zinc-600 hover:border-[#FDD700] text-zinc-200 font-semibold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Enter shipping address</a>
+                        <a id="successShipLink" href="#" class="border border-zinc-600 hover:border-[#FDD700] text-zinc-200 font-semibold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Edit shipping address</a>
                     </div>
                     <p class="text-xs text-zinc-500">Payment handles and full steps are on the payment page only</p>
                 </div>
@@ -1016,11 +1036,45 @@
             try { localStorage.removeItem(CART_KEY); } catch (_) {}
         }
 
+        function getShippingFromForm() {
+            const shipStateEl = document.getElementById('shipState');
+            if (shipStateEl) shipStateEl.value = (shipStateEl.value || '').trim().toUpperCase();
+            return {
+                ship_name: document.getElementById('name').value.trim() || 'Customer',
+                ship_line1: document.getElementById('shipLine1').value.trim(),
+                ship_line2: document.getElementById('shipLine2').value.trim(),
+                ship_city: document.getElementById('shipCity').value.trim(),
+                ship_state: (document.getElementById('shipState').value || '').trim().toUpperCase(),
+                ship_postal: document.getElementById('shipPostal').value.trim(),
+                ship_country: 'US',
+                ship_phone: document.getElementById('shipPhone').value.trim(),
+            };
+        }
+
+        function validateShippingFields() {
+            const s = getShippingFromForm();
+            if (!s.ship_line1) return { ok: false, reason: 'Street address is required.', focus: 'shipLine1' };
+            if (!s.ship_city) return { ok: false, reason: 'City is required.', focus: 'shipCity' };
+            if (!/^[A-Z]{2}$/.test(s.ship_state)) {
+                return { ok: false, reason: 'State must be a 2-letter code (e.g. MO).', focus: 'shipState' };
+            }
+            if (!/^\d{5}(-\d{4})?$/.test(s.ship_postal)) {
+                return { ok: false, reason: 'Enter a valid ZIP (12345 or 12345-6789).', focus: 'shipPostal' };
+            }
+            return { ok: true, reason: '', shipping: s };
+        }
+
         function saveContactDraft() {
             try {
                 localStorage.setItem(CONTACT_KEY, JSON.stringify({
                     name: document.getElementById('name').value.trim(),
                     email: document.getElementById('email').value.trim(),
+                    ship_line1: document.getElementById('shipLine1')?.value.trim() || '',
+                    ship_line2: document.getElementById('shipLine2')?.value.trim() || '',
+                    ship_city: document.getElementById('shipCity')?.value.trim() || '',
+                    ship_state: (document.getElementById('shipState')?.value || '').trim().toUpperCase(),
+                    ship_postal: document.getElementById('shipPostal')?.value.trim() || '',
+                    ship_phone: document.getElementById('shipPhone')?.value.trim() || '',
                 }));
             } catch (_) {}
         }
@@ -1032,6 +1086,12 @@
                 const d = JSON.parse(raw);
                 if (d.name) document.getElementById('name').value = d.name;
                 if (d.email) document.getElementById('email').value = d.email;
+                if (d.ship_line1) document.getElementById('shipLine1').value = d.ship_line1;
+                if (d.ship_line2) document.getElementById('shipLine2').value = d.ship_line2;
+                if (d.ship_city) document.getElementById('shipCity').value = d.ship_city;
+                if (d.ship_state) document.getElementById('shipState').value = String(d.ship_state).toUpperCase();
+                if (d.ship_postal) document.getElementById('shipPostal').value = d.ship_postal;
+                if (d.ship_phone) document.getElementById('shipPhone').value = d.ship_phone;
             } catch (_) {}
         }
 
@@ -1568,7 +1628,9 @@
                     reason: `Single vial orders need at least ${MIN_SINGLE_VIALS} vials (you have ${t.singleVials}).`,
                 };
             }
-            return { ok: true, reason: '' };
+            const ship = validateShippingFields();
+            if (!ship.ok) return { ok: false, reason: ship.reason, focus: ship.focus };
+            return { ok: true, reason: '', shipping: ship.shipping };
         }
 
         const agreeCheckbox = document.getElementById('agree');
@@ -1601,7 +1663,8 @@
                 return;
             }
             if (!check.ok) {
-                showSubmitError(check.reason, document.getElementById('orderForm'));
+                const focusEl = check.focus ? document.getElementById(check.focus) : document.getElementById('orderForm');
+                showSubmitError(check.reason, focusEl || document.getElementById('orderForm'));
                 document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
@@ -1611,6 +1674,7 @@
                 return;
             }
             const name = document.getElementById('name').value.trim() || 'Customer';
+            const ship = check.shipping || getShippingFromForm();
             const t = tallyOrder();
             const linesEl = document.getElementById('reviewLines');
             // Map raw lines with product name for remove
@@ -1676,6 +1740,26 @@
             document.getElementById('reviewEmail').textContent = email;
             document.getElementById('reviewName').textContent = name;
             document.getElementById('reviewTotal').textContent = `$${money(t.total)}`;
+            let reviewShip = document.getElementById('reviewShip');
+            if (!reviewShip) {
+                const wrap = document.getElementById('reviewEmail')?.closest('.border-t') || document.getElementById('reviewEmail')?.parentElement?.parentElement;
+                if (wrap) {
+                    reviewShip = document.createElement('div');
+                    reviewShip.id = 'reviewShip';
+                    reviewShip.className = 'flex justify-between gap-2';
+                    reviewShip.innerHTML = '<span class="text-zinc-400">Ship to</span><span class="text-white text-right text-xs leading-snug"></span>';
+                    const totalRow = wrap.querySelector('.text-base.font-bold') || wrap.lastElementChild;
+                    wrap.insertBefore(reviewShip, totalRow);
+                }
+            }
+            if (reviewShip) {
+                const addr = [ship.ship_line1, ship.ship_line2, `${ship.ship_city}, ${ship.ship_state} ${ship.ship_postal}`]
+                    .filter(Boolean)
+                    .join(', ');
+                const span = reviewShip.querySelector('span:last-child') || reviewShip;
+                if (span !== reviewShip) span.textContent = addr;
+                else reviewShip.textContent = addr;
+            }
             document.getElementById('reviewError').classList.add('hidden');
 
             const modal = document.getElementById('reviewModal');
@@ -1707,6 +1791,8 @@
             const notes = document.getElementById('message').value.trim();
             const items = t.items;
             const subtotalFinal = items.reduce((s, it) => s + it.qty * it.unit_price_cents, 0);
+            const shipping = check.shipping || getShippingFromForm();
+            shipping.ship_name = name;
 
             placingOrder = true;
             submitBtn.disabled = true;
@@ -1729,6 +1815,7 @@
                         total_cents: subtotalFinal,
                         currency: 'USD',
                         notes: notes || undefined,
+                        shipping,
                     }),
                 });
                 const data = await res.json().catch(() => ({}));
@@ -1749,8 +1836,18 @@
                     '$' + (Number(data.total_cents || subtotalFinal) / 100).toFixed(2);
                 document.getElementById('successPayLink').href =
                     data.pay_url || `https://spbc-orders.spbc.workers.dev/pay/${encodeURIComponent(data.order_number)}`;
-                document.getElementById('successShipLink').href =
+                const shipLink = document.getElementById('successShipLink');
+                shipLink.href =
                     data.shipping_url || `https://spbc-orders.spbc.workers.dev/shipping/${encodeURIComponent(data.order_number)}`;
+                const shipNote = document.getElementById('successShipNote');
+                if (data.shipping_saved === false) {
+                    if (shipNote) shipNote.textContent = 'We still need your shipping address — use the link below.';
+                    shipLink.textContent = 'Enter shipping address';
+                    shipLink.classList.add('ring-2', 'ring-amber-400');
+                } else {
+                    if (shipNote) shipNote.textContent = 'Shipping address is on file.';
+                    shipLink.textContent = 'Edit shipping address';
+                }
 
                 box.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
@@ -1775,10 +1872,17 @@
         }
 
         agreeCheckbox.addEventListener('change', refreshSubmitEnabled);
-        document.getElementById('name').addEventListener('change', saveContactDraft);
-        document.getElementById('email').addEventListener('change', saveContactDraft);
-        document.getElementById('name').addEventListener('blur', saveContactDraft);
-        document.getElementById('email').addEventListener('blur', saveContactDraft);
+        ['name', 'email', 'shipLine1', 'shipLine2', 'shipCity', 'shipState', 'shipPostal', 'shipPhone'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', () => {
+                if (id === 'shipState') el.value = el.value.toUpperCase();
+                refreshSubmitEnabled();
+                saveContactDraft();
+            });
+            el.addEventListener('change', saveContactDraft);
+            el.addEventListener('blur', saveContactDraft);
+        });
 
         document.getElementById('orderForm').addEventListener('submit', e => {
             e.preventDefault();
