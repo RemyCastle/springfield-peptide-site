@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="SPBC peptide reconstitution dosage calculator for U-100 insulin syringes. Research planning only.">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#006600">
+  <meta name="theme-color" content="#0B120E">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -26,13 +26,15 @@
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shared/site-header.css?v=10">
-  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=8">
+  <link rel="stylesheet" href="/shared/site-header.css?v=12">
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=10">
   <style>
-    html.spbc-locked body { visibility: hidden !important; background: #000 !important; }
+    html.spbc-locked body { visibility: hidden !important; background: #0B120E !important; }
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
       font-family: 'Inter', system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
       padding-left: env(safe-area-inset-left, 0);
       padding-right: env(safe-area-inset-right, 0);
       padding-bottom: env(safe-area-inset-bottom, 0);
@@ -45,32 +47,32 @@
     }
     .field {
       width: 100%;
-      background: #000;
-      border: 1px solid #3f3f46;
+      background: #0B120E;
+      border: 1px solid #263A2C;
       border-radius: 1rem;
       padding: 0.85rem 1.1rem;
-      color: #fff;
+      color: #F2F7F3;
       font-size: 16px; /* avoids iOS focus zoom */
       min-height: 2.75rem;
       touch-action: manipulation;
     }
     .field:focus {
       outline: none;
-      box-shadow: 0 0 0 2px rgba(253, 215, 0, 0.55);
-      border-color: #FDD700;
+      box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.55);
+      border-color: #EAB308;
     }
     .field:focus-visible {
-      outline: 2px solid #FDD700;
+      outline: 2px solid #EAB308;
       outline-offset: 2px;
     }
     .result-card {
-      background: #18181b;
-      border: 1px solid rgba(253, 215, 0, 0.25);
+      background: rgba(19, 28, 22, 0.85);
+      border: 1px solid rgba(234, 179, 8, 0.22);
       border-radius: 1.25rem;
     }
     .syringe-wrap {
-      background: linear-gradient(180deg, #14532d 0%, #052e16 45%, #0a0a0a 100%);
-      border: 1px solid rgba(253, 215, 0, 0.3);
+      background: linear-gradient(180deg, #1B2820 0%, #131C16 45%, #0B120E 100%);
+      border: 1px solid rgba(234, 179, 8, 0.28);
       border-radius: 1.25rem;
       padding: 1.25rem 1rem 1rem;
     }
@@ -95,11 +97,12 @@
       left: -9999px;
       top: 0.5rem;
       z-index: 200;
-      background: #FDD700;
-      color: #000;
+      background: #EAB308;
+      color: #0B120E;
       font-weight: 700;
       padding: 0.6rem 1rem;
       border-radius: 0.75rem;
+      min-height: 44px;
     }
     .skip-link:focus {
       left: 0.5rem;
@@ -138,11 +141,22 @@
   </header>
 
   <section class="page-hero" aria-label="Calculator intro">
+    <div class="page-hero-blobs" aria-hidden="true">
+      <svg class="blob-a" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="calcBlobA" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#16A34A" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#EAB308" stop-opacity="0.16"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#calcBlobA)" d="M440.5,323.5Q418,397,349.5,430.5Q281,464,214,424.5Q147,385,112,317.5Q77,250,116.5,187.5Q156,125,226.5,101.5Q297,78,361,115.5Q425,153,444,201.5Q463,250,440.5,323.5Z"/>
+      </svg>
+    </div>
     <div class="page-hero-orb page-hero-orb--green" aria-hidden="true"></div>
     <div class="page-hero-orb page-hero-orb--gold" aria-hidden="true"></div>
     <div class="page-hero-inner">
       <p class="page-hero-eyebrow">Dosage tools</p>
-      <h1 class="page-hero-title ducks-font">Dosage Calculator</h1>
+      <h1 class="page-hero-title ducks-font hero-gold-underline">Dosage Calculator</h1>
       <p class="page-hero-sub">
         Reconstitution math for U-100 insulin syringes (100 units = 1&nbsp;mL).
         BAC water max <strong class="text-zinc-100">3&nbsp;mL</strong> per vial.
@@ -159,7 +173,7 @@
 
   <main id="calc-main" class="spbc-main max-w-4xl mx-auto px-4 py-8 sm:py-10" tabindex="-1">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-    <form id="calcForm" class="space-y-4 depth-card result-card p-5 sm:p-6 reveal" onsubmit="return false;" aria-labelledby="calc-heading">
+    <form id="calcForm" class="space-y-4 depth-card result-card grid-item p-5 sm:p-6 reveal" onsubmit="return false;" aria-labelledby="calc-heading">
       <h2 id="calc-heading" class="ducks-font text-2xl text-white mb-1">Inputs</h2>
 
       <div>
@@ -214,10 +228,10 @@
 
     <div class="space-y-6">
     <!-- SYRINGE VISUAL -->
-    <section id="syringePanel" class="syringe-wrap depth-card mb-0 reveal" aria-labelledby="syringe-heading">
+    <section id="syringePanel" class="syringe-wrap depth-card grid-item mb-0 reveal" aria-labelledby="syringe-heading">
       <div class="flex items-center justify-between mb-3 px-1 gap-2">
         <h2 id="syringe-heading" class="text-xs text-zinc-300 uppercase tracking-wider font-semibold">U-100 Insulin Syringe</h2>
-        <p id="syringeLabel" class="text-sm font-bold text-[#FDD700]" aria-live="polite">— units</p>
+        <p id="syringeLabel" class="text-sm font-bold text-[#EAB308]" aria-live="polite">— units</p>
       </div>
 
       <svg class="syringe-svg" viewBox="0 0 460 120" role="img" aria-labelledby="syringe-title syringe-desc">
@@ -251,7 +265,7 @@
           <rect x="402" y="36" width="14" height="34" rx="3" fill="#d0d5e0" stroke="#8a93a8" stroke-width="1"/>
         </g>
 
-        <polygon id="doseMarker" points="104,78 110,88 98,88" fill="#FDD700"/>
+        <polygon id="doseMarker" points="104,78 110,88 98,88" fill="#EAB308"/>
 
         <defs>
           <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
@@ -272,9 +286,11 @@
       <p id="syringeSub" class="text-center text-xs text-zinc-400 mt-3" aria-live="polite">Enter values to see draw volume</p>
     </section>
 
-    <section id="results" class="depth-card result-card p-5 sm:p-6 space-y-4 hidden reveal" aria-live="polite" aria-atomic="true" aria-labelledby="results-heading">
+    <section id="results" class="depth-card result-card grid-item p-5 sm:p-6 space-y-4 hidden reveal" aria-live="polite" aria-atomic="true" aria-labelledby="results-heading">
       <h2 id="results-heading" class="ducks-font text-2xl text-white flex items-center gap-2">
-        <span class="text-[#FDD700]" aria-hidden="true">★</span> Results
+        <span class="text-[#EAB308]" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7L12 17.8 5.7 21l2.3-7-6-4.6h7.6L12 2z"/></svg>
+        </span> Results
       </h2>
       <dl class="grid gap-3 text-sm">
         <div class="flex justify-between gap-3 border-b border-zinc-700 pb-2">
@@ -318,7 +334,7 @@
     </div>
 
     <p class="text-center text-zinc-500 text-xs mt-8">
-      <a href="/#prices" class="hover:text-[#FDD700] underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FDD700] rounded">← Back to price list</a>
+      <a href="/#prices" class="hover:text-[#EAB308] underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#EAB308] rounded">← Back to price list</a>
     </p>
   </main>
 
@@ -326,7 +342,7 @@
     <p>SPRINGFIELD PEPTIDE BUYERS CLUB · RESEARCH ONLY</p>
     <p class="mt-2 text-sm">
       Contact ·
-      <a href="mailto:springfieldpeps@proton.me" class="text-[#FDD700] hover:underline">springfieldpeps@proton.me</a>
+      <a href="mailto:springfieldpeps@proton.me" class="text-[#EAB308] hover:underline">springfieldpeps@proton.me</a>
     </p>
   </footer>
   </div>
@@ -425,7 +441,7 @@
       syringeLabel.textContent = label;
       syringeLabel.className = over
         ? 'text-sm font-bold text-amber-400'
-        : 'text-sm font-bold text-[#FDD700]';
+        : 'text-sm font-bold text-[#EAB308]';
 
       if (!Number.isFinite(units) || units <= 0) {
         syringeSub.textContent = 'Enter values to see draw volume';
@@ -599,7 +615,42 @@
     calculate();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
   <script src="/shared/site-atmosphere.js?v=8" defer></script>
   <script src="/shared/site-header.js?v=10" defer></script>
+  <script>
+  (function () {
+    function reduced() {
+      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    function init() {
+      if (reduced() || !window.gsap) return;
+      if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+      document.querySelectorAll('.reveal').forEach(function (el) {
+        gsap.from(el, {
+          opacity: 0, y: 18, duration: 0.4, ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 90%', once: true, onEnter: function () { el.classList.add('is-visible'); } }
+        });
+      });
+      var items = document.querySelectorAll('.grid-item');
+      if (items.length) {
+        gsap.from(items, {
+          opacity: 0, scale: 0.92, y: 16, duration: 0.4,
+          stagger: { each: 0.06, from: 'start', grid: 'auto' },
+          ease: 'back.out(1.4)', clearProps: 'transform'
+        });
+      }
+      document.querySelectorAll('.btn-primary, .btn-secondary').forEach(function (btn) {
+        btn.addEventListener('pointerdown', function () { gsap.to(btn, { scale: 0.97, duration: 0.1 }); });
+        btn.addEventListener('pointerup', function () { gsap.to(btn, { scale: 1, duration: 0.18, ease: 'back.out(1.4)' }); });
+        btn.addEventListener('pointerleave', function () { gsap.to(btn, { scale: 1, duration: 0.12 }); });
+      });
+    }
+    function ready() { if (window.gsap) init(); else setTimeout(ready, 40); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
+    else ready();
+  })();
+  </script>
 </body>
 </html>

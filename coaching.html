@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="SPBC research coaching — $100/hr. Stack recommendations, solutions, consulting, and bloodwork guidance.">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#006600">
+  <meta name="theme-color" content="#0B120E">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -26,13 +26,15 @@
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shared/site-header.css?v=10">
-  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=8">
+  <link rel="stylesheet" href="/shared/site-header.css?v=12">
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=10">
   <style>
-    html.spbc-locked body { visibility: hidden !important; background: #000 !important; }
+    html.spbc-locked body { visibility: hidden !important; background: #0B120E !important; }
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
       font-family: 'Inter', system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
       padding-left: env(safe-area-inset-left, 0);
       padding-right: env(safe-area-inset-right, 0);
       padding-bottom: env(safe-area-inset-bottom, 0);
@@ -48,11 +50,12 @@
       left: -9999px;
       top: 0.5rem;
       z-index: 200;
-      background: #FDD700;
-      color: #000;
+      background: #EAB308;
+      color: #0B120E;
       font-weight: 700;
       padding: 0.6rem 1rem;
       border-radius: 0.75rem;
+      min-height: 44px;
     }
     .skip-link:focus {
       left: 0.5rem;
@@ -60,40 +63,43 @@
       outline-offset: 2px;
     }
     .pillar-card {
-      border: 1px solid rgba(253, 215, 0, 0.22);
+      border: 1px solid rgba(234, 179, 8, 0.22);
       border-radius: 1.25rem;
       padding: 1.25rem 1.35rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      cursor: default;
     }
     .pillar-icon {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 0.75rem;
-      background: linear-gradient(145deg, #14532d, #052e16);
-      border: 1px solid rgba(253, 215, 0, 0.35);
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 0.85rem;
+      background: linear-gradient(145deg, #1B2820, #0B120E);
+      border: 1px solid rgba(234, 179, 8, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.15rem;
       margin-bottom: 0.85rem;
+      color: #EAB308;
     }
+    .pillar-icon svg { width: 1.15rem; height: 1.15rem; }
     .price-pill {
       display: inline-flex;
       align-items: baseline;
       gap: 0.35rem;
-      background: linear-gradient(180deg, #ffe44d 0%, #FDD700 45%, #e6c200 100%);
-      color: #000;
+      background: linear-gradient(180deg, #f5d76e 0%, #EAB308 48%, #ca8a04 100%);
+      color: #0B120E;
       font-weight: 800;
       padding: 0.55rem 1.1rem;
       border-radius: 999px;
-      box-shadow: 0 4px 18px rgba(253, 215, 0, 0.35);
+      box-shadow: 0 4px 18px rgba(234, 179, 8, 0.35);
     }
     .field {
       width: 100%;
-      background: #0a0a0a;
-      border: 1px solid #3f3f46;
+      background: #0B120E;
+      border: 1px solid #263A2C;
       border-radius: 0.85rem;
       padding: 0.85rem 1.1rem;
-      color: #fff;
+      color: #F2F7F3;
       font-size: 16px;
       min-height: 2.75rem;
       touch-action: manipulation;
@@ -103,8 +109,8 @@
       -webkit-appearance: none;
     }
     select.field {
-      background-image: linear-gradient(45deg, transparent 50%, #a1a1aa 50%),
-        linear-gradient(135deg, #a1a1aa 50%, transparent 50%);
+      background-image: linear-gradient(45deg, transparent 50%, #A8B8AC 50%),
+        linear-gradient(135deg, #A8B8AC 50%, transparent 50%);
       background-position: calc(100% - 18px) calc(50% - 3px), calc(100% - 12px) calc(50% - 3px);
       background-size: 6px 6px, 6px 6px;
       background-repeat: no-repeat;
@@ -112,26 +118,28 @@
     }
     .field:focus {
       outline: none;
-      border-color: #FDD700;
-      box-shadow: 0 0 0 1px rgba(253, 215, 0, 0.45);
+      border-color: #EAB308;
+      box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.45);
     }
     /* Kill browser / double-ring on focus inside coaching book panel */
     #book .field:focus-visible {
       outline: none;
-      box-shadow: 0 0 0 1px rgba(253, 215, 0, 0.45);
+      box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.45);
     }
     .chip {
       display: inline-flex;
       align-items: center;
-      padding: 0.35rem 0.75rem;
+      min-height: 2.25rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 999px;
       font-size: 0.7rem;
       font-weight: 700;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      border: 1px solid rgba(253, 215, 0, 0.3);
-      color: #FDD700;
-      background: rgba(253, 215, 0, 0.08);
+      border: 1px solid rgba(234, 179, 8, 0.3);
+      color: #EAB308;
+      background: rgba(234, 179, 8, 0.08);
+      backdrop-filter: blur(8px);
     }
     input, textarea, select, button {
       font-size: 16px;
@@ -166,11 +174,22 @@
   </header>
 
   <section class="page-hero">
+    <div class="page-hero-blobs" aria-hidden="true">
+      <svg class="blob-a" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="coachBlobA" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#16A34A" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#EAB308" stop-opacity="0.16"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#coachBlobA)" d="M440.5,323.5Q418,397,349.5,430.5Q281,464,214,424.5Q147,385,112,317.5Q77,250,116.5,187.5Q156,125,226.5,101.5Q297,78,361,115.5Q425,153,444,201.5Q463,250,440.5,323.5Z"/>
+      </svg>
+    </div>
     <div class="page-hero-orb page-hero-orb--green" aria-hidden="true"></div>
     <div class="page-hero-orb page-hero-orb--gold" aria-hidden="true"></div>
     <div class="page-hero-inner">
       <p class="page-hero-eyebrow">1-on-1 protocol coaching</p>
-      <h1 class="page-hero-title ducks-font">Research Coaching</h1>
+      <h1 class="page-hero-title ducks-font hero-gold-underline">Research Coaching</h1>
       <p class="page-hero-sub">
         Stack design, problem-solving, protocol consulting, and lab-marker guidance —
         tailored for serious club members who want a clear plan.
@@ -196,8 +215,8 @@
 
     <h2 class="ducks-font text-3xl text-white text-center mb-6 reveal">What’s included</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
-      <article class="pillar-card depth-card p-5 reveal" id="stacks">
-        <div class="pillar-icon" aria-hidden="true">◎</div>
+      <article class="pillar-card depth-card grid-item p-5 reveal" id="stacks">
+        <div class="pillar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></div>
         <h3 class="font-bold text-lg text-white mb-2">Stack recommendations</h3>
         <p class="text-zinc-400 text-sm leading-relaxed">
           Goal-based research stack outlines: compound selection, sequencing, cycle length ideas,
@@ -210,8 +229,8 @@
         </ul>
       </article>
 
-      <article class="pillar-card depth-card p-5 reveal" id="solutions">
-        <div class="pillar-icon" aria-hidden="true">✦</div>
+      <article class="pillar-card depth-card grid-item p-5 reveal" id="solutions">
+        <div class="pillar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
         <h3 class="font-bold text-lg text-white mb-2">Solutions</h3>
         <p class="text-zinc-400 text-sm leading-relaxed">
           Stuck on a research problem? We troubleshoot plateaus, logistics, storage, sourcing
@@ -224,8 +243,8 @@
         </ul>
       </article>
 
-      <article class="pillar-card depth-card p-5 reveal" id="consulting">
-        <div class="pillar-icon" aria-hidden="true">◆</div>
+      <article class="pillar-card depth-card grid-item p-5 reveal" id="consulting">
+        <div class="pillar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
         <h3 class="font-bold text-lg text-white mb-2">Consulting</h3>
         <p class="text-zinc-400 text-sm leading-relaxed">
           Broader 1:1 consulting — long-horizon research planning, budget optimization with bulk
@@ -238,8 +257,8 @@
         </ul>
       </article>
 
-      <article class="pillar-card depth-card p-5 reveal" id="bloodwork">
-        <div class="pillar-icon" aria-hidden="true">◈</div>
+      <article class="pillar-card depth-card grid-item p-5 reveal" id="bloodwork">
+        <div class="pillar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
         <h3 class="font-bold text-lg text-white mb-2">Bloodwork recommendations</h3>
         <p class="text-zinc-400 text-sm leading-relaxed">
           What panels to request and when — baseline, mid-protocol, and follow-up markers commonly
@@ -259,15 +278,15 @@
       <h2 class="ducks-font text-2xl text-white mb-4 text-center">How it works</h2>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-sm text-zinc-300 mb-4">
         <div>
-          <p class="text-[#FDD700] font-extrabold text-lg mb-1">1 · Book</p>
+          <p class="text-[#EAB308] font-extrabold text-lg mb-1">1 · Book</p>
           <p>Submit the request form with goals + preferred times.</p>
         </div>
         <div>
-          <p class="text-[#FDD700] font-extrabold text-lg mb-1">2 · Meet</p>
+          <p class="text-[#EAB308] font-extrabold text-lg mb-1">2 · Meet</p>
           <p>We confirm a slot and payment for the booked hours ($100/hr).</p>
         </div>
         <div>
-          <p class="text-[#FDD700] font-extrabold text-lg mb-1">3 · Protocol</p>
+          <p class="text-[#EAB308] font-extrabold text-lg mb-1">3 · Protocol</p>
           <p>Remote session + short written summary of recommendations after.</p>
         </div>
       </div>
@@ -326,7 +345,7 @@
         </div>
 
         <label class="flex items-start gap-3 text-sm cursor-pointer select-none">
-          <input type="checkbox" id="cAgree" class="w-6 h-6 mt-0.5 shrink-0 accent-[#FDD700]" required>
+          <input type="checkbox" id="cAgree" class="w-6 h-6 mt-0.5 shrink-0 accent-[#EAB308]" required>
           <span class="text-zinc-300 leading-snug text-xs sm:text-sm">
             I understand this is educational research coaching only — not medical advice — and I’m 21+.
           </span>
@@ -340,22 +359,22 @@
         </button>
         <p class="text-[11px] text-zinc-500 text-center">
           Opens your email client with a filled request to the club.
-          Or email <a class="text-[#FDD700] underline underline-offset-2" href="mailto:springfieldpeps@proton.me?subject=SPBC%20Coaching%20Request">springfieldpeps@proton.me</a> directly.
+          Or email <a class="text-[#EAB308] underline underline-offset-2" href="mailto:springfieldpeps@proton.me?subject=SPBC%20Coaching%20Request">springfieldpeps@proton.me</a> directly.
         </p>
       </form>
     </section>
 
     <p class="text-center text-zinc-500 text-xs">
-      <a href="/#prices" class="hover:text-[#FDD700] underline underline-offset-2">← Back to price list</a>
+      <a href="/#prices" class="hover:text-[#EAB308] underline underline-offset-2">← Back to price list</a>
       ·
-      <a href="/calculator.html" class="hover:text-[#FDD700] underline underline-offset-2">Dosage calculator</a>
+      <a href="/calculator.html" class="hover:text-[#EAB308] underline underline-offset-2">Dosage calculator</a>
     </p>
   </main>
 
   <footer class="text-center py-6 text-xs text-zinc-500 bg-black border-t border-zinc-800 mt-6 px-3">
     <p>SPRINGFIELD PEPTIDE BUYERS CLUB · RESEARCH ONLY · COACHING $100/HR</p>
     <p class="mt-2 text-sm">
-      <a href="mailto:springfieldpeps@proton.me" class="text-[#FDD700] hover:underline">springfieldpeps@proton.me</a>
+      <a href="mailto:springfieldpeps@proton.me" class="text-[#EAB308] hover:underline">springfieldpeps@proton.me</a>
     </p>
   </footer>
   </div>
@@ -420,7 +439,42 @@
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
   <script src="/shared/site-atmosphere.js?v=8" defer></script>
   <script src="/shared/site-header.js?v=10" defer></script>
+  <script>
+  (function () {
+    function reduced() {
+      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    function init() {
+      if (reduced() || !window.gsap) return;
+      if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+      document.querySelectorAll('.reveal').forEach(function (el) {
+        gsap.from(el, {
+          opacity: 0, y: 18, duration: 0.4, ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 90%', once: true, onEnter: function () { el.classList.add('is-visible'); } }
+        });
+      });
+      var items = document.querySelectorAll('.grid-item');
+      if (items.length) {
+        gsap.from(items, {
+          opacity: 0, scale: 0.92, y: 16, duration: 0.4,
+          stagger: { each: 0.06, from: 'start', grid: 'auto' },
+          ease: 'back.out(1.4)', clearProps: 'transform'
+        });
+      }
+      document.querySelectorAll('.btn-primary, .btn-secondary').forEach(function (btn) {
+        btn.addEventListener('pointerdown', function () { gsap.to(btn, { scale: 0.97, duration: 0.1 }); });
+        btn.addEventListener('pointerup', function () { gsap.to(btn, { scale: 1, duration: 0.18, ease: 'back.out(1.4)' }); });
+        btn.addEventListener('pointerleave', function () { gsap.to(btn, { scale: 1, duration: 0.12 }); });
+      });
+    }
+    function ready() { if (window.gsap) init(); else setTimeout(ready, 40); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
+    else ready();
+  })();
+  </script>
 </body>
 </html>

@@ -3,33 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0B120E">
   <title>QR Code — Springfield Peptide Buyers Club</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=10">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
-    .brand { font-family: 'Bebas Neue', Impact, sans-serif; letter-spacing: 0.02em; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    .brand {
+      font-family: 'Bebas Neue', Impact, sans-serif;
+      letter-spacing: 0.02em;
+      font-size: clamp(1.75rem, 6vw, 2.25rem);
+      line-height: 1.1;
+    }
+    .qr-card {
+      background: rgba(19, 28, 22, 0.82);
+      border: 1px solid rgba(234, 179, 8, 0.22);
+      border-radius: 1.5rem;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.04) inset,
+        0 16px 40px rgba(0, 0, 0, 0.4);
+      padding: 1.75rem 1.5rem;
+    }
+    .qr-frame {
+      background: #fff;
+      border-radius: 1.25rem;
+      padding: 1.25rem;
+      display: inline-block;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    .btn-gold {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      background: linear-gradient(180deg, #f5d76e 0%, #EAB308 48%, #ca8a04 100%);
+      color: #0B120E;
+      font-weight: 800;
+      padding: 0.75rem 1.5rem;
+      border-radius: 1rem;
+      transition: filter 0.2s ease, transform 0.15s ease;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-gold:hover { filter: brightness(1.06); }
+    .btn-gold:active { transform: scale(0.97); }
+    .btn-gold:focus-visible {
+      outline: 2px solid #EAB308;
+      outline-offset: 3px;
+    }
+    a.back-link {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #A8B8AC;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    a.back-link:hover { color: #F2F7F3; }
+    a.back-link:focus-visible {
+      outline: 2px solid #EAB308;
+      outline-offset: 3px;
+      border-radius: 0.35rem;
+    }
   </style>
 </head>
-<body class="bg-black text-white min-h-screen flex items-center justify-center p-6">
-  <div class="max-w-md w-full text-center">
-    <h1 class="brand text-3xl text-[#FDD700] mb-2">SPRINGFIELD PEPTIDE BUYERS CLUB</h1>
-    <p class="text-zinc-400 text-sm mb-8">Scan to open the price list</p>
+<body class="atmosphere text-white min-h-screen flex items-center justify-center p-6">
+  <div class="max-w-md w-full text-center qr-card grid-item">
+    <h1 class="brand text-[#EAB308] mb-2">SPRINGFIELD PEPTIDE BUYERS CLUB</h1>
+    <p class="text-[#A8B8AC] text-sm mb-8" style="color:#A8B8AC">Scan to open the price list</p>
 
-    <div class="bg-white rounded-3xl p-6 inline-block mb-6">
+    <div class="qr-frame mb-6">
       <img id="qrImage" alt="QR code" width="280" height="280" class="block">
     </div>
 
-    <p id="siteUrl" class="text-emerald-400 text-sm break-all mb-6 font-mono"></p>
+    <p id="siteUrl" class="text-sm break-all mb-6 font-mono" style="color:#4ade80"></p>
 
     <div class="flex flex-col gap-3">
-      <a id="downloadBtn" href="#" download="springfield-peptide-qr.png"
-         class="bg-[#FDD700] hover:bg-white text-black font-bold py-3 px-6 rounded-2xl transition-colors">
+      <a id="downloadBtn" href="#" download="springfield-peptide-qr.png" class="btn-gold">
         Download QR image
       </a>
-      <a href="/" class="text-zinc-500 hover:text-white text-sm">← Back to site</a>
+      <a href="/" class="back-link">← Back to site</a>
     </div>
 
-    <p class="text-zinc-600 text-xs mt-10 leading-relaxed">
+    <p class="text-xs mt-10 leading-relaxed" style="color:#6b7c70">
       Print this QR code on flyers, business cards, or display it at events.
       Once deployed to your server, it always points to your live site.
     </p>
@@ -42,6 +106,24 @@
     document.getElementById('siteUrl').textContent = siteUrl;
     document.getElementById('qrImage').src = qrApi;
     document.getElementById('downloadBtn').href = qrApi;
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script>
+  (function () {
+    function reduced() {
+      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    function init() {
+      if (reduced() || !window.gsap) return;
+      gsap.from('.grid-item', {
+        opacity: 0, scale: 0.92, y: 16, duration: 0.45,
+        ease: 'back.out(1.4)', clearProps: 'transform'
+      });
+    }
+    function ready() { if (window.gsap) init(); else setTimeout(ready, 40); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
+    else ready();
+  })();
   </script>
 </body>
 </html>

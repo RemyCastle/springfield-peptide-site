@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="description" content="Springfield Peptide Buyers Club — research peptides price list and order inquiries.">
-    <meta name="theme-color" content="#006600">
+    <meta name="theme-color" content="#0B120E">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="canonical" href="https://springfieldpbc.com/">
@@ -38,13 +38,15 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/site-header.css?v=11">
-    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=9">
+    <link rel="stylesheet" href="/shared/site-header.css?v=12">
+    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=10">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         body {
             font-family: 'Inter', system-ui, sans-serif;
+            font-size: 1rem;
+            line-height: 1.5;
             padding-left: env(safe-area-inset-left, 0);
             padding-right: env(safe-area-inset-right, 0);
             padding-bottom: env(safe-area-inset-bottom, 0);
@@ -54,6 +56,10 @@
             font-weight: 400;
             letter-spacing: 0.02em;
             text-transform: uppercase;
+        }
+        h2.ducks-font {
+            font-size: clamp(1.85rem, 5vw, 3rem);
+            line-height: 1.1;
         }
         .terms-scroll {
             max-height: min(40vh, 280px);
@@ -106,11 +112,12 @@
             left: -9999px;
             top: 0.5rem;
             z-index: 200;
-            background: #FDD700;
-            color: #000;
+            background: #EAB308;
+            color: #0B120E;
             font-weight: 700;
             padding: 0.6rem 1rem;
             border-radius: 0.75rem;
+            min-height: 44px;
         }
         .skip-link:focus {
             left: 0.5rem;
@@ -119,52 +126,52 @@
         }
         .search-field {
             width: 100%;
-            background: #000;
-            border: 1px solid #3f3f46;
+            background: #0B120E;
+            border: 1px solid #263A2C;
             border-radius: 1rem;
             padding: 0.75rem 1rem 0.75rem 2.75rem;
-            color: #fff;
+            color: #F2F7F3;
             font-size: 16px;
             min-height: 2.75rem;
         }
         .search-field:focus {
             outline: none;
-            border-color: #FDD700;
-            box-shadow: 0 0 0 2px rgba(253, 215, 0, 0.35);
+            border-color: #EAB308;
+            box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.35);
         }
         .filter-chip {
             font-size: 0.7rem;
             font-weight: 700;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            padding: 0.45rem 0.85rem;
+            padding: 0.5rem 0.9rem;
             border-radius: 999px;
-            border: 1px solid #3f3f46;
-            color: #a1a1aa;
+            border: 1px solid #263A2C;
+            color: #A8B8AC;
             background: transparent;
-            min-height: 2.25rem;
-            transition: color 0.15s, background 0.15s, border-color 0.15s;
+            min-height: 44px;
+            cursor: pointer;
+            transition: color 0.2s, background 0.2s, border-color 0.2s;
         }
         .filter-chip.active {
-            background: #FDD700;
-            color: #000;
-            border-color: #FDD700;
+            background: #EAB308;
+            color: #0B120E;
+            border-color: #EAB308;
         }
         .filter-chip:hover:not(.active) {
-            border-color: rgba(253, 215, 0, 0.5);
-            color: #fff;
+            border-color: rgba(234, 179, 8, 0.5);
+            color: #F2F7F3;
         }
         .price-card {
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-            transform: none !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+            border-radius: 1.25rem;
+            cursor: pointer;
         }
         .price-card.qty-flash {
-            border-color: rgba(253, 215, 0, 0.85);
+            border-color: rgba(234, 179, 8, 0.85);
             box-shadow:
-              0 0 0 1px rgba(253, 215, 0, 0.4),
-              0 0 16px rgba(253, 215, 0, 0.35);
-            transform: none !important;
-            animation: product-glitch 0.22s steps(2, end) 1;
+              0 0 0 1px rgba(234, 179, 8, 0.4),
+              0 0 16px rgba(234, 179, 8, 0.35);
         }
         .sticky-order-bar {
             position: fixed;
@@ -184,8 +191,8 @@
         .sticky-order-inner {
             max-width: 28rem;
             margin: 0 auto;
-            background: linear-gradient(180deg, #14532d 0%, #052e16 100%);
-            border: 1px solid rgba(253, 215, 0, 0.45);
+            background: linear-gradient(180deg, rgba(27, 40, 32, 0.96) 0%, rgba(11, 18, 14, 0.98) 100%);
+            border: 1px solid rgba(234, 179, 8, 0.4);
             border-radius: 1.25rem;
             box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.2);
             padding: 0.75rem 1rem;
@@ -223,7 +230,7 @@
             color: inherit;
             font: inherit;
         }
-        .sticky-count-btn:hover { color: #FDD700; }
+        .sticky-count-btn:hover { color: #EAB308; }
         .sticky-actions {
             display: grid;
             grid-template-columns: auto 1fr;
@@ -274,18 +281,18 @@
         }
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #FDD700, #86efac);
+            background: linear-gradient(90deg, #EAB308, #4ade80);
             border-radius: 999px;
             width: 0%;
             transition: width 0.35s ease;
         }
         .progress-track.celebrate {
-            box-shadow: 0 0 0 0 rgba(253, 215, 0, 0.7);
+            box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
             animation: progress-celebrate 0.7s ease 2;
         }
         @keyframes progress-celebrate {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(253, 215, 0, 0); }
-            50% { box-shadow: 0 0 14px 3px rgba(253, 215, 0, 0.55); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+            50% { box-shadow: 0 0 14px 3px rgba(234, 179, 8, 0.55); }
         }
         .qty-stepper {
             display: inline-flex;
@@ -305,11 +312,12 @@
             justify-content: center;
             font-size: 1.15rem;
             font-weight: 700;
-            color: #FDD700;
+            color: #EAB308;
             background: transparent;
             border: 0;
             touch-action: manipulation;
             user-select: none;
+            cursor: pointer;
         }
         .qty-stepper .qty-btn:active { background: rgba(253, 215, 0, 0.12); }
         .qty-stepper .qty-btn:disabled { opacity: 0.35; color: #71717a; }
@@ -335,7 +343,7 @@
             top: -0.35rem;
             font-size: 0.75rem;
             font-weight: 800;
-            color: #FDD700;
+            color: #EAB308;
             pointer-events: none;
             animation: qty-float-up 0.55s ease forwards;
             z-index: 5;
@@ -347,8 +355,8 @@
             100% { opacity: 0; transform: translateY(-18px); }
         }
         .price-card.in-cart {
-            border-color: rgba(253, 215, 0, 0.55);
-            box-shadow: 0 0 0 1px rgba(253, 215, 0, 0.12);
+            border-color: rgba(234, 179, 8, 0.55);
+            box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.12);
         }
         .review-remove {
             color: #f87171;
@@ -367,9 +375,9 @@
             font-weight: 600;
         }
         .skeleton-card {
-            border-radius: 1rem;
-            border: 1px solid rgba(253, 215, 0, 0.15);
-            background: #18181b;
+            border-radius: 1.25rem;
+            border: 1px solid rgba(38, 58, 44, 0.9);
+            background: #131C16;
             padding: 1rem;
             min-height: 5.5rem;
             position: relative;
@@ -379,7 +387,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(253, 215, 0, 0.08), transparent);
+            background: linear-gradient(90deg, transparent, rgba(234, 179, 8, 0.08), transparent);
             animation: shimmer 1.4s infinite;
         }
         @keyframes shimmer {
@@ -407,8 +415,8 @@
             max-width: 28rem;
             max-height: min(88vh, 640px);
             overflow-y: auto;
-            background: #18181b;
-            border: 1px solid rgba(253, 215, 0, 0.35);
+            background: #131C16;
+            border: 1px solid rgba(234, 179, 8, 0.3);
             border-radius: 1.5rem 1.5rem 0 0;
             padding: 1.25rem 1.25rem max(1.25rem, env(safe-area-inset-bottom));
             -webkit-overflow-scrolling: touch;
@@ -424,14 +432,15 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            color: #FDD700;
-            border: 1px solid rgba(253, 215, 0, 0.4);
+            color: #EAB308;
+            border: 1px solid rgba(234, 179, 8, 0.4);
             border-radius: 0.75rem;
-            padding: 0.4rem 0.75rem;
-            background: rgba(0, 0, 0, 0.35);
-            min-height: 2.25rem;
+            padding: 0.5rem 0.85rem;
+            background: rgba(11, 18, 14, 0.55);
+            min-height: 44px;
+            cursor: pointer;
         }
-        .copy-btn:hover { background: rgba(253, 215, 0, 0.12); }
+        .copy-btn:hover { background: rgba(234, 179, 8, 0.12); }
         body.has-cart-bar { padding-bottom: 9.5rem; }
         body.has-cart-bar.sticky-expanded { padding-bottom: 16rem; }
         /* ── Password gate: wrong = red flash; correct = explode ── */
@@ -487,11 +496,11 @@
             height: 10px;
             margin: -5px 0 0 -5px;
             border-radius: 2px;
-            background: #FDD700;
+            background: #EAB308;
             opacity: 0;
             will-change: transform, opacity;
         }
-        .gate-shard.green { background: #22c55e; }
+        .gate-shard.green { background: #16A34A; }
         .gate-shard.white { background: #fff; }
         #passwordScreen.gate-success .gate-shard {
             animation: gate-shard-fly 0.75s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
@@ -564,17 +573,17 @@
         <div class="gate-flash" aria-hidden="true"></div>
         <div class="gate-burst" id="gateBurst" aria-hidden="true"></div>
         <div class="gate-card max-w-xs w-full text-center px-2 sm:px-4">
-            <div class="ducks-font text-2xl sm:text-3xl mb-6 sm:mb-8 text-[#FDD700] leading-tight break-word">
+            <div class="ducks-font text-2xl sm:text-3xl mb-6 sm:mb-8 text-[#EAB308] leading-tight break-word">
                 SPRINGFIELD<br class="sm:hidden"> PEPTIDE BUYERS CLUB
             </div>
             <input type="password" id="passwordInput" placeholder="ENTER PASSWORD"
-                   class="w-full bg-zinc-900 border border-[#FDD700] text-center py-4 rounded-2xl text-base focus:outline-none focus:ring-2 focus:ring-[#FDD700]/50"
+                   class="w-full bg-zinc-900 border border-[#EAB308] text-center py-4 rounded-2xl text-base focus:outline-none focus:ring-2 focus:ring-[#EAB308]/50"
                    autocomplete="current-password"
                    enterkeyhint="go"
                    inputmode="text"
                    aria-label="Club password">
             <button type="button" id="passwordEnterBtn"
-                    class="mt-6 w-full bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-4 rounded-2xl transition-colors min-h-[3rem]">ENTER</button>
+                    class="mt-6 w-full bg-[#EAB308] hover:bg-white active:bg-white text-black font-bold py-4 rounded-2xl transition-colors min-h-[3rem]">ENTER</button>
             <p id="errorMsg" class="text-red-500 mt-4 text-sm hidden" role="alert">Incorrect password</p>
         </div>
     </div>
@@ -600,15 +609,50 @@
         </header>
 
         <section class="page-hero" aria-label="Welcome">
+            <div class="page-hero-blobs" aria-hidden="true">
+                <svg class="blob-a" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="heroBlobGradA" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#16A34A" stop-opacity="0.55"/>
+                            <stop offset="55%" stop-color="#006600" stop-opacity="0.35"/>
+                            <stop offset="100%" stop-color="#EAB308" stop-opacity="0.18"/>
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#heroBlobGradA)" d="M440.5,323.5Q418,397,349.5,430.5Q281,464,214,424.5Q147,385,112,317.5Q77,250,116.5,187.5Q156,125,226.5,101.5Q297,78,361,115.5Q425,153,444,201.5Q463,250,440.5,323.5Z"/>
+                </svg>
+                <svg class="blob-b" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="heroBlobGradB" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#EAB308" stop-opacity="0.22"/>
+                            <stop offset="100%" stop-color="#16A34A" stop-opacity="0.28"/>
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#heroBlobGradB)" d="M421,334Q392,418,312.5,441.5Q233,465,168.5,411.5Q104,358,95.5,274.5Q87,191,154,138.5Q221,86,304.5,92Q388,98,429,174Q470,250,421,334Z"/>
+                </svg>
+            </div>
             <div class="page-hero-orb page-hero-orb--green" aria-hidden="true"></div>
             <div class="page-hero-orb page-hero-orb--gold" aria-hidden="true"></div>
             <div class="page-hero-inner">
                 <p class="page-hero-eyebrow">Members-only research collective</p>
-                <h1 class="page-hero-title ducks-font">GAINS WITHOUT COMPROMISE</h1>
+                <h1 class="page-hero-title ducks-font hero-gold-underline">GAINS WITHOUT COMPROMISE</h1>
                 <p class="page-hero-sub">Bulk-ready pricing, transparent discounts, dosage tools, and protocol coaching — built for serious research buyers.</p>
                 <div class="page-hero-cta">
                     <a href="#prices" class="btn-primary btn-magnetic">View prices</a>
                     <a href="/coaching.html" class="btn-secondary">Coaching · $100/hr</a>
+                </div>
+                <div class="trust-badges" role="list">
+                    <span class="trust-badge" role="listitem">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                        Research only
+                    </span>
+                    <span class="trust-badge" role="listitem">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                        Bulk pricing
+                    </span>
+                    <span class="trust-badge" role="listitem">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+                        Dosage tools
+                    </span>
                 </div>
             </div>
         </section>
@@ -619,10 +663,10 @@
             <div class="spbc-main max-w-screen-md">
                 <h2 class="ducks-font text-3xl sm:text-4xl md:text-5xl text-center mb-4 sm:mb-6 text-white reveal">PRICE LIST</h2>
                 <div class="depth-card px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5 reveal">
-                    <p class="text-[#FDD700] font-semibold">Single vial rules</p>
+                    <p class="text-[#EAB308] font-semibold">Single vial rules</p>
                     <p class="text-zinc-300"><strong class="text-white">3 vial minimum</strong> when ordering single vials</p>
                     <p class="text-zinc-300"><strong class="text-white">5+ single vials</strong> → <span class="text-emerald-400 font-semibold">10% off</span> single-vial prices</p>
-                    <p class="text-[#FDD700] font-semibold pt-2">10-pack / kit rules</p>
+                    <p class="text-[#EAB308] font-semibold pt-2">10-pack / kit rules</p>
                     <p class="text-zinc-300"><strong class="text-white">2+ kits</strong> → <span class="text-emerald-400 font-semibold">10% off</span> kit subtotal</p>
                     <p class="text-zinc-300"><strong class="text-white">5+ kits</strong> → <span class="text-emerald-400 font-semibold">15% off</span> kit subtotal</p>
                 </div>
@@ -642,7 +686,7 @@
                     </div>
                     <p id="filterEmpty" class="hidden text-center text-zinc-500 text-sm py-2">
                         No products match your search.
-                        <button type="button" id="clearSearchBtn" class="block mx-auto mt-2 text-[#FDD700] font-semibold underline underline-offset-2">Clear search &amp; filters</button>
+                        <button type="button" id="clearSearchBtn" class="block mx-auto mt-2 text-[#EAB308] font-semibold underline underline-offset-2">Clear search &amp; filters</button>
                     </p>
                 </div>
 
@@ -671,7 +715,7 @@
                 </div>
 
                 <div class="mb-8 reveal">
-                    <h3 class="text-[#FDD700] font-bold mb-3 text-center text-sm sm:text-base">
+                    <h3 class="text-[#EAB308] font-bold mb-3 text-center text-sm sm:text-base">
                         <a href="#terms-section" class="hover:underline">TERMS OF SERVICE &amp; PURCHASE AGREEMENT</a>
                     </h3>
                     <div id="terms-section" class="terms-scroll depth-card p-4 sm:p-6 text-xs leading-relaxed text-zinc-300">
@@ -705,7 +749,7 @@
                     </button>
 
                     <fieldset class="space-y-3 pt-1">
-                        <legend class="text-[10px] uppercase tracking-[0.2em] text-[#FDD700]/80 font-semibold w-full text-center mb-1">Shipping address (US only)</legend>
+                        <legend class="text-[10px] uppercase tracking-[0.2em] text-[#EAB308]/80 font-semibold w-full text-center mb-1">Shipping address (US only)</legend>
                         <input type="text" id="shipLine1" name="ship_line1" placeholder="Street address" required autocomplete="address-line1"
                                class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
                         <input type="text" id="shipLine2" name="ship_line2" placeholder="Apt, suite, unit (optional)" autocomplete="address-line2"
@@ -725,8 +769,8 @@
                     </fieldset>
 
                     <label class="flex items-start gap-3 text-sm cursor-pointer select-none">
-                        <input type="checkbox" id="agree" class="w-6 h-6 mt-0.5 shrink-0 accent-[#FDD700]">
-                        <span class="text-[#FDD700] font-medium leading-snug">I AGREE TO ALL TERMS</span>
+                        <input type="checkbox" id="agree" class="w-6 h-6 mt-0.5 shrink-0 accent-[#EAB308]">
+                        <span class="text-[#EAB308] font-medium leading-snug">I AGREE TO ALL TERMS</span>
                     </label>
 
                     <p id="submitError" class="text-red-400 text-sm text-center hidden break-word"></p>
@@ -740,7 +784,7 @@
                 <div id="orderSuccess" class="hidden mt-6 bg-emerald-950 border border-emerald-600 rounded-3xl p-4 sm:p-6 text-center space-y-3">
                     <p class="text-emerald-300 font-bold text-lg">Order placed</p>
                     <div class="flex flex-col items-center gap-2">
-                        <p class="text-[#FDD700] text-xl sm:text-2xl font-bold font-mono break-all" id="successOrderNumber"></p>
+                        <p class="text-[#EAB308] text-xl sm:text-2xl font-bold font-mono break-all" id="successOrderNumber"></p>
                         <button type="button" id="copyOrderBtn" class="copy-btn" aria-live="polite">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                             <span id="copyOrderLabel">Copy order #</span>
@@ -752,8 +796,8 @@
                         <span id="successShipNote">Shipping address is on file.</span>
                     </p>
                     <div class="flex flex-col gap-2 pt-2">
-                        <a id="successPayLink" href="#" class="bg-[#FDD700] hover:bg-white active:bg-white text-black font-bold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Open payment page</a>
-                        <a id="successShipLink" href="#" class="border border-zinc-600 hover:border-[#FDD700] text-zinc-200 font-semibold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Edit shipping address</a>
+                        <a id="successPayLink" href="#" class="bg-[#EAB308] hover:bg-white active:bg-white text-black font-bold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Open payment page</a>
+                        <a id="successShipLink" href="#" class="border border-zinc-600 hover:border-[#EAB308] text-zinc-200 font-semibold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Edit shipping address</a>
                     </div>
                     <p class="text-xs text-zinc-500">Payment handles and full steps are on the payment page only</p>
                 </div>
@@ -776,7 +820,7 @@
                     </div>
                     <div class="text-right shrink-0">
                         <p class="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">Total</p>
-                        <p id="stickyTotal" class="text-lg font-bold text-[#FDD700] tabular-nums" aria-live="polite">$0.00</p>
+                        <p id="stickyTotal" class="text-lg font-bold text-[#EAB308] tabular-nums" aria-live="polite">$0.00</p>
                     </div>
                 </div>
                 <div id="stickyLines" class="sticky-lines" role="region" aria-label="Cart items"></div>
@@ -803,7 +847,7 @@
         <div class="modal-sheet">
             <div class="flex items-start justify-between gap-3 mb-4">
                 <div>
-                    <p class="text-[10px] uppercase tracking-[0.2em] text-[#FDD700] font-semibold mb-1">Confirm</p>
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-[#EAB308] font-semibold mb-1">Confirm</p>
                     <h2 id="reviewTitle" class="ducks-font text-2xl text-white">Review order</h2>
                 </div>
                 <button type="button" id="reviewCloseBtn" class="text-zinc-400 hover:text-white text-2xl leading-none px-2 min-h-[2.5rem]" aria-label="Close review">&times;</button>
@@ -812,7 +856,7 @@
             <div class="border-t border-zinc-700 pt-3 mb-4 space-y-1.5 text-sm">
                 <div class="flex justify-between gap-2"><span class="text-zinc-400">Email</span><span id="reviewEmail" class="text-white break-all text-right"></span></div>
                 <div class="flex justify-between gap-2"><span class="text-zinc-400">Name</span><span id="reviewName" class="text-white text-right"></span></div>
-                <div class="flex justify-between gap-2 text-base font-bold pt-1"><span class="text-zinc-200">Total</span><span id="reviewTotal" class="text-[#FDD700] tabular-nums"></span></div>
+                <div class="flex justify-between gap-2 text-base font-bold pt-1"><span class="text-zinc-200">Total</span><span id="reviewTotal" class="text-[#EAB308] tabular-nums"></span></div>
             </div>
             <p id="reviewError" class="text-red-400 text-sm text-center hidden mb-3" role="alert"></p>
             <div class="flex flex-col gap-2">
@@ -834,7 +878,7 @@
                 <div>
                     <p class="text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Email</p>
                     <a href="mailto:springfieldpeps@proton.me?subject=SPBC%20question"
-                       class="text-lg sm:text-xl font-bold text-[#FDD700] hover:underline break-all">
+                       class="text-lg sm:text-xl font-bold text-[#EAB308] hover:underline break-all">
                         springfieldpeps@proton.me
                     </a>
                 </div>
@@ -843,7 +887,7 @@
                         <li><strong class="text-zinc-200">Orders &amp; payment</strong> — include your order number if you have one</li>
                         <li><strong class="text-zinc-200">Tracking / shipping</strong> — name + order code helps us find you fast</li>
                         <li><strong class="text-zinc-200">Coaching</strong> — use the
-                          <a href="/coaching.html" class="text-[#FDD700] underline underline-offset-2">coaching page</a>
+                          <a href="/coaching.html" class="text-[#EAB308] underline underline-offset-2">coaching page</a>
                           or email with subject “Coaching”</li>
                     </ul>
                 </div>
@@ -858,10 +902,10 @@
     <footer class="text-center py-6 text-xs text-zinc-500 bg-black px-3 break-word border-t border-zinc-900">
         <p>SPRINGFIELD PEPTIDE BUYERS CLUB • RESEARCH ONLY</p>
         <p class="mt-2 text-sm">
-            <a href="mailto:springfieldpeps@proton.me" class="text-[#FDD700] hover:underline">springfieldpeps@proton.me</a>
+            <a href="mailto:springfieldpeps@proton.me" class="text-[#EAB308] hover:underline">springfieldpeps@proton.me</a>
         </p>
         <p class="mt-1">
-            <a href="#contact" class="hover:text-[#FDD700] underline underline-offset-2">Contact</a>
+            <a href="#contact" class="hover:text-[#EAB308] underline underline-offset-2">Contact</a>
         </p>
     </footer>
 
@@ -1161,7 +1205,7 @@
                 const kitOnly = !!p.kit_only;
                 const saved = draft[name] || {};
                 const article = document.createElement('article');
-                article.className = 'price-card depth-card p-3 sm:p-4 reveal';
+                article.className = 'price-card depth-card grid-item p-3 sm:p-4 reveal';
                 article.setAttribute('data-name', name);
                 if (kitOnly) {
                     article.setAttribute('data-kit', String(p.pack_price));
@@ -1176,7 +1220,7 @@
                         <div class="price-row">
                             <span class="price-label text-sm text-zinc-400">Vial</span>
                             <div class="price-controls">
-                                <span class="font-bold text-[#FDD700] tabular-nums">$${formatPrice(p.vial_price)}</span>
+                                <span class="font-bold text-[#EAB308] tabular-nums">$${formatPrice(p.vial_price)}</span>
                                 ${buildStepper('vial', VIAL_OPTS, saved.vial, name + ' vial qty')}
                             </div>
                         </div>`;
@@ -1185,7 +1229,7 @@
                     <div class="price-row">
                         <span class="price-label text-sm text-zinc-400">${kitOnly ? 'Kit' : '10-Pack / Kit'}</span>
                         <div class="price-controls">
-                            <span class="font-bold text-[#FDD700] tabular-nums">$${formatPrice(p.pack_price)}</span>
+                            <span class="font-bold text-[#EAB308] tabular-nums">$${formatPrice(p.pack_price)}</span>
                             ${buildStepper('pack', kitOnly ? VIAL_OPTS : PACK_OPTS, saved.pack, name + ' kit qty')}
                         </div>
                     </div>
@@ -1489,7 +1533,7 @@
             if (linesEl) {
                 linesEl.innerHTML = t.lines.map(l => {
                     const parts = l.text.split(' — ');
-                    return `<div class="sticky-line"><span class="break-word min-w-0">${escapeHtml(parts[0] || '')}</span><span class="text-[#FDD700] tabular-nums shrink-0">${escapeHtml(parts[1] || '')}</span></div>`;
+                    return `<div class="sticky-line"><span class="break-word min-w-0">${escapeHtml(parts[0] || '')}</span><span class="text-[#EAB308] tabular-nums shrink-0">${escapeHtml(parts[1] || '')}</span></div>`;
                 }).join('');
             }
 
@@ -1693,7 +1737,7 @@
                     const row = document.createElement('div');
                     row.className = 'flex items-center justify-between gap-2 border-b border-zinc-800 pb-2';
                     row.innerHTML = `<span class="break-word min-w-0 flex-1">${escapeHtml(line ? line.text.split(' — ')[0] : vialQty + 'x ' + pname + ' (Vial)')}</span>
-                        <span class="text-[#FDD700] tabular-nums shrink-0">${escapeHtml(line ? (line.text.split(' — ')[1] || '') : '')}</span>
+                        <span class="text-[#EAB308] tabular-nums shrink-0">${escapeHtml(line ? (line.text.split(' — ')[1] || '') : '')}</span>
                         <button type="button" class="review-remove" data-name="${escapeHtml(pname)}" data-kind="vial" aria-label="Remove ${escapeHtml(pname)} vials">&times;</button>`;
                     linesEl.appendChild(row);
                 }
@@ -1702,7 +1746,7 @@
                     const row = document.createElement('div');
                     row.className = 'flex items-center justify-between gap-2 border-b border-zinc-800 pb-2';
                     row.innerHTML = `<span class="break-word min-w-0 flex-1">${escapeHtml(line ? line.text.split(' — ')[0] : packQty + 'x ' + pname)}</span>
-                        <span class="text-[#FDD700] tabular-nums shrink-0">${escapeHtml(line ? (line.text.split(' — ')[1] || '') : '')}</span>
+                        <span class="text-[#EAB308] tabular-nums shrink-0">${escapeHtml(line ? (line.text.split(' — ')[1] || '') : '')}</span>
                         <button type="button" class="review-remove" data-name="${escapeHtml(pname)}" data-kind="pack" aria-label="Remove ${escapeHtml(pname)} kits">&times;</button>`;
                     linesEl.appendChild(row);
                 }
@@ -1980,7 +2024,104 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
     <script src="/shared/site-atmosphere.js?v=9" defer></script>
     <script src="/shared/site-header.js?v=11" defer></script>
+    <script>
+    (function () {
+      function prefersReduced() {
+        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      }
+      function initGsap() {
+        if (prefersReduced() || !window.gsap) return;
+        if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+
+        // Hero blob subtle parallax (transform only)
+        var blobs = document.querySelectorAll('.page-hero-blobs svg');
+        if (blobs.length && window.ScrollTrigger) {
+          blobs.forEach(function (el, i) {
+            gsap.to(el, {
+              y: i === 0 ? 48 : 28,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: '.page-hero',
+                start: 'top top',
+                end: 'bottom top',
+                scrub: true
+              }
+            });
+          });
+        }
+
+        // Section scroll reveals (enhance .reveal if not already visible)
+        document.querySelectorAll('.reveal').forEach(function (el) {
+          if (el.classList.contains('is-visible')) return;
+          gsap.from(el, {
+            opacity: 0,
+            y: 20,
+            duration: 0.45,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 88%',
+              once: true,
+              onEnter: function () { el.classList.add('is-visible'); }
+            }
+          });
+        });
+
+        // Card grid stagger
+        function staggerCards() {
+          var items = document.querySelectorAll('#priceTable .grid-item:not(.hidden)');
+          if (!items.length) return;
+          gsap.from(items, {
+            opacity: 0,
+            scale: 0.92,
+            y: 16,
+            duration: 0.4,
+            stagger: { each: 0.06, from: 'start', grid: 'auto' },
+            ease: 'back.out(1.4)',
+            clearProps: 'transform'
+          });
+        }
+        var priceRoot = document.getElementById('priceTable');
+        if (priceRoot && window.MutationObserver) {
+          var armed = false;
+          new MutationObserver(function () {
+            if (armed) return;
+            if (!priceRoot.querySelector('.grid-item')) return;
+            armed = true;
+            requestAnimationFrame(staggerCards);
+            setTimeout(function () { armed = false; }, 800);
+          }).observe(priceRoot, { childList: true });
+        }
+
+        // Button press-scale already in CSS; soft GSAP hover for primary (fine pointer only)
+        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+          document.querySelectorAll('.btn-primary, .btn-secondary').forEach(function (btn) {
+            btn.addEventListener('pointerdown', function () {
+              gsap.to(btn, { scale: 0.97, duration: 0.1, ease: 'power1.out' });
+            });
+            btn.addEventListener('pointerup', function () {
+              gsap.to(btn, { scale: 1, duration: 0.18, ease: 'back.out(1.4)' });
+            });
+            btn.addEventListener('pointerleave', function () {
+              gsap.to(btn, { scale: 1, duration: 0.15 });
+            });
+          });
+        }
+      }
+      function whenReady() {
+        if (window.gsap) initGsap();
+        else setTimeout(whenReady, 40);
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', whenReady);
+      } else {
+        whenReady();
+      }
+    })();
+    </script>
 </body>
 </html>
