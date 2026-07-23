@@ -5,7 +5,22 @@ const MEMBER_COOKIE = 'spbc_member';
 
 function hasMemberSession(request) {
   const header = request.headers.get('Cookie') || '';
-  return new RegExp(`(?:^|;\\s*)${MEMBER_COOKIE}=1(?:;|$)`).test(header);
+  if (new RegExp(`(?:^|;\\s*)${MEMBER_COOKIE}=1(?:;|$)`).test(header)) {
+    return true;
+  }
+  // Cloudflare Workers cannot set Cookie on outbound fetch (forbidden header).
+  // Server-to-server callers (spbc-orders dropship pricing) use header and/or query.
+  const soft =
+    (request.headers.get('X-SPBC-Member') || '').trim() ||
+    (request.headers.get('x-spbc-member') || '').trim();
+  if (soft === '1') return true;
+  try {
+    const url = new URL(request.url);
+    if (url.searchParams.get('member') === '1') return true;
+  } catch {
+    /* ignore */
+  }
+  return false;
 }
 
 export async function onRequestGet({ request, env }) {
