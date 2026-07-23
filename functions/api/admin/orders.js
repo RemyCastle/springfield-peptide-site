@@ -17,6 +17,9 @@ export async function onRequestGet({ request, env }) {
     const v = url.searchParams.get(key);
     if (v != null && v !== '') params.set(key, v);
   }
+  // SPBC-owner view: never show partner (franchisee) retail orders. SPBC only acts on
+  // its own direct orders and the wholesale dropships created once a partner is paid.
+  params.set('exclude_partner_retail', '1');
   const qs = params.toString();
   const path = `/admin/orders${qs ? `?${qs}` : ''}`;
 
