@@ -335,6 +335,42 @@
           </button>
         </div>
         <p id="franMeta" class="text-xs text-zinc-500 mb-2"></p>
+
+        <!-- Wholesale batching schedule (per franchisee) -->
+        <div class="border border-violet-500/25 rounded-2xl p-3 mb-4">
+          <p class="text-[11px] uppercase tracking-wide text-violet-300 mb-2">Wholesale batching</p>
+          <div class="flex flex-wrap gap-3 items-end">
+            <div class="min-w-[170px]">
+              <label class="block text-[11px] text-zinc-400 mb-1" for="franMode">Fulfillment</label>
+              <select id="franMode" class="admin-input">
+                <option value="batch">Stack into weekly master order</option>
+                <option value="immediate">Dropship each order immediately</option>
+              </select>
+            </div>
+            <div class="min-w-[150px]">
+              <label class="block text-[11px] text-zinc-400 mb-1" for="franDay">Batch day</label>
+              <select id="franDay" class="admin-input">
+                <option value="0">Sunday</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+              </select>
+            </div>
+            <button id="franSaveScheduleBtn" type="button"
+                    class="px-4 py-2.5 rounded-2xl text-sm font-semibold bg-violet-900/40 border border-violet-500/40 hover:border-violet-400">
+              Save schedule
+            </button>
+          </div>
+          <p class="text-[11px] text-zinc-500 mt-2">
+            On the chosen day, every paid customer order from that week is combined into
+            <strong class="text-violet-300">one master wholesale order</strong>.
+            Emergency purchases are never batched.
+          </p>
+        </div>
+
         <div class="table-scroll border border-violet-500/25 rounded-2xl">
           <table class="w-full text-sm">
             <thead>
@@ -514,7 +550,21 @@
         return;
       }
       const links = partner.product_links || [];
-      meta.textContent = `${partner.name} · ${links.length} mapped product(s)${partner.active ? '' : ' · INACTIVE'}`;
+      const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const mode = partner.fulfillment_mode || 'batch';
+      const day = partner.batch_weekday ?? 4;
+      const schedBit =
+        mode === 'batch'
+          ? ` · batches ${DAY_NAMES[day]}`
+          : ' · dropships immediately';
+      meta.textContent = `${partner.name} · ${links.length} mapped product(s)${schedBit}${partner.active ? '' : ' · INACTIVE'}`;
+      const modeEl = document.getElementById('franMode');
+      const dayEl = document.getElementById('franDay');
+      if (modeEl) modeEl.value = mode;
+      if (dayEl) {
+        dayEl.value = String(day);
+        dayEl.disabled = mode !== 'batch';
+      }
       if (!links.length) {
         tbody.innerHTML =
           '<tr><td colspan="5" class="px-3 py-4 text-zinc-500">No product links. Clone from an existing franchisee or map products in the worker partners UI.</td></tr>';
@@ -607,6 +657,41 @@
       } else {
         showFranMsg(`Saved ${saved} item price(s)`);
       }
+      await loadFranchisees();
+      document.getElementById('franSelect').value = slug;
+      fillFranSelects(slug);
+      renderFranPrices();
+    }
+
+    /** Save this franchisee's batching schedule (mode + weekly batch day). */
+    async function saveFranSchedule() {
+      const slug = document.getElementById('franSelect').value;
+      if (!slug) {
+        showFranMsg('Select a franchisee first', false);
+        return;
+      }
+      const mode = document.getElementById('franMode').value;
+      const day = Number(document.getElementById('franDay').value);
+      const res = await fetch(
+        `/api/admin/franchisees/${encodeURIComponent(slug)}/schedule`,
+        {
+          method: 'PATCH',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fulfillment_mode: mode, batch_weekday: day }),
+        }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showFranMsg(data.message || data.error || 'Schedule save failed', false);
+        return;
+      }
+      const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      showFranMsg(
+        mode === 'batch'
+          ? `Saved — orders stack into one master order every ${DAY_NAMES[day]}`
+          : 'Saved — each paid order dropships immediately'
+      );
       await loadFranchisees();
       document.getElementById('franSelect').value = slug;
       fillFranSelects(slug);
@@ -1855,6 +1940,11 @@
     document.getElementById('franchiseesRefreshBtn').addEventListener('click', () => loadFranchisees());
     document.getElementById('franSelect').addEventListener('change', () => renderFranPrices());
     document.getElementById('franSavePricesBtn').addEventListener('click', () => saveFranPrices());
+    document.getElementById('franMode')?.addEventListener('change', (e) => {
+      const dayEl = document.getElementById('franDay');
+      if (dayEl) dayEl.disabled = e.target.value !== 'batch';
+    });
+    document.getElementById('franSaveScheduleBtn')?.addEventListener('click', () => saveFranSchedule());
     document.getElementById('franSetupLinkBtn').addEventListener('click', () => rotateFranSetupLink());
     document.getElementById('newFranCreateBtn').addEventListener('click', () => createFranchisee());
     document.getElementById('productsFranSelect').addEventListener('change', () => onProductsFranSelectChange());
