@@ -53,29 +53,6 @@ export async function ensureCatalogSchema(env) {
       /* ignore */
     }
   }
-
-  // products.vial_mg — mg of peptide per vial (for cycle-supply / cart-quantity math)
-  try {
-    await env.DB.prepare(`SELECT vial_mg FROM products LIMIT 1`).first();
-  } catch {
-    try {
-      await env.DB.prepare(`ALTER TABLE products ADD COLUMN vial_mg REAL`).run();
-    } catch {
-      /* ignore */
-    }
-  }
-
-  // products.lab_slug — maps this product to a Peptide Stack Lab compound slug
-  // (used to auto-build a cart from a lab regimen). Optional; null for kits/blends.
-  try {
-    await env.DB.prepare(`SELECT lab_slug FROM products LIMIT 1`).first();
-  } catch {
-    try {
-      await env.DB.prepare(`ALTER TABLE products ADD COLUMN lab_slug TEXT`).run();
-    } catch {
-      /* ignore */
-    }
-  }
 }
 
 export async function listSuppliers(env, { activeOnly = false } = {}) {

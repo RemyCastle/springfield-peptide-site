@@ -135,9 +135,6 @@ function productToPublic(row) {
     kit_only: !!row.kit_only,
     sort_order: row.sort_order,
     active: !!row.active,
-    // mg per vial + lab compound slug — for cycle-supply / cart-quantity math.
-    vial_mg: row.vial_mg == null ? null : Number(row.vial_mg),
-    lab_slug: row.lab_slug == null || row.lab_slug === '' ? null : String(row.lab_slug),
   };
 }
 
