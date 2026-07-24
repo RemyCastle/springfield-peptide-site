@@ -830,6 +830,10 @@
                     </div>
                     <p id="stickyProgressHint" class="text-[11px] text-zinc-300 mt-1.5 leading-snug sticky-progress-hint">Add items to unlock discounts</p>
                 </div>
+                <label class="flex items-center gap-2 mb-2.5 text-[12px] text-zinc-200 cursor-pointer select-none">
+                    <input type="checkbox" id="bacMatch" class="accent-[#EAB308]" style="width:1rem;height:1rem;">
+                    <span>Add matching <strong>3ml BAC water</strong> — one per peptide vial</span>
+                </label>
                 <div class="sticky-actions">
                     <button type="button" id="stickyClearBtn" class="btn-clear-cart" aria-label="Clear cart">
                         Clear cart
@@ -1421,6 +1425,29 @@
                 };
             });
 
+            // Optional: matching 3ml BAC water, one per peptide vial (10-pack = 10 vials, kit = 1).
+            let bacVials = 0;
+            const bacToggle = document.getElementById('bacMatch');
+            if (bacToggle && bacToggle.checked) {
+                cards.forEach(card => {
+                    const nm = card.getAttribute('data-name') || '';
+                    if (/BAC WATER/i.test(nm)) return; // never add BAC water for BAC water
+                    const vq = parseInt(card.querySelector('select[data-kind="vial"]')?.value || 0, 10) || 0;
+                    const kq = parseInt(card.querySelector('select[data-kind="pack"]')?.value || 0, 10) || 0;
+                    const isKit = card.hasAttribute('data-kit') && !card.hasAttribute('data-pack');
+                    bacVials += vq + (isKit ? kq : kq * 10);
+                });
+            }
+            let bacTotal = 0;
+            if (bacVials > 0) {
+                const bacCard = Array.from(cards).find(c => /BAC WATER 3\s*ML/i.test(c.getAttribute('data-name') || ''));
+                const bacName = bacCard ? bacCard.getAttribute('data-name') : 'BAC WATER 3ML';
+                const bacPrice = parseFloat(bacCard ? bacCard.getAttribute('data-vial') : 5) || 5;
+                bacTotal = bacVials * bacPrice;
+                lines.push({ kind: 'bac', text: `${bacVials}x ${bacName} (Vial) — $${money(bacTotal)}` });
+                items.push({ sku: skuFrom(bacName, 'vial'), name: `${bacName} (Vial)`, qty: bacVials, unit_price_cents: dollarsToCents(bacPrice) });
+            }
+
             return {
                 singleVials,
                 kitCount,
@@ -1431,7 +1458,8 @@
                 kitDiscount,
                 kitRate,
                 kitDiscountPct,
-                total,
+                total: total + bacTotal,
+                bacVials,
                 lines,
                 items,
             };
@@ -1960,6 +1988,7 @@
             clearCart({ skipConfirm: false });
         }
         document.getElementById('stickyClearBtn').addEventListener('click', onClearCartClick);
+        document.getElementById('bacMatch')?.addEventListener('change', updateOrder);
         document.getElementById('clearCartFormBtn').addEventListener('click', onClearCartClick);
 
         document.getElementById('stickyCountBtn').addEventListener('click', () => {
