@@ -3,10 +3,22 @@ import { ensureCatalogSchema } from '../../../lib/db.js';
 
 const PRODUCT_SELECT = `
   SELECT p.id, p.name, p.vial_price, p.pack_price, p.kit_only, p.sort_order, p.active,
-         p.source, p.supplier_id, p.updated_at, s.name AS supplier_name
+         p.source, p.supplier_id, p.vial_mg, p.lab_slug, p.updated_at, s.name AS supplier_name
   FROM products p
   LEFT JOIN suppliers s ON s.id = p.supplier_id
 `;
+
+function parseVialMg(raw) {
+  if (raw === '' || raw == null) return { value: null };
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return { error: 'Invalid vial_mg' };
+  return { value: n };
+}
+
+function parseLabSlug(raw) {
+  if (raw == null || String(raw).trim() === '') return null;
+  return String(raw).trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 60) || null;
+}
 
 function parseId(params) {
   const id = parseInt(params.id, 10);
@@ -63,6 +75,11 @@ export async function onRequestPut({ request, env, params }) {
     }
   }
 
+  const vialMgParsed = parseVialMg(body.vial_mg);
+  if (vialMgParsed.error) return json({ error: vialMgParsed.error }, 400);
+  const vialMg = vialMgParsed.value;
+  const labSlug = parseLabSlug(body.lab_slug);
+
   try {
     await ensureCatalogSchema(env);
     const existing = await env.DB.prepare(`SELECT id FROM products WHERE id = ?`)
@@ -80,10 +97,10 @@ export async function onRequestPut({ request, env, params }) {
     await env.DB.prepare(
       `UPDATE products
        SET name = ?, vial_price = ?, pack_price = ?, kit_only = ?, sort_order = ?,
-           active = ?, source = ?, supplier_id = ?, updated_at = datetime('now')
+           active = ?, source = ?, supplier_id = ?, vial_mg = ?, lab_slug = ?, updated_at = datetime('now')
        WHERE id = ?`
     )
-      .bind(name, vialPrice, packPrice, kitOnly, sortOrder, active, source, supplierId, id)
+      .bind(name, vialPrice, packPrice, kitOnly, sortOrder, active, source, supplierId, vialMg, labSlug, id)
       .run();
 
     const row = await env.DB.prepare(`${PRODUCT_SELECT} WHERE p.id = ?`)

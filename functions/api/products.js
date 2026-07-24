@@ -1,4 +1,5 @@
 import { json, productToPublic } from '../lib/auth.js';
+import { ensureCatalogSchema } from '../lib/db.js';
 
 /** Soft member session cookie set after password unlock (client). Not hard security. */
 const MEMBER_COOKIE = 'spbc_member';
@@ -48,8 +49,9 @@ export async function onRequestGet({ request, env }) {
     return json({ error: 'Database not configured' }, 500);
   }
   try {
+    await ensureCatalogSchema(env);
     const { results } = await env.DB.prepare(
-      `SELECT id, name, vial_price, pack_price, kit_only, sort_order, active
+      `SELECT id, name, vial_price, pack_price, kit_only, sort_order, active, vial_mg, lab_slug
        FROM products
        WHERE active = 1
        ORDER BY sort_order ASC, id ASC`
