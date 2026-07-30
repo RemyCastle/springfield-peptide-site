@@ -8,3 +8,11 @@ node_modules/
 .dev.vars
 .playwright-mcp/
 
+
+# Local verification artifacts / credential caches (never commit)
+.ai/*.tmp
+.ai/.*.tmp
+.ai/verify-screens/
+.ai/*-smoke*.cjs
+.ai/verify-*.json
+.ai/.verify-state.json
