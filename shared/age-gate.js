@@ -116,7 +116,12 @@
     document.addEventListener('keydown', onKeydown, true);
 
     var enterBtn = document.getElementById('ageGateEnter');
-    enterBtn.addEventListener('click', function () {
+    // Delegated on the overlay so the accept still fires if the press lands on the
+    // button's inner text node or the button is re-rendered under us.
+    gate.addEventListener('click', function (e) {
+      var hit = e.target && e.target.closest ? e.target.closest('#ageGateEnter') : null;
+      if (!hit) return;
+      e.preventDefault();
       accept(gate);
       activeGate = null;
     });
@@ -128,12 +133,16 @@
   }
 
   function init() {
-    if (isAgeOk()) {
-      setMemberCookie();
-      return;
-    }
+    // Soft member session only (see functions/api/products.js — "Not hard security").
+    // Set it unconditionally so the price list can never be left unauthorised by a
+    // dropped cookie; the overlay below is what actually blocks a non-confirmed visitor.
+    setMemberCookie();
+    if (isAgeOk()) return;
     showGate();
   }
+
+  // Lets the storefront re-open the gate if it ever needs to re-confirm.
+  window.spbcShowAgeGate = showGate;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

@@ -1115,29 +1115,28 @@
                     <div class="skeleton-card"></div>
                 </div>`;
             try {
-                const res = await fetch('/api/products', { credentials: 'same-origin' });
+                // Soft member cookie can be dropped (Safari ITP, privacy cleanup) while
+                // localStorage spbc_age_ok remains "1" — re-set once and retry on 401.
+                let res = await fetch('/api/products', { credentials: 'same-origin' });
                 if (res.status === 401) {
-                    root.innerHTML = '<p class="text-center text-zinc-400 text-sm py-8">Confirm you are 21+ to load prices.</p>';
-                    return;
+                    document.cookie = 'spbc_member=1; path=/; max-age=31536000; SameSite=Lax';
+                    res = await fetch('/api/products', { credentials: 'same-origin' });
                 }
                 if (!res.ok) throw new Error('bad status');
                 const data = await res.json();
                 renderProducts(data.products || []);
             } catch (e) {
-                root.innerHTML = '<p class="text-center text-red-400 text-sm py-8">Could not load prices. Please refresh.</p>';
+                root.innerHTML = `
+                    <div class="text-center py-8 space-y-3">
+                        <p class="text-red-400 text-sm">Could not load prices.</p>
+                        <button type="button" id="priceRetryBtn"
+                            class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-4 py-2 text-sm font-medium rounded-lg border border-[#FDD700]/40 text-[#FDD700] bg-zinc-900 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FDD700]/60">
+                            Retry
+                        </button>
+                    </div>`;
+                const btn = document.getElementById('priceRetryBtn');
+                if (btn) btn.addEventListener('click', function () { loadProducts(); });
             }
-        }
-
-        /** Wait for age gate accept before hitting /api/products (needs spbc_member cookie). */
-        function whenAgeOk(fn) {
-            try {
-                if (localStorage.getItem('spbc_age_ok') === '1') {
-                    document.cookie = 'spbc_member=1; path=/; max-age=31536000; SameSite=Lax';
-                    fn();
-                    return;
-                }
-            } catch (e) { /* private mode */ }
-            window.addEventListener('spbc:age-ok', fn, { once: true });
         }
 
         function onStorefrontReady() {
@@ -1817,9 +1816,9 @@
             }
         });
 
-        whenAgeOk(onStorefrontReady);
+        onStorefrontReady();
     </script>
-    <script src="/shared/age-gate.js?v=1" defer></script>
+    <script src="/shared/age-gate.js?v=2" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
