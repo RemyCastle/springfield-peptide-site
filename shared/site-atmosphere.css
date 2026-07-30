@@ -1,7 +1,7 @@
 /**
  * SPBC layered-depth atmosphere — organic biophilic dark forest + gold.
  * Brand tokens + shell shared by index / calculator / coaching / qr.
- * v10 — aesthetic mega-upgrade (LOCAL PREVIEW)
+ * v11 — 21+ age gate (replaces password gate)
  */
 :root {
   /* Design tokens (ui-ux-pro-max curated) */
@@ -109,8 +109,102 @@ body.atmosphere > .skip-link {
 body.atmosphere .site-header { z-index: var(--spbc-z-header); }
 body.atmosphere .sticky-order-bar,
 body.atmosphere .modal-backdrop { z-index: var(--spbc-z-sticky); }
-body.atmosphere #passwordScreen { z-index: var(--spbc-z-gate); }
+body.atmosphere #ageGate { z-index: var(--spbc-z-gate); }
 body.atmosphere .modal-sheet { z-index: var(--spbc-z-modal); position: relative; }
+
+/* ── 21+ / research-use age gate (solid black, no blur/particles) ── */
+#ageGate {
+  position: fixed;
+  inset: 0;
+  z-index: var(--spbc-z-gate);
+  background: #000 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  overflow: auto;
+}
+.age-gate__inner {
+  width: 100%;
+  max-width: 28rem;
+  text-align: center;
+  color: #F2F7F3;
+}
+.age-gate__brand {
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+.age-gate__brand-gold { color: #FDD700; }
+.age-gate__brand-white { color: #fff; }
+.age-gate__title {
+  font-family: 'Bebas Neue', 'Inter', system-ui, sans-serif;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #FDD700;
+  margin: 0 0 1rem;
+  line-height: 1.2;
+}
+.age-gate__body {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #c8d4cc;
+  margin: 0 0 1.5rem;
+}
+.age-gate__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+.age-gate__enter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 0.85rem;
+  background: #FDD700;
+  color: #0B120E;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.age-gate__enter:hover,
+.age-gate__enter:focus-visible {
+  background: #fff;
+  outline: none;
+}
+.age-gate__leave {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 0.85rem;
+  background: transparent;
+  color: #F2F7F3;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.age-gate__leave:hover,
+.age-gate__leave:focus-visible {
+  border-color: #FDD700;
+  color: #FDD700;
+  outline: none;
+}
 
 /* Content shell */
 .spbc-main {
@@ -407,15 +501,9 @@ body.atmosphere label {
 
 section.bg-zinc-950,
 section.bg-black,
-.bg-black:not(#passwordScreen),
+.bg-black:not(#ageGate),
 main.bg-black {
   background: transparent !important;
-}
-
-#passwordScreen {
-  background: #050807 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
 }
 
 footer {

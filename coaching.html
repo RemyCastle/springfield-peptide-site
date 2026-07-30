@@ -10,26 +10,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>Coaching — Springfield Peptide Buyers Club</title>
-  <script>
-    (function () {
-      try {
-        if (sessionStorage.getItem('spbc_auth') === '1') {
-          document.documentElement.classList.add('spbc-authed');
-          document.cookie = 'spbc_member=1; Path=/; Max-Age=604800; SameSite=Lax';
-        } else {
-          document.documentElement.classList.add('spbc-locked');
-        }
-      } catch (e) {
-        document.documentElement.classList.add('spbc-locked');
-      }
-    })();
-  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared/site-header.css?v=12">
-  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=10">
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=11">
   <style>
-    html.spbc-locked body { visibility: hidden !important; background: #0B120E !important; }
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
       font-family: 'Inter', system-ui, sans-serif;
@@ -152,7 +137,7 @@
   </style>
 </head>
 <body class="atmosphere text-white min-h-screen overflow-x-hidden" data-page="coaching">
-  <div id="mainContent" class="hidden">
+  <div id="mainContent">
   <a href="#coach-main" class="skip-link">Skip to coaching</a>
 
   <header class="site-header" data-site-header>
@@ -380,17 +365,6 @@
   </div>
 
   <script>
-    const AUTH_KEY = 'spbc_auth';
-    if (sessionStorage.getItem(AUTH_KEY) !== '1') {
-      window.location.replace('/');
-    } else {
-      document.cookie = 'spbc_member=1; Path=/; Max-Age=604800; SameSite=Lax';
-      document.documentElement.classList.remove('spbc-locked');
-      document.documentElement.classList.add('spbc-authed');
-      var mc = document.getElementById('mainContent');
-      if (mc) mc.classList.remove('hidden');
-    }
-
     const RATE = 100;
 
     function submitCoach(e) {
@@ -438,6 +412,7 @@
       return false;
     }
   </script>
+  <script src="/shared/age-gate.js?v=1" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>

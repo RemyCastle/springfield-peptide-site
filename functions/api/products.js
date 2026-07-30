@@ -1,6 +1,6 @@
 import { json, productToPublic } from '../lib/auth.js';
 
-/** Soft member session cookie set after password unlock (client). Not hard security. */
+/** Soft member session cookie set after 21+ age gate accept (client). Not hard security. */
 const MEMBER_COOKIE = 'spbc_member';
 
 function hasCookieMember(request) {
@@ -38,7 +38,7 @@ export async function onRequestGet({ request, env }) {
     return json(
       {
         error: 'unauthorized',
-        message: 'Member session required. Unlock the club password first.',
+        message: 'Member session required. Complete the 21+ age gate first.',
       },
       401
     );

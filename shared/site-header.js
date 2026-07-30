@@ -3,7 +3,7 @@
  * - Marks active nav from body[data-page]
  * - Sliding gold pill under active link
  * - Scroll state with hysteresis (no top-of-page thrashing)
- * - window.spbcHeaderRefresh() after password unlock / layout changes
+ * - window.spbcHeaderRefresh() after age-gate accept / layout changes
  */
 (function () {
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -36,7 +36,7 @@
 
   function movePill(animateGlow) {
     if (!pill || !active) return;
-    // Hidden (password gate) → zero width; skip until visible
+    // Hidden layout → zero width; skip until visible
     if (active.offsetParent === null && active.getClientRects().length === 0) return;
     var parent = active.parentElement;
     if (!parent) return;
