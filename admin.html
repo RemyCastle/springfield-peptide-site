@@ -279,6 +279,49 @@
             + Add product
           </button>
         </div>
+
+        <!-- Add product: lands at position 1, franchisee cost always settable (creates the link) -->
+        <div id="addProductModal" class="hidden fixed inset-0 z-[120] bg-black/80 flex items-start sm:items-center justify-center p-4 overflow-auto">
+          <div class="w-full max-w-md bg-zinc-900 border border-[#FDD700]/30 rounded-2xl p-5 space-y-4">
+            <h2 class="ducks-font text-2xl text-[#FDD700]">Add product</h2>
+            <p class="text-xs text-zinc-500">Added at <strong class="text-zinc-300">position 1</strong> (top of the list).</p>
+
+            <label class="block text-xs text-zinc-400">Name
+              <input id="apName" type="text" autocomplete="off"
+                     class="mt-1 w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
+            </label>
+            <div class="flex gap-3">
+              <label class="block text-xs text-zinc-400 flex-1">Vial price $
+                <input id="apVial" type="number" step="0.01" min="0"
+                       class="mt-1 w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
+              </label>
+              <label class="block text-xs text-zinc-400 flex-1">10-pack / kit $
+                <input id="apPack" type="number" step="0.01" min="0"
+                       class="mt-1 w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
+              </label>
+            </div>
+            <label class="flex items-center gap-2 text-xs text-zinc-400">
+              <input id="apKitOnly" type="checkbox" class="accent-[#FDD700]"> Kit only (no single vials)
+            </label>
+
+            <div class="pt-3 border-t border-zinc-700 space-y-2">
+              <p class="text-xs text-zinc-400">
+                <strong class="text-amber-400">Franchisee cost</strong> — what the franchisee pays you.
+                Prefilled with the automatic fallback; saving creates the product link so their
+                cost never silently follows a public price change.
+              </p>
+              <div id="addFranchiseeRows" class="space-y-2"></div>
+            </div>
+
+            <p id="apError" class="hidden text-xs text-red-400"></p>
+            <div class="flex gap-2 justify-end pt-1">
+              <button id="apCancel" type="button"
+                      class="px-4 py-2 rounded-xl border border-zinc-600 text-zinc-300 text-sm min-h-[44px]">Cancel</button>
+              <button id="apSave" type="button"
+                      class="px-4 py-2 rounded-xl bg-[#FDD700] hover:bg-white text-black font-bold text-sm min-h-[44px]">Add product</button>
+            </div>
+          </div>
+        </div>
         <p class="text-xs text-zinc-500 mb-3">
           Assign a <strong class="text-amber-400">Supplier</strong> per product (admin only). That name is sent to Telegram when an order is paid — never shown to customers.
         </p>
@@ -2168,9 +2211,14 @@
         showMsg('Select a franchisee first', false);
         return;
       }
-      const partner_name = block.getAttribute('data-partner-name');
+      // No existing link is NOT a blocker — saving a price creates the link, keyed on
+      // the SPBC product name. Previously this bailed out, which is how a product could
+      // stay without an override and silently track the public price.
+      const partner_name =
+        block.getAttribute('data-partner-name') ||
+        card.querySelector('[data-field="name"]').value.trim();
       if (!partner_name) {
-        showMsg('No franchisee product link for this item', false);
+        showMsg('Product needs a name before franchisee pricing', false);
         return;
       }
       const vial = dollarInputToCents(block.querySelector('[data-fran-field="vial"]')?.value);
@@ -2179,26 +2227,16 @@
         showMsg('Invalid franchisee price (use dollars, e.g. 12.50)', false);
         return;
       }
-      const res = await fetch(
-        `/api/admin/franchisees/${encodeURIComponent(slug)}/prices`,
-        {
-          method: 'PATCH',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            partner_name,
-            franchisee_vial_cents: vial,
-            franchisee_pack_cents: pack,
-          }),
-        }
-      );
-      if (res.status === 401) {
-        showLogin();
-        return;
-      }
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        showMsg(err.message || err.error || 'Franchisee price save failed', false);
+      try {
+        await saveFranchiseePrice(
+          slug,
+          partner_name,
+          block.querySelector('[data-fran-field="vial"]')?.value ?? '',
+          block.querySelector('[data-fran-field="pack"]')?.value ?? ''
+        );
+      } catch (e) {
+        if (/\b401\b/.test(String(e.message))) return showLogin();
+        showMsg(e.message || 'Franchisee price save failed', false);
         return;
       }
       showMsg('Franchisee price saved');
@@ -2425,33 +2463,175 @@
       showLogin();
     });
 
+    /** Worker fallback cost when no franchisee override is set: floor(cents/1.2/50)*50. */
+    function fallbackFranchiseeDollars(customerDollars) {
+      const cents = Math.round((Number(customerDollars) || 0) * 100);
+      if (cents <= 0) return '';
+      return (Math.floor(cents / 1.2 / 50) * 50 / 100).toFixed(2);
+    }
+
+    /** Active franchisees (slug + name), cached per session. */
+    async function activeFranchisees() {
+      try {
+        const res = await fetch('/api/admin/franchisees', { credentials: 'same-origin' });
+        if (!res.ok) return [];
+        const data = await res.json().catch(() => ({}));
+        const list = data.partners || data.franchisees || [];
+        return list
+          .filter((p) => p.active === 1 || p.active === true)
+          .map((p) => ({ slug: p.slug, name: p.name || p.slug }));
+      } catch {
+        return [];
+      }
+    }
+
+    /**
+     * Set a franchisee's cost for a product. Creates the product_link first — the
+     * worker's franchisee PATCH fails with link_not_found when no link exists, which
+     * is how a product ends up with NULL overrides silently tracking the public price.
+     */
+    async function saveFranchiseePrice(slug, productName, vialDollars, packDollars) {
+      const put = await fetch(`/api/admin/franchisees/${encodeURIComponent(slug)}/links`, {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ partner_name: productName, spbc_name: productName }),
+      });
+      if (!put.ok) {
+        const d = await put.json().catch(() => ({}));
+        throw new Error(d.message || d.error || `link failed (${put.status})`);
+      }
+      const payload = { partner_name: productName };
+      if (vialDollars !== '' && vialDollars != null) {
+        payload.franchisee_vial_cents = Math.round(Number(vialDollars) * 100);
+      }
+      if (packDollars !== '' && packDollars != null) {
+        payload.franchisee_pack_cents = Math.round(Number(packDollars) * 100);
+      }
+      if (payload.franchisee_vial_cents == null && payload.franchisee_pack_cents == null) {
+        return;
+      }
+      const patch = await fetch(`/api/admin/franchisees/${encodeURIComponent(slug)}/prices`, {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!patch.ok) {
+        const d = await patch.json().catch(() => ({}));
+        throw new Error(d.message || d.error || `price failed (${patch.status})`);
+      }
+    }
+
     document.getElementById('addBtn').addEventListener('click', async () => {
-      const name = prompt('New product name:');
-      if (!name || !name.trim()) return;
-      const pack = prompt('10-pack / kit price:', '0');
-      if (pack == null) return;
+      const partners = await activeFranchisees();
+      const dlg = document.getElementById('addProductModal');
+      const fr = document.getElementById('addFranchiseeRows');
+      fr.innerHTML = partners.length
+        ? partners
+            .map(
+              (p) => `
+        <div class="grid grid-cols-[1fr_auto_auto] gap-2 items-center" data-slug="${p.slug}">
+          <span class="text-xs text-zinc-300">${p.name}</span>
+          <input data-fr="vial" type="number" step="0.01" min="0" placeholder="vial $"
+                 class="w-24 bg-black border border-zinc-700 rounded-xl px-2 py-1 text-sm">
+          <input data-fr="pack" type="number" step="0.01" min="0" placeholder="kit $"
+                 class="w-24 bg-black border border-zinc-700 rounded-xl px-2 py-1 text-sm">
+        </div>`
+            )
+            .join('')
+        : '<p class="text-xs text-zinc-500">No active franchisees.</p>';
+
+      document.getElementById('apName').value = '';
+      document.getElementById('apVial').value = '';
+      document.getElementById('apPack').value = '';
+      document.getElementById('apKitOnly').checked = false;
+      document.getElementById('apError').classList.add('hidden');
+      dlg.classList.remove('hidden');
+      document.getElementById('apName').focus();
+      syncFranchiseeDefaults();
+    });
+
+    /** Keep franchisee cost inputs prefilled with the fallback the worker would use. */
+    function syncFranchiseeDefaults() {
+      const vial = document.getElementById('apVial').value;
+      const pack = document.getElementById('apPack').value;
+      document.querySelectorAll('#addFranchiseeRows [data-slug]').forEach((row) => {
+        const v = row.querySelector('[data-fr="vial"]');
+        const p = row.querySelector('[data-fr="pack"]');
+        if (!v.dataset.touched) v.value = fallbackFranchiseeDollars(vial);
+        if (!p.dataset.touched) p.value = fallbackFranchiseeDollars(pack);
+      });
+    }
+
+    ['apVial', 'apPack'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', syncFranchiseeDefaults);
+    });
+    document.getElementById('addFranchiseeRows').addEventListener('input', (e) => {
+      if (e.target.matches('[data-fr]')) e.target.dataset.touched = '1';
+    });
+
+    document.getElementById('apCancel').addEventListener('click', () => {
+      document.getElementById('addProductModal').classList.add('hidden');
+    });
+
+    document.getElementById('apSave').addEventListener('click', async () => {
+      const err = document.getElementById('apError');
+      const name = document.getElementById('apName').value.trim();
+      const vialRaw = document.getElementById('apVial').value;
+      const packRaw = document.getElementById('apPack').value;
+      const kitOnly = document.getElementById('apKitOnly').checked;
+
+      const fail = (m) => {
+        err.textContent = m;
+        err.classList.remove('hidden');
+      };
+      if (!name) return fail('Name is required.');
+      if (packRaw === '' || !Number.isFinite(Number(packRaw))) {
+        return fail('10-pack / kit price is required.');
+      }
+      err.classList.add('hidden');
+
+      // No sort_order sent → the API places new products at position 1 (top).
       const res = await fetch('/api/admin/products', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: name.trim(),
-          vial_price: null,
-          pack_price: Number(pack) || 0,
-          kit_only: false,
+          name,
+          vial_price: kitOnly || vialRaw === '' ? null : Number(vialRaw),
+          pack_price: Number(packRaw),
+          kit_only: kitOnly,
           active: true,
-          sort_order: 999,
         }),
       });
-      if (res.status === 401) {
-        showLogin();
-        return;
-      }
+      if (res.status === 401) return showLogin();
       if (!res.ok) {
-        showMsg('Could not add product', false);
-        return;
+        const d = await res.json().catch(() => ({}));
+        return fail(d.error || 'Could not add product');
       }
-      showMsg('Product added — set vial price and Save');
+
+      const problems = [];
+      for (const row of document.querySelectorAll('#addFranchiseeRows [data-slug]')) {
+        const slug = row.dataset.slug;
+        try {
+          await saveFranchiseePrice(
+            slug,
+            name,
+            row.querySelector('[data-fr="vial"]').value,
+            row.querySelector('[data-fr="pack"]').value
+          );
+        } catch (e) {
+          problems.push(`${slug}: ${e.message}`);
+        }
+      }
+
+      document.getElementById('addProductModal').classList.add('hidden');
+      if (problems.length) {
+        showMsg(`Product added, but franchisee pricing failed — ${problems.join('; ')}`, false);
+      } else {
+        showMsg('Product added at position 1 with franchisee pricing set');
+      }
       await loadProducts();
     });
 

@@ -50,3 +50,9 @@ Append-only log. Newest at bottom.
 - Bug: `.reveal { opacity: 0 }` gated visibility on IntersectionObserver; observer miss left all 26 cards permanently invisible (data-reveal-bound=1, no is-visible). DOM text still returned content so text assertions missed it.
 - Fix: content visible by default; hide only under `html.spbc-anim` (set by site-atmosphere.js when IO + motion OK); 1.5s revealAll safety net; GSAP from→fromTo with explicit opacity:1 + clearProps so inline styles cannot stick at 0.
 - Cache-busters: site-atmosphere.css ?v=12, site-atmosphere.js ?v=10 on all public pages.
+
+### 2026-07-30 — Admin: new products top + franchisee link create
+- New products: POST `/api/admin/products` no longer defaults `sort_order` to 999; when omitted, uses `MIN(sort_order)-10` (or 10 if empty) so each add lands at position 1. Explicit sort still honoured from product edit cards.
+- Franchisee pricing always works: new Pages proxy `PUT /api/admin/franchisees/:slug/links` → worker product-links upsert. Admin UI does PUT-then-PATCH so saving a cost creates the link when missing (fixes `link_not_found` / silent public-price tracking).
+- Add-product modal replaces `prompt()` chain; franchisee cost inputs prefilled with `floor(cents/1.2/50)*50` fallback and recompute live.
+- Worker (spbc-orders) not modified.

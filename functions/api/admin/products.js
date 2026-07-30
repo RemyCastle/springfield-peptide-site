@@ -53,9 +53,15 @@ export async function onRequestPost({ request, env }) {
     return json({ error: 'Invalid pack/kit price' }, 400);
   }
 
-  const sortOrder = Number.isFinite(Number(body.sort_order))
-    ? Number(body.sort_order)
-    : 999;
+  // New products go to POSITION 1 (top of the list) unless an explicit sort_order is
+  // sent (the per-product edit card sends its own). Resolved against MIN(sort_order)
+  // below so repeated adds each land above the previous one.
+  const explicitSort =
+    body.sort_order != null &&
+    body.sort_order !== '' &&
+    Number.isFinite(Number(body.sort_order))
+      ? Number(body.sort_order)
+      : null;
   const active = body.active === false || body.active === 0 ? 0 : 1;
   const source =
     body.source == null || String(body.source).trim() === ''
@@ -77,6 +83,15 @@ export async function onRequestPost({ request, env }) {
         .bind(supplierId)
         .first();
       if (!s) return json({ error: 'Supplier not found' }, 400);
+    }
+
+    let sortOrder = explicitSort;
+    if (sortOrder == null) {
+      const minRow = await env.DB.prepare(
+        `SELECT MIN(sort_order) AS m FROM products`
+      ).first();
+      const min = Number(minRow?.m);
+      sortOrder = Number.isFinite(min) ? min - 10 : 10;
     }
 
     const result = await env.DB.prepare(
