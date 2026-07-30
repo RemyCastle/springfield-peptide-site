@@ -2239,15 +2239,24 @@
         showMsg(e.message || 'Franchisee price save failed', false);
         return;
       }
-      showMsg('Franchisee price saved');
-      // Refresh franchisee links (same backend as Franchisees tab) and re-render cards
-      await loadProductsFranSelector();
-      const sel = document.getElementById('productsFranSelect');
-      if (sel && slug && franchiseesCache.some((p) => p.slug === slug)) {
-        sel.value = slug;
-        syncProductsFranLinks();
+      // Save in place — no reload, no re-render. Update the local link cache so the
+      // shown value and the "no override" badge stay accurate until the next load.
+      const existing = productsFranLinks.find((l) => l.spbc_name === partner_name);
+      if (existing) {
+        if (vial !== undefined) existing.franchisee_vial_cents = vial;
+        if (pack !== undefined) existing.franchisee_pack_cents = pack;
+      } else {
+        productsFranLinks.push({
+          spbc_name: partner_name,
+          partner_name,
+          franchisee_vial_cents: vial ?? null,
+          franchisee_pack_cents: pack ?? null,
+        });
       }
-      renderProducts(productsCache);
+      block.setAttribute('data-partner-name', partner_name);
+      const warn = block.querySelector('[data-fran-warn]');
+      if (warn && vial != null && pack != null) warn.classList.add('hidden');
+      flashSaved(card, 'save-fran-price');
     }
 
     function onProductsFranSelectChange() {
@@ -2294,8 +2303,39 @@
         showMsg(err.error || 'Save failed', false);
         return;
       }
-      showMsg('Saved');
-      await loadProducts();
+      // Save in place — no list reload. Reloading re-rendered every card, which threw
+      // away scroll position and any other card mid-edit. Keep the cache in sync so
+      // later renders (tab switch, franchisee selector) show the saved values.
+      const saved = await res.json().catch(() => ({}));
+      const fresh = saved.product || null;
+      const idx = productsCache.findIndex((p) => String(p.id) === String(id));
+      if (idx >= 0) {
+        productsCache[idx] = fresh || { ...productsCache[idx], ...body };
+      }
+      flashSaved(card);
+    }
+
+    /** Inline "Saved" confirmation on a card, so no re-render is needed. */
+    function flashSaved(card, label) {
+      // Prefer explicit action. Default to "save" — do NOT use a combined selector:
+      // when a franchisee is selected, [data-action="save-fran-price"] appears first
+      // in the card DOM and would steal the flash from the main Save button.
+      const action = label || 'save';
+      const target = card.querySelector(`[data-action="${action}"]`);
+      if (!target) {
+        showMsg('Saved');
+        return;
+      }
+      if (target.dataset.flashing === '1') return;
+      const original = target.textContent;
+      target.dataset.flashing = '1';
+      target.textContent = 'Saved ✓';
+      target.classList.add('ring-2', 'ring-emerald-400');
+      setTimeout(() => {
+        target.textContent = original;
+        target.classList.remove('ring-2', 'ring-emerald-400');
+        delete target.dataset.flashing;
+      }, 1400);
     }
 
     async function deleteProduct(card) {
@@ -2314,8 +2354,13 @@
         showMsg('Delete failed', false);
         return;
       }
+      // Drop just this row instead of reloading the whole list.
+      productsCache = productsCache.filter((p) => String(p.id) !== String(id));
+      card.remove();
+      if (!productsCache.length) {
+        productList.innerHTML = '<p class="text-zinc-500 text-sm">No products yet. Add one.</p>';
+      }
       showMsg('Deleted');
-      await loadProducts();
     }
 
     // ---------- Events ----------
@@ -2566,6 +2611,14 @@
 
     ['apVial', 'apPack'].forEach((id) => {
       document.getElementById(id).addEventListener('input', syncFranchiseeDefaults);
+    });
+
+    // Match the product cards: kit-only disables the vial price.
+    document.getElementById('apKitOnly').addEventListener('change', (e) => {
+      const vial = document.getElementById('apVial');
+      vial.disabled = e.target.checked;
+      if (e.target.checked) vial.value = '';
+      syncFranchiseeDefaults();
     });
     document.getElementById('addFranchiseeRows').addEventListener('input', (e) => {
       if (e.target.matches('[data-fr]')) e.target.dataset.touched = '1';
