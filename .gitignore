@@ -6,4 +6,5 @@ node_modules/
 .cf-pages/
 .secrets-tmp/
 .dev.vars
+.playwright-mcp/
 

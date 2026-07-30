@@ -38,3 +38,10 @@ Append-only log. Newest at bottom.
 - /api/products requires member cookie (soft gate); override MEMBERS_API_OPEN=1 if needed
 - Home: canonical + OG/Twitter + Organization JSON-LD
 - Soft gate is intentional UI privacy, not hard security (document)
+
+### 2026-07-30 — Public catalog reprice (23 items)
+- Decision: Repriced 23 active products ~20% under min(Royal Peptides, DryvLife). **Held** `5-AMINO-1MQ 50MG` at 46 / 342 (public) pending a patriotic franchisee override — do not change that row without setting an explicit franchisee cost override first.
+- Franchisee neutrality this run: zero edits to spbc-orders worker, zero franchisee overrides written, zero changes under `functions/api/admin/franchisees/**`. Patriotic null-override fallback still resolves to the same cost for 5-AMINO because public price was unchanged.
+- Override formula once Remy sets patriotic cost for 5-AMINO (customer dollars → cents / 1.2 margin / 50¢ snap): `floor(customer_cents / 1.2 / 50) * 50` → today **3800** vial cents / **28500** pack cents for public 46 / 342.
+- Also held unchanged: `BAC WATER 3ML` (5/50), `BAC WATER 10 ML` (30/96).
+- Seed: `schema.sql` INSERT block rewritten to match all 26 production active products (names, kit_only, sort_order, new prices). Never run schema.sql against production (DELETE + reseed).

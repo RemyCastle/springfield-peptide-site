@@ -23,17 +23,34 @@ CREATE TABLE IF NOT EXISTS products (
   updated_at  TEXT NOT NULL
 );
 
+-- WARNING: DELETE + reseed. NEVER run this file against production D1.
+-- Seed matches production public catalog (26 active products) as of 2026-07-30 reprice.
 DELETE FROM products;
 
 INSERT INTO products (name, vial_price, pack_price, kit_only, sort_order, active, updated_at) VALUES
-  ('RETA 35 MG', 42.50, 325, 0, 10, 1, datetime('now')),
-  ('RETA 66 MG', 76.00, 470, 0, 20, 1, datetime('now')),
-  ('GHK-CU 34MG', 27.00, 170, 0, 30, 1, datetime('now')),
-  ('KPV 10 MG', 30.00, 200, 0, 40, 1, datetime('now')),
-  ('5-AMINO-1MQ 44MG', 32.50, 225, 0, 50, 1, datetime('now')),
-  ('NAD 1000MG', 33.00, 230, 0, 60, 1, datetime('now')),
-  ('TIRZ 30MG', 33.50, 235, 0, 70, 1, datetime('now')),
-  ('MOTS-C 40MG', 43.00, 330, 0, 80, 1, datetime('now')),
-  ('KLOW 80MG', 43.00, 330, 0, 90, 1, datetime('now')),
-  ('CJC/IPA NO DAC 10MG', 34.00, 240, 0, 100, 1, datetime('now')),
-  ('BAC WATER 3ML KIT', NULL, 40, 1, 110, 1, datetime('now'));
+  ('SEMA 10MG', 60, 480, 0, 1, 1, datetime('now')),
+  ('CAGRI  5MG', 36, 288, 0, 2, 1, datetime('now')),
+  ('RETA 10MG', 52, 416, 0, 9, 1, datetime('now')),
+  ('RETA 35 MG', 168, 1344, 0, 10, 1, datetime('now')),
+  ('RETA 66 MG', 290, 2320, 0, 20, 1, datetime('now')),
+  ('GHK-CU 34MG', 18, 144, 0, 30, 1, datetime('now')),
+  ('KPV 10 MG', 31, 248, 0, 40, 1, datetime('now')),
+  ('NAD+ 500MG', 48, 384, 0, 59, 1, datetime('now')),
+  ('NAD 1000MG', 68, 544, 0, 60, 1, datetime('now')),
+  ('5-AMINO-1MQ 50MG', 46, 342, 0, 61, 1, datetime('now')),
+  ('TIRZ 30MG', 72, 576, 0, 70, 1, datetime('now')),
+  ('MOTS-C 10MG', 44, 352, 0, 78, 1, datetime('now')),
+  ('MOTS-C 40MG', 104, 832, 0, 79, 1, datetime('now')),
+  ('SS-31 10MG', 52, 416, 0, 80, 1, datetime('now')),
+  ('BPC-157 10MG', 32, 256, 0, 88, 1, datetime('now')),
+  ('TB-500 10MG', 34, 272, 0, 89, 1, datetime('now')),
+  ('KLOW 80MG', 72, 576, 0, 90, 1, datetime('now')),
+  ('CJC/IPA NO DAC 10MG', 45, 360, 0, 100, 1, datetime('now')),
+  ('IPA 10MG', 28, 224, 0, 107, 1, datetime('now')),
+  ('PT-141 10 MG', 35, 280, 0, 107, 1, datetime('now')),
+  ('MT1', 44, 352, 0, 108, 1, datetime('now')),
+  ('MT2', 44, 352, 0, 109, 1, datetime('now')),
+  ('BAC WATER 3ML', 5, 50, 0, 110, 1, datetime('now')),
+  ('BAC WATER 10 ML', 30, 96, 0, 111, 1, datetime('now')),
+  ('GLUTATHIONE 1200MG', 41, 328, 0, 112, 1, datetime('now')),
+  ('DSIP 10MG', 44, 352, 0, 999, 1, datetime('now'));
