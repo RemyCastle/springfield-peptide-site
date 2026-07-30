@@ -45,3 +45,8 @@ Append-only log. Newest at bottom.
 - Override formula once Remy sets patriotic cost for 5-AMINO (customer dollars → cents / 1.2 margin / 50¢ snap): `floor(customer_cents / 1.2 / 50) * 50` → today **3800** vial cents / **28500** pack cents for public 46 / 342.
 - Also held unchanged: `BAC WATER 3ML` (5/50), `BAC WATER 10 ML` (30/96).
 - Seed: `schema.sql` INSERT block rewritten to match all 26 production active products (names, kit_only, sort_order, new prices). Never run schema.sql against production (DELETE + reseed).
+
+### 2026-07-30 — Invisible product cards hotfix
+- Bug: `.reveal { opacity: 0 }` gated visibility on IntersectionObserver; observer miss left all 26 cards permanently invisible (data-reveal-bound=1, no is-visible). DOM text still returned content so text assertions missed it.
+- Fix: content visible by default; hide only under `html.spbc-anim` (set by site-atmosphere.js when IO + motion OK); 1.5s revealAll safety net; GSAP from→fromTo with explicit opacity:1 + clearProps so inline styles cannot stick at 0.
+- Cache-busters: site-atmosphere.css ?v=12, site-atmosphere.js ?v=10 on all public pages.

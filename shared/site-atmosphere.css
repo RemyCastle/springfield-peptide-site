@@ -1,7 +1,7 @@
 /**
  * SPBC layered-depth atmosphere — organic biophilic dark forest + gold.
  * Brand tokens + shell shared by index / calculator / coaching / qr.
- * v11 — 21+ age gate (replaces password gate)
+ * v12 — reveal animation progressive enhancement (never hide content without html.spbc-anim)
  */
 :root {
   /* Design tokens (ui-ux-pro-max curated) */
@@ -641,12 +641,17 @@ a.btn-secondary:active {
 }
 
 /* ── Scroll reveal (CSS fallback; GSAP enhances when present) ─ */
+/* Content is VISIBLE by default. The hidden start state applies only after JS has
+   confirmed it can actually run the reveal (html.spbc-anim). A blocked CDN, a JS
+   error, or an observer that never fires must never leave the price list invisible. */
 .reveal {
-  opacity: 0;
-  transform: translateY(20px);
   transition: opacity var(--spbc-t-macro), transform var(--spbc-t-macro);
 }
-.reveal.is-visible {
+html.spbc-anim .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+}
+html.spbc-anim .reveal.is-visible {
   opacity: 1;
   transform: none;
 }

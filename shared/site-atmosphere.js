@@ -34,11 +34,18 @@
   }
 
   // ── Scroll reveal ─────────────────────────────────────────
+  /** Last-resort: never leave content hidden because an animation did not run. */
+  function revealAll(els) {
+    (els || document.querySelectorAll('.reveal:not(.is-visible)')).forEach(function (el) {
+      el.classList.add('is-visible');
+    });
+  }
+
   function initReveal() {
     var els = document.querySelectorAll('.reveal:not(.is-visible):not([data-reveal-bound])');
     if (!els.length) return;
-    if (reduced) {
-      els.forEach(function (el) { el.classList.add('is-visible'); });
+    if (reduced || !window.IntersectionObserver) {
+      revealAll(els);
       return;
     }
     var io = new IntersectionObserver(
@@ -64,6 +71,10 @@
       }
       io.observe(el);
     });
+
+    // Safety net: if the observer has not reported these within 1.5s (hidden tab,
+    // flaky mobile observer, layout the observer never sees), show them anyway.
+    setTimeout(function () { revealAll(els); }, 1500);
   }
 
   // ── Hero parallax (desktop) ───────────────────────────────
@@ -264,6 +275,12 @@
 
   function boot() {
     document.body.classList.add('atmosphere');
+    // Opt in to the hidden reveal start state only now that this script is running
+    // and can guarantee something will reveal it. Without this class, .reveal
+    // content renders normally — a blocked CDN can never hide the price list.
+    if (!reduced && window.IntersectionObserver) {
+      document.documentElement.classList.add('spbc-anim');
+    }
     initTilt();
     watchProducts();
     initReveal();

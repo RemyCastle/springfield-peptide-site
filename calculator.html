@@ -13,7 +13,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared/site-header.css?v=12">
-  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=11">
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=12">
   <style>
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
@@ -592,7 +592,7 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
-  <script src="/shared/site-atmosphere.js?v=8" defer></script>
+  <script src="/shared/site-atmosphere.js?v=10" defer></script>
   <script src="/shared/site-header.js?v=10" defer></script>
   <script>
   (function () {
@@ -602,19 +602,34 @@
     function init() {
       if (reduced() || !window.gsap) return;
       if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+      function gsapReveal(el) {
+        el.classList.add('is-visible');
+        gsap.set(el, { clearProps: 'opacity,transform' });
+      }
       document.querySelectorAll('.reveal').forEach(function (el) {
-        gsap.from(el, {
-          opacity: 0, y: 18, duration: 0.4, ease: 'power2.out',
-          scrollTrigger: { trigger: el, start: 'top 90%', once: true, onEnter: function () { el.classList.add('is-visible'); } }
-        });
+        if (el.classList.contains('is-visible')) return;
+        if (!window.ScrollTrigger) { gsapReveal(el); return; }
+        gsap.fromTo(el,
+          { opacity: 0, y: 18 },
+          {
+            opacity: 1, y: 0, duration: 0.4, ease: 'power2.out',
+            clearProps: 'opacity,transform',
+            scrollTrigger: { trigger: el, start: 'top 90%', once: true, onEnter: function () { gsapReveal(el); } }
+          }
+        );
+        setTimeout(function () { gsapReveal(el); }, 2000);
       });
       var items = document.querySelectorAll('.grid-item');
       if (items.length) {
-        gsap.from(items, {
-          opacity: 0, scale: 0.92, y: 16, duration: 0.4,
-          stagger: { each: 0.06, from: 'start', grid: 'auto' },
-          ease: 'back.out(1.4)', clearProps: 'transform'
-        });
+        items.forEach(function (el) { el.classList.add('is-visible'); });
+        gsap.fromTo(items,
+          { opacity: 0, scale: 0.92, y: 16 },
+          {
+            opacity: 1, scale: 1, y: 0, duration: 0.4,
+            stagger: { each: 0.06, from: 'start', grid: 'auto' },
+            ease: 'back.out(1.4)', clearProps: 'opacity,transform,scale'
+          }
+        );
       }
       document.querySelectorAll('.btn-primary, .btn-secondary').forEach(function (btn) {
         btn.addEventListener('pointerdown', function () { gsap.to(btn, { scale: 0.97, duration: 0.1 }); });
