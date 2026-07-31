@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="SPBC common research stacks — one-click add to cart. Research-use only; not for human consumption.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0B120E">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>Research Stacks — Springfield Peptide Buyers Club</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/site-header.css?v=12">
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=12">
+  <style>
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
+      padding-left: env(safe-area-inset-left, 0);
+      padding-right: env(safe-area-inset-right, 0);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .ducks-font {
+      font-family: 'Bebas Neue', Impact, sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0.5rem;
+      z-index: 200;
+      background: #EAB308;
+      color: #0B120E;
+      font-weight: 700;
+      padding: 0.6rem 1rem;
+      border-radius: 0.75rem;
+      min-height: 44px;
+    }
+    .skip-link:focus {
+      left: 0.5rem;
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+    .stack-card {
+      border: 1px solid rgba(234, 179, 8, 0.22);
+      border-radius: 1.25rem;
+      padding: 1.25rem 1.35rem;
+      background: rgba(19, 28, 22, 0.85);
+    }
+    .stack-card.is-unavailable {
+      opacity: 0.72;
+      border-color: rgba(113, 113, 122, 0.45);
+    }
+    .stack-item-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.35rem 0.75rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(39, 58, 44, 0.65);
+    }
+    .stack-item-row:last-child { border-bottom: none; }
+    .stack-cat {
+      display: inline-flex;
+      align-items: center;
+      min-height: 1.75rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid rgba(234, 179, 8, 0.3);
+      color: #EAB308;
+      background: rgba(234, 179, 8, 0.08);
+    }
+    .stack-total {
+      font-variant-numeric: tabular-nums;
+      color: #EAB308;
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+    .bac-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .bac-check input {
+      width: 1.15rem;
+      height: 1.15rem;
+      margin-top: 0.15rem;
+      accent-color: #EAB308;
+      flex-shrink: 0;
+    }
+    .btn-add-stack {
+      width: 100%;
+      min-height: 2.75rem;
+      border-radius: 0.85rem;
+      font-weight: 800;
+      font-size: 0.95rem;
+      background: linear-gradient(180deg, #f5d76e 0%, #EAB308 48%, #ca8a04 100%);
+      color: #0B120E;
+      border: none;
+      box-shadow: 0 4px 18px rgba(234, 179, 8, 0.3);
+      touch-action: manipulation;
+    }
+    .btn-add-stack:hover:not(:disabled) { filter: brightness(1.05); }
+    .btn-add-stack:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: grayscale(0.4);
+    }
+    input, textarea, select, button {
+      font-size: 16px;
+      touch-action: manipulation;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .btn-add-stack { transition: none !important; }
+    }
+  </style>
+</head>
+<body class="atmosphere text-white min-h-screen overflow-x-hidden" data-page="stacks">
+  <div id="mainContent">
+  <a href="#stacks-main" class="skip-link">Skip to stacks</a>
+
+  <header class="site-header" data-site-header>
+    <div class="site-header__inner">
+      <a href="/" class="site-header__brand" aria-label="Springfield Peptide Buyers Club — home">
+        <span class="ducks-font site-header__brand-text">
+          <span class="site-header__brand-gold">SPRINGFIELD</span>
+          <span class="site-header__brand-white">PEPTIDE BUYERS CLUB</span>
+        </span>
+      </a>
+      <nav class="site-header__nav" aria-label="Main">
+        <span class="nav-pill" aria-hidden="true"></span>
+        <a href="/" class="nav-link" data-nav="index">Home</a>
+        <a href="/calculator.html" class="nav-link" data-nav="calculator">Calculator</a>
+        <a href="/stacks.html" class="nav-link" data-nav="stacks">Stacks</a>
+        <a href="/coaching.html" class="nav-link" data-nav="coaching">Coaching</a>
+        <a href="/#contact" class="nav-link" data-nav="contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="page-hero" aria-label="Stacks intro">
+    <div class="page-hero-blobs" aria-hidden="true">
+      <svg class="blob-a" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="stacksBlobA" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#16A34A" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#EAB308" stop-opacity="0.16"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#stacksBlobA)" d="M440.5,323.5Q418,397,349.5,430.5Q281,464,214,424.5Q147,385,112,317.5Q77,250,116.5,187.5Q156,125,226.5,101.5Q297,78,361,115.5Q425,153,444,201.5Q463,250,440.5,323.5Z"/>
+      </svg>
+    </div>
+    <div class="page-hero-orb page-hero-orb--green" aria-hidden="true"></div>
+    <div class="page-hero-orb page-hero-orb--gold" aria-hidden="true"></div>
+    <div class="page-hero-inner">
+      <p class="page-hero-eyebrow">Research compositions</p>
+      <h1 class="page-hero-title ducks-font hero-gold-underline">Common Stacks</h1>
+      <p class="page-hero-sub">
+        One-click add of commonly discussed research combinations to your cart.
+        Dosages shown are <strong class="text-zinc-100">commonly cited research reference ranges only</strong> —
+        not medical advice and not for human consumption.
+      </p>
+      <div class="page-hero-cta">
+        <a href="#stacks-main" class="btn-primary btn-magnetic">Browse stacks</a>
+        <a href="/#prices" class="btn-secondary">Price list</a>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule" aria-hidden="true">
+
+  <main id="stacks-main" class="spbc-main max-w-5xl mx-auto px-4 py-8 sm:py-10" tabindex="-1">
+    <div class="depth-card p-4 sm:p-5 mb-8 border border-amber-500/30 bg-amber-950/20 reveal" role="note">
+      <p class="text-sm text-amber-100/95 leading-relaxed">
+        <strong class="text-amber-300">Research use only.</strong>
+        All products are research chemicals intended solely for laboratory research.
+        They are <strong>not for human or veterinary consumption</strong>.
+        Reference ranges below are compiled from commonly cited research figures for planning —
+        they are not clinical guidance, not dosing recommendations, and not a protocol.
+        You must be 21+.
+      </p>
+    </div>
+
+    <p id="stacksStatus" class="text-sm text-zinc-400 mb-4" aria-live="polite">Loading catalog prices…</p>
+    <div id="stacksGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+  </main>
+
+  <footer class="text-center py-6 text-xs text-zinc-500 bg-black border-t border-zinc-800 mt-10 px-3">
+    <p>SPRINGFIELD PEPTIDE BUYERS CLUB · RESEARCH ONLY</p>
+    <p class="mt-2 text-sm">
+      Contact ·
+      <a href="mailto:springfieldpeps@proton.me" class="text-[#EAB308] hover:underline">springfieldpeps@proton.me</a>
+    </p>
+  </footer>
+  </div>
+
+  <script src="/shared/stacks.js?v=1"></script>
+  <script>
+    (function () {
+      const CART_KEY = 'spbc_cart_draft';
+      const VIAL_MAX = 10;
+      const KIT_ALLOWED = new Set([0, 1, 2, 3, 5]);
+      const BAC_NAME = window.SPBC_STACKS_BAC_PRODUCT || 'BAC WATER 3ML';
+
+      /** @type {Record<string, {vial_price:number, pack_price:number, name:string}>} */
+      let catalogByName = {};
+      let catalogLoaded = false;
+
+      function money(n) {
+        const num = Number(n);
+        if (!Number.isFinite(num)) return '—';
+        const rounded = Math.round(num);
+        if (Math.abs(num - rounded) < 1e-9) return '$' + String(rounded);
+        return '$' + num.toFixed(2);
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function clampVial(n) {
+        const v = Math.max(0, Math.min(VIAL_MAX, Math.round(Number(n) || 0)));
+        return v;
+      }
+
+      function clampKit(n) {
+        const v = Math.round(Number(n) || 0);
+        if (KIT_ALLOWED.has(v)) return v;
+        // snap down to nearest allowed
+        const allowed = [0, 1, 2, 3, 5];
+        let best = 0;
+        for (const a of allowed) {
+          if (a <= v) best = a;
+        }
+        return best;
+      }
+
+      function loadCart() {
+        try {
+          const raw = localStorage.getItem(CART_KEY);
+          if (!raw) return {};
+          const data = JSON.parse(raw);
+          return data && typeof data === 'object' ? data : {};
+        } catch (_) {
+          return {};
+        }
+      }
+
+      function saveCart(draft) {
+        try {
+          if (draft && Object.keys(draft).length) {
+            localStorage.setItem(CART_KEY, JSON.stringify(draft));
+          } else {
+            localStorage.removeItem(CART_KEY);
+          }
+        } catch (_) { /* quota */ }
+      }
+
+      /**
+       * Merge stack lines into existing cart (ADD quantities; never wipe).
+       * @param {{product:string, vials:number}[]} lines
+       */
+      function mergeIntoCart(lines) {
+        const draft = loadCart();
+        for (const line of lines) {
+          if (!line || !line.product) continue;
+          if (!catalogByName[line.product]) continue; // never add nonexistent names
+          const addVial = clampVial(line.vials);
+          if (addVial <= 0) continue;
+          const prev = draft[line.product] || { vial: 0, pack: 0 };
+          draft[line.product] = {
+            vial: clampVial((Number(prev.vial) || 0) + addVial),
+            pack: clampKit(prev.pack || 0),
+          };
+        }
+        // drop zero lines
+        Object.keys(draft).forEach((k) => {
+          const e = draft[k];
+          if (!e || ((Number(e.vial) || 0) <= 0 && (Number(e.pack) || 0) <= 0)) delete draft[k];
+        });
+        saveCart(draft);
+        return draft;
+      }
+
+      function stackVialCount(stack) {
+        return (stack.items || []).reduce((sum, it) => {
+          if (!catalogByName[it.product]) return sum;
+          return sum + clampVial(it.vials);
+        }, 0);
+      }
+
+      function stackAvailable(stack) {
+        const items = stack.items || [];
+        if (!items.length) return false;
+        return items.every((it) => !!catalogByName[it.product]);
+      }
+
+      function stackMissing(stack) {
+        return (stack.items || []).filter((it) => !catalogByName[it.product]).map((it) => it.product);
+      }
+
+      function computeTotal(stack, includeBac) {
+        let total = 0;
+        let known = true;
+        for (const it of stack.items || []) {
+          const p = catalogByName[it.product];
+          if (!p) {
+            known = false;
+            continue;
+          }
+          total += (Number(p.vial_price) || 0) * clampVial(it.vials);
+        }
+        if (includeBac) {
+          const bac = catalogByName[BAC_NAME];
+          const bacQty = clampVial(stackVialCount(stack));
+          if (bac && bacQty > 0) {
+            total += (Number(bac.vial_price) || 0) * bacQty;
+          } else if (bacQty > 0 && !bac) {
+            known = false;
+          }
+        }
+        return { total, known };
+      }
+
+      function renderStacks() {
+        const grid = document.getElementById('stacksGrid');
+        const status = document.getElementById('stacksStatus');
+        const stacks = Array.isArray(window.SPBC_STACKS) ? window.SPBC_STACKS : [];
+        if (!stacks.length) {
+          status.textContent = 'No stacks configured.';
+          grid.innerHTML = '';
+          return;
+        }
+        if (catalogLoaded) {
+          status.textContent = 'Prices from the live catalog. Add a stack to merge into your cart, then review on the price list.';
+        }
+
+        grid.innerHTML = stacks.map((stack) => {
+          const available = catalogLoaded ? stackAvailable(stack) : true;
+          const missing = catalogLoaded ? stackMissing(stack) : [];
+          const bacDefault = true;
+          const { total, known } = computeTotal(stack, bacDefault);
+          const vialCount = stackVialCount(stack);
+          const bacP = catalogByName[BAC_NAME];
+          const bacLinePrice = bacP ? (Number(bacP.vial_price) || 0) * clampVial(vialCount) : null;
+
+          const itemsHtml = (stack.items || []).map((it) => {
+            const p = catalogByName[it.product];
+            const miss = catalogLoaded && !p;
+            const line = p ? (Number(p.vial_price) || 0) * clampVial(it.vials) : null;
+            return `<div class="stack-item-row${miss ? ' opacity-60' : ''}">
+              <div>
+                <p class="text-sm font-semibold text-white">${escapeHtml(it.product)} <span class="text-zinc-400 font-normal">×${clampVial(it.vials)} vial${clampVial(it.vials) === 1 ? '' : 's'}</span>
+                  ${miss ? '<span class="ml-1 text-amber-400 text-xs font-bold">currently unavailable</span>' : ''}
+                </p>
+                <p class="text-[11px] text-zinc-500 mt-0.5 leading-snug">${escapeHtml(it.refRange || '')}</p>
+              </div>
+              <div class="text-right text-sm text-zinc-300 whitespace-nowrap">${miss ? '—' : money(line)}</div>
+            </div>`;
+          }).join('');
+
+          const bacRow = `<div class="stack-item-row bac-price-row" data-stack-bac-row="${escapeHtml(stack.id)}">
+            <div>
+              <p class="text-sm font-semibold text-white">${escapeHtml(BAC_NAME)} <span class="text-zinc-400 font-normal bac-qty">×${clampVial(vialCount)} vial${clampVial(vialCount) === 1 ? '' : 's'}</span>
+                ${catalogLoaded && !bacP ? '<span class="ml-1 text-amber-400 text-xs font-bold">currently unavailable</span>' : ''}
+              </p>
+              <p class="text-[11px] text-zinc-500 mt-0.5">1 × 3 mL per stack vial (research reconstitution)</p>
+            </div>
+            <div class="text-right text-sm text-zinc-300 whitespace-nowrap bac-line-price">${bacLinePrice == null ? '—' : money(bacLinePrice)}</div>
+          </div>`;
+
+          return `<article class="stack-card depth-card reveal${available ? '' : ' is-unavailable'}" data-stack-id="${escapeHtml(stack.id)}" data-stack-card>
+            <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+              <div>
+                <h2 class="ducks-font text-2xl text-white leading-tight">${escapeHtml(stack.name)}</h2>
+                <span class="stack-cat mt-2">${escapeHtml(stack.category)}</span>
+              </div>
+              ${available ? '' : '<span class="text-xs font-bold uppercase tracking-wide text-amber-400">Currently unavailable</span>'}
+            </div>
+            <p class="text-xs text-zinc-500 mb-3">Typical research duration: ${escapeHtml(stack.duration)}</p>
+            <div class="mb-3">
+              ${itemsHtml}
+              ${bacRow}
+            </div>
+            <label class="bac-check mb-3 text-sm text-zinc-300">
+              <input type="checkbox" class="bac-toggle" data-stack-id="${escapeHtml(stack.id)}" ${bacDefault ? 'checked' : ''} ${available ? '' : 'disabled'}>
+              <span>Add bacteriostatic water <span class="text-zinc-500">(${escapeHtml(BAC_NAME)} — 1 per vial)</span></span>
+            </label>
+            <div class="flex items-end justify-between gap-3 mb-3">
+              <div>
+                <p class="text-[11px] uppercase tracking-wide text-zinc-500 font-semibold">Stack total</p>
+                <p class="stack-total" data-stack-total="${escapeHtml(stack.id)}">${known ? money(total) : '—'}</p>
+              </div>
+              <p class="text-[10px] text-zinc-600 text-right max-w-[12rem] leading-snug">Research use only · not for human consumption</p>
+            </div>
+            <button type="button" class="btn-add-stack" data-add-stack="${escapeHtml(stack.id)}" ${available ? '' : 'disabled'}>
+              ${available ? 'Add stack to cart' : 'Unavailable'}
+            </button>
+            ${missing.length ? `<p class="text-[11px] text-amber-400/90 mt-2">Missing from catalog: ${escapeHtml(missing.join(', '))}</p>` : ''}
+            <p class="text-[10px] text-zinc-600 mt-3 leading-relaxed">
+              Reference ranges are commonly cited research figures only — not medical, therapeutic, or disease-related claims.
+            </p>
+          </article>`;
+        }).join('');
+
+        // Wire events
+        grid.querySelectorAll('.bac-toggle').forEach((cb) => {
+          cb.addEventListener('change', () => updateCardTotals(cb.getAttribute('data-stack-id')));
+        });
+        grid.querySelectorAll('[data-add-stack]').forEach((btn) => {
+          btn.addEventListener('click', () => onAddStack(btn.getAttribute('data-add-stack')));
+        });
+      }
+
+      function updateCardTotals(stackId) {
+        const stack = (window.SPBC_STACKS || []).find((s) => s.id === stackId);
+        if (!stack) return;
+        const card = document.querySelector(`[data-stack-card][data-stack-id="${stackId}"]`);
+        if (!card) return;
+        const includeBac = !!card.querySelector('.bac-toggle')?.checked;
+        const bacRow = card.querySelector('[data-stack-bac-row]');
+        if (bacRow) bacRow.style.display = includeBac ? '' : 'none';
+        const { total, known } = computeTotal(stack, includeBac);
+        const el = card.querySelector(`[data-stack-total="${stackId}"]`);
+        if (el) el.textContent = known ? money(total) : '—';
+      }
+
+      function onAddStack(stackId) {
+        const stack = (window.SPBC_STACKS || []).find((s) => s.id === stackId);
+        if (!stack) return;
+        if (!stackAvailable(stack)) {
+          alert('This stack has products that are currently unavailable.');
+          return;
+        }
+        const card = document.querySelector(`[data-stack-card][data-stack-id="${stackId}"]`);
+        const includeBac = !!card?.querySelector('.bac-toggle')?.checked;
+        const lines = (stack.items || [])
+          .filter((it) => catalogByName[it.product])
+          .map((it) => ({ product: it.product, vials: clampVial(it.vials) }));
+        if (includeBac) {
+          const bacQty = clampVial(stackVialCount(stack));
+          if (bacQty > 0 && catalogByName[BAC_NAME]) {
+            lines.push({ product: BAC_NAME, vials: bacQty });
+          }
+        }
+        if (!lines.length) {
+          alert('No available products to add.');
+          return;
+        }
+        const { total } = computeTotal(stack, includeBac);
+        const summary = lines.map((l) => `${l.product} ×${l.vials}`).join('\n');
+        const ok = window.confirm(
+          `Add this research stack to your cart?\n\n${stack.name}\n${summary}\n\nApprox. total: ${money(total)}\n\n(Existing cart quantities are kept and increased — nothing is wiped.)`
+        );
+        if (!ok) return;
+        mergeIntoCart(lines);
+        window.location.href = '/#prices';
+      }
+
+      async function loadCatalog() {
+        try {
+          const res = await fetch('/api/products', {
+            credentials: 'same-origin',
+            headers: { 'X-SPBC-Member': '1' },
+          });
+          if (!res.ok) throw new Error('catalog ' + res.status);
+          const data = await res.json();
+          const products = Array.isArray(data.products) ? data.products : [];
+          catalogByName = {};
+          products.forEach((p) => {
+            if (!p || !p.name) return;
+            if (p.active === 0 || p.active === false) return;
+            catalogByName[p.name] = p;
+          });
+          catalogLoaded = true;
+        } catch (e) {
+          catalogLoaded = false;
+          const status = document.getElementById('stacksStatus');
+          if (status) {
+            status.textContent = 'Could not load live prices — complete the 21+ gate and refresh. Stacks still list compositions.';
+          }
+        }
+        renderStacks();
+        // hide/show bac rows for default checked state
+        (window.SPBC_STACKS || []).forEach((s) => updateCardTotals(s.id));
+      }
+
+      renderStacks();
+      loadCatalog();
+    })();
+  </script>
+  <script src="/shared/age-gate.js?v=2" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+  <script src="/shared/site-atmosphere.js?v=10" defer></script>
+  <script src="/shared/site-header.js?v=10" defer></script>
+  <script>
+  (function () {
+    function reduced() {
+      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    function init() {
+      if (reduced() || !window.gsap) return;
+      if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+      function gsapReveal(el) {
+        el.classList.add('is-visible');
+        gsap.set(el, { clearProps: 'opacity,transform' });
+      }
+      document.querySelectorAll('.reveal').forEach(function (el) {
+        if (el.classList.contains('is-visible')) return;
+        if (!window.ScrollTrigger) { gsapReveal(el); return; }
+        gsap.fromTo(el,
+          { opacity: 0, y: 18 },
+          {
+            opacity: 1, y: 0, duration: 0.4, ease: 'power2.out',
+            clearProps: 'opacity,transform',
+            scrollTrigger: { trigger: el, start: 'top 90%', once: true, onEnter: function () { gsapReveal(el); } }
+          }
+        );
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(init, 50);
+    });
+    else setTimeout(init, 50);
+  })();
+  </script>
+</body>
+</html>
