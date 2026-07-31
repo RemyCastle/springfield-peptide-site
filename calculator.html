@@ -165,17 +165,7 @@
         <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="peptideName">Peptide (optional)</label>
         <select id="peptideName" class="field" autocomplete="off">
           <option value="">Custom / other</option>
-          <option value="RETA 30 MG" data-mg="30">RETA 30 MG</option>
-          <option value="RETA 66 MG" data-mg="66">RETA 66 MG</option>
-          <option value="GHK-CU 34MG" data-mg="34">GHK-CU 34MG</option>
-          <option value="NAD +1000MG" data-mg="1000">NAD +1000MG</option>
-          <option value="TIRZ 30MG" data-mg="30">TIRZ 30MG</option>
-          <option value="MOTS-C 40MG" data-mg="40">MOTS-C 40MG</option>
-          <option value="KLOW 80MG" data-mg="80">KLOW 80MG</option>
-          <option value="CJC/IPA NO DAC 10MG" data-mg="10">CJC/IPA NO DAC 10MG</option>
-          <option value="CAGRILINTIDE 5MG" data-mg="5">CAGRILINTIDE 5MG</option>
-          <option value="MELANOTAN II 10 MG" data-mg="10">MELANOTAN II 10 MG</option>
-          <option value="SS-31 10 MG" data-mg="10">SS-31 10 MG</option>
+          <!-- Options filled from live /api/products (fallback list below as initial HTML) -->
         </select>
       </div>
 
@@ -348,6 +338,74 @@
     const doseMarker = document.getElementById('doseMarker');
     const syringeLabel = document.getElementById('syringeLabel');
     const syringeSub = document.getElementById('syringeSub');
+
+    /** Fallback = current catalog (non-BAC). Used when fetch fails / 401 so the dropdown never ships empty. */
+    const FALLBACK_PEPTIDES = [
+      'SEMA 5MG', 'SEMA 10MG', 'CAGRI  5MG', 'CAGRI 10MG',
+      'TIRZ 10MG', 'TIRZ 30MG', 'TIRZ 60MG',
+      'RETA 10MG', 'RETA 30MG', 'RETA 60 MG',
+      'GHK-CU 50MG', 'GHK-cu 100MG', 'KPV 10 MG',
+      'NAD+ 500MG', 'NAD+ 1000MG', '5-AMINO-1MQ 50MG',
+      'MOTS-C 10MG', 'MOTS-C 40MG', 'SS-31 10MG',
+      'BPC-157 10MG', 'TB-500 10MG', 'KLOW 80MG',
+      'IPA 10MG', 'CJC/IPA NO DAC 10MG', 'Tesamorelin',
+      'PT-141 10 MG', 'MT1', 'MT2',
+      'GLUTATHIONE 1200MG', 'DSIP 10MG',
+    ];
+
+    /** Parse vial mg from product name: "RETA 30MG"→30, "NAD+ 1000MG"→1000, "CAGRI  5MG"→5. Empty when no mg (MT1, Tesamorelin). */
+    function parseMgFromName(name) {
+      const m = String(name || '').match(/(\d+(?:\.\d+)?)\s*MG\b/i);
+      if (!m) return '';
+      const n = Number(m[1]);
+      return Number.isFinite(n) ? String(n) : '';
+    }
+
+    function isBacWater(name) {
+      return /^BAC\s*WATER/i.test(String(name || '').trim());
+    }
+
+    function fillPeptideOptions(names, preferredValue) {
+      const keep = preferredValue != null ? preferredValue : peptideName.value;
+      peptideName.innerHTML = '';
+      const custom = document.createElement('option');
+      custom.value = '';
+      custom.textContent = 'Custom / other';
+      peptideName.appendChild(custom);
+      (names || []).forEach((name) => {
+        if (!name || isBacWater(name)) return;
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        const mg = parseMgFromName(name);
+        if (mg) opt.dataset.mg = mg;
+        peptideName.appendChild(opt);
+      });
+      if (keep) {
+        const match = [...peptideName.options].find((o) => o.value === keep);
+        if (match) peptideName.value = keep;
+      }
+    }
+
+    async function loadPeptideCatalog() {
+      fillPeptideOptions(FALLBACK_PEPTIDES);
+      try {
+        const res = await fetch('/api/products', {
+          credentials: 'same-origin',
+          headers: { 'X-SPBC-Member': '1' },
+        });
+        if (!res.ok) return; // keep fallback
+        const data = await res.json().catch(() => ({}));
+        const products = Array.isArray(data.products) ? data.products : [];
+        const names = products
+          .filter((p) => p && p.active !== 0 && p.active !== false)
+          .map((p) => p.name)
+          .filter(Boolean);
+        if (names.length) fillPeptideOptions(names);
+      } catch (_) {
+        /* keep fallback */
+      }
+    }
 
     (function buildTicks() {
       const g = document.getElementById('tickMarks');
@@ -585,8 +643,12 @@
       if (Number(bacMl.value) < 0.1) bacMl.value = '0.1';
       calculate();
     });
-    applyShareParams();
-    calculate();
+    // Populate peptide list (fallback immediately, then live catalog), preserve ?p= share links.
+    (async function initPeptideSelect() {
+      await loadPeptideCatalog();
+      applyShareParams();
+      calculate();
+    })();
   </script>
   <script src="/shared/age-gate.js?v=2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
