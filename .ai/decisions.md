@@ -76,3 +76,5 @@ Append-only log. Newest at bottom.
 - Cache-buster site-atmosphere.css ?v=14. Deploy 4fc2b84e Source 98df411.
 - 360px: index stays at floor 512 with working badge trim (inner ~369); not the ~573 pre-cascade-fix estimate.
 - Pre-existing 375 h-scroll (~401 vs 375) still present; not fixed this ship.
+
+- Follow-up: custom domain Cache-Control max-age=14400 (zone, not _headers 300) polluted ?v=14 briefly; bumped to ?v=15. Deploy 0a75612c Source 1823426.
