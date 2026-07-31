@@ -68,3 +68,11 @@ Append-only log. Newest at bottom.
 - Cache-buster site-atmosphere.css ?v=13 on all 6 HTML pages. Deploy 1a899832 Source 5077965.
 - Mobile h-scroll (~401 vs 375) is pre-existing `.site-header__nav` overflow, not hero flex.
 - Unit C (patriotic sync) still needs Remy admin session — no secrets touched.
+
+### 2026-07-30 - Hero eyebrow specificity + phone trim
+- Root cause: `body.atmosphere p` out-specced bare `.page-hero-eyebrow` (16px not 12px).
+- Fix: `body.atmosphere p.page-hero-eyebrow` + phone spacing trim under 767px (no hide/remove).
+- Grok review: moved phone-trim media block AFTER base `.trust-badge` so min-height/padding/font-size overrides actually cascade.
+- Cache-buster site-atmosphere.css ?v=14. Deploy 4fc2b84e Source 98df411.
+- 360px: index stays at floor 512 with working badge trim (inner ~369); not the ~573 pre-cascade-fix estimate.
+- Pre-existing 375 h-scroll (~401 vs 375) still present; not fixed this ship.
