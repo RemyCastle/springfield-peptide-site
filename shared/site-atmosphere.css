@@ -350,10 +350,16 @@ body.atmosphere label {
   text-align: center;
 }
 
+/* NOTE the selector: `body.atmosphere p` (mobile legibility floor above)
+   out-specifies a bare `.page-hero-eyebrow`, so the eyebrow was rendering at 16px
+   instead of 12px on every page — wrapping to two lines and inflating the hero.
+   Keep it qualified so the intended size actually wins. */
+body.atmosphere p.page-hero-eyebrow,
 .page-hero-eyebrow {
   font-size: 0.75rem;
+  line-height: 1.4;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--accent-gold);
   margin-bottom: 0.75rem;
@@ -405,6 +411,7 @@ body.atmosphere label {
   justify-content: center;
   margin-top: 1.5rem;
 }
+
 .trust-badge {
   display: inline-flex;
   align-items: center;
@@ -430,6 +437,17 @@ body.atmosphere label {
   height: 14px;
   color: var(--accent-gold);
   flex-shrink: 0;
+}
+
+/* Phone-width hero trim. Home carries a CTA row + trust badges the other pages do
+   not, which pushed its hero past the shared floor and broke the uniform height.
+   Tighten spacing only — no element is removed or hidden.
+   Must follow base .trust-badge rules so min-height/padding/font-size overrides win. */
+@media (max-width: 767px) {
+  .page-hero-sub { margin-bottom: 1rem; }
+  .page-hero-cta { gap: 0.5rem; }
+  .trust-badges { margin-top: 0.85rem; gap: 0.4rem; }
+  .trust-badge { min-height: 2.1rem; padding: 0.3rem 0.6rem; font-size: 0.68rem; }
 }
 
 /* ── Depth cards ──────────────────────────────────────────── */
