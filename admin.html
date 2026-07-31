@@ -452,6 +452,42 @@
           </p>
         </div>
 
+        <!-- Sync all products: explicit click only — never auto-run on load -->
+        <div id="franSyncPanel" class="border border-emerald-500/30 rounded-2xl p-4 mb-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-sm font-bold text-emerald-300 uppercase tracking-wide">Sync all products</h2>
+            <p id="franCoverage" class="text-sm font-semibold text-white">— of — products linked</p>
+          </div>
+          <p class="text-[11px] text-zinc-500 leading-relaxed">
+            Links every live catalog product to this franchisee and sets an <strong class="text-zinc-300">explicit</strong>
+            franchisee cost (fallback formula — never NULL). Stale links (catalog name gone) break order mapping — remove them.
+            Nothing runs until you click.
+          </p>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div class="rounded-xl bg-zinc-950/60 border border-zinc-800 p-3">
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <p class="text-[11px] uppercase tracking-wide text-amber-300 font-bold">Unlinked catalog products</p>
+                <button id="franLinkAllBtn" type="button"
+                        class="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white disabled:opacity-40 disabled:cursor-not-allowed">
+                  Link all
+                </button>
+              </div>
+              <ul id="franUnlinkedList" class="text-xs text-zinc-400 space-y-1 max-h-40 overflow-y-auto"></ul>
+            </div>
+            <div class="rounded-xl bg-zinc-950/60 border border-zinc-800 p-3">
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <p class="text-[11px] uppercase tracking-wide text-red-300 font-bold">Stale links (not in catalog)</p>
+                <button id="franRemoveAllStaleBtn" type="button"
+                        class="text-xs font-bold px-3 py-1.5 rounded-xl bg-red-900/70 hover:bg-red-800 text-red-100 border border-red-500/40 disabled:opacity-40 disabled:cursor-not-allowed">
+                  Remove all stale
+                </button>
+              </div>
+              <ul id="franStaleList" class="text-xs text-zinc-400 space-y-1 max-h-40 overflow-y-auto"></ul>
+            </div>
+          </div>
+          <p id="franSyncMsg" class="text-xs hidden"></p>
+        </div>
+
         <div class="table-scroll border border-violet-500/25 rounded-2xl">
           <table class="w-full text-sm">
             <thead>
@@ -785,6 +821,7 @@
       if (!partner) {
         tbody.innerHTML = '';
         meta.textContent = 'No franchisees yet.';
+        renderFranSync();
         return;
       }
       const links = partner.product_links || [];
@@ -806,15 +843,14 @@
       if (!links.length) {
         tbody.innerHTML =
           '<tr><td colspan="5" class="px-3 py-4 text-zinc-500">No product links. Clone from an existing franchisee or map products in the worker partners UI.</td></tr>';
-        return;
-      }
-      tbody.innerHTML = links
-        .map((l) => {
-          const key = escapeAttr(l.partner_name);
-          const title = `${escapeHtml(l.partner_name)} <span class="text-zinc-500">→ ${escapeHtml(l.spbc_name)}</span>`;
-          const spbcV = l.spbc_vial_cents != null ? formatCents(l.spbc_vial_cents) : (l.spbc_vial_price != null ? '$' + moneyVal(l.spbc_vial_price) : '—');
-          const spbcP = l.spbc_pack_cents != null ? formatCents(l.spbc_pack_cents) : (l.spbc_pack_price != null ? '$' + moneyVal(l.spbc_pack_price) : '—');
-          return `<tr class="border-b border-zinc-900" data-partner-name="${key}">
+      } else {
+        tbody.innerHTML = links
+          .map((l) => {
+            const key = escapeAttr(l.partner_name);
+            const title = `${escapeHtml(l.partner_name)} <span class="text-zinc-500">→ ${escapeHtml(l.spbc_name)}</span>`;
+            const spbcV = l.spbc_vial_cents != null ? formatCents(l.spbc_vial_cents) : (l.spbc_vial_price != null ? '$' + moneyVal(l.spbc_vial_price) : '—');
+            const spbcP = l.spbc_pack_cents != null ? formatCents(l.spbc_pack_cents) : (l.spbc_pack_price != null ? '$' + moneyVal(l.spbc_pack_price) : '—');
+            return `<tr class="border-b border-zinc-900" data-partner-name="${key}">
             <td class="px-3 py-2.5 align-top">${title}</td>
             <td class="px-3 py-2.5 text-zinc-400 whitespace-nowrap">${spbcV}</td>
             <td class="px-3 py-2"><input type="number" step="0.01" min="0" inputmode="decimal"
@@ -825,12 +861,227 @@
               class="admin-input py-1.5 px-2 text-sm max-w-[7rem] fran-pack"
               placeholder="base" value="${escapeAttr(centsToDollarInput(l.franchisee_pack_cents))}"></td>
           </tr>`;
-        })
-        .join('');
+          })
+          .join('');
+      }
+      renderFranSync();
+    }
+
+    /** Catalog product names (active) for franchisee coverage sync. */
+    function activeCatalogProducts() {
+      return (productsCache || []).filter((p) => p && p.active !== 0 && p.active !== false && p.name);
+    }
+
+    function franSyncState() {
+      const slug = document.getElementById('franSelect')?.value;
+      const partner = franchiseesCache.find((p) => p.slug === slug);
+      const catalog = activeCatalogProducts();
+      const catalogNames = new Set(catalog.map((p) => p.name));
+      const links = (partner && partner.product_links) || [];
+      const linkedSpbc = new Set(links.map((l) => l.spbc_name).filter(Boolean));
+      const unlinked = catalog.filter((p) => !linkedSpbc.has(p.name));
+      const stale = links.filter((l) => l.spbc_name && !catalogNames.has(l.spbc_name));
+      const linkedCount = catalog.filter((p) => linkedSpbc.has(p.name)).length;
+      return { slug, partner, catalog, unlinked, stale, linkedCount, total: catalog.length };
+    }
+
+    function renderFranSync() {
+      const cov = document.getElementById('franCoverage');
+      const unEl = document.getElementById('franUnlinkedList');
+      const stEl = document.getElementById('franStaleList');
+      const linkBtn = document.getElementById('franLinkAllBtn');
+      const staleBtn = document.getElementById('franRemoveAllStaleBtn');
+      if (!cov || !unEl || !stEl) return;
+      const state = franSyncState();
+      if (!state.partner) {
+        cov.textContent = '— of — products linked';
+        unEl.innerHTML = '<li class="text-zinc-600">Select a franchisee.</li>';
+        stEl.innerHTML = '';
+        if (linkBtn) linkBtn.disabled = true;
+        if (staleBtn) staleBtn.disabled = true;
+        return;
+      }
+      if (!state.total) {
+        cov.textContent = '0 of 0 products linked (load products if empty)';
+      } else {
+        cov.textContent = `${state.linkedCount} of ${state.total} products linked`;
+        cov.className =
+          'text-sm font-semibold ' +
+          (state.linkedCount === state.total && state.stale.length === 0
+            ? 'text-emerald-400'
+            : 'text-white');
+      }
+      unEl.innerHTML = state.unlinked.length
+        ? state.unlinked.map((p) => `<li class="text-amber-200/90">${escapeHtml(p.name)}</li>`).join('')
+        : '<li class="text-emerald-500/80">None — full coverage</li>';
+      stEl.innerHTML = state.stale.length
+        ? state.stale
+            .map(
+              (l) =>
+                `<li class="flex items-center justify-between gap-2 text-red-200/90">
+                  <span>${escapeHtml(l.spbc_name)} <span class="text-zinc-600">(${escapeHtml(l.partner_name)})</span></span>
+                  <button type="button" data-remove-stale="${escapeAttr(l.partner_name)}"
+                    class="text-[10px] font-bold uppercase px-2 py-1 rounded-lg bg-red-950 border border-red-500/40 hover:bg-red-900">Remove</button>
+                </li>`
+            )
+            .join('')
+        : '<li class="text-emerald-500/80">None — no stale links</li>';
+      if (linkBtn) linkBtn.disabled = !state.unlinked.length;
+      if (staleBtn) staleBtn.disabled = !state.stale.length;
+      stEl.querySelectorAll('[data-remove-stale]').forEach((btn) => {
+        btn.addEventListener('click', () => removeFranLink(btn.getAttribute('data-remove-stale')));
+      });
+    }
+
+    function showFranSyncMsg(text, ok = true) {
+      const el = document.getElementById('franSyncMsg');
+      if (!el) return;
+      el.textContent = text;
+      el.className = `text-xs ${ok ? 'text-emerald-400' : 'text-red-400'}`;
+      el.classList.remove('hidden');
+    }
+
+    /**
+     * Fallback franchisee cost in cents: floor(customer_cents / 1.2 / 50) * 50.
+     * Always write an explicit value — never leave NULL overrides.
+     */
+    function fallbackFranchiseeCents(customerDollars) {
+      const cents = Math.round((Number(customerDollars) || 0) * 100);
+      if (cents <= 0) return 0;
+      return Math.floor(cents / 1.2 / 50) * 50;
+    }
+
+    async function ensureProductsCacheForSync() {
+      if (productsCache && productsCache.length) return;
+      try {
+        const res = await fetch('/api/admin/products', { credentials: 'same-origin' });
+        if (res.status === 401) {
+          showLogin();
+          return;
+        }
+        if (!res.ok) return;
+        const data = await res.json();
+        productsCache = data.products || [];
+      } catch (_) { /* leave empty */ }
+    }
+
+    async function linkAllUnlinked() {
+      const state = franSyncState();
+      if (!state.slug || !state.unlinked.length) return;
+      if (
+        !window.confirm(
+          `Link ${state.unlinked.length} product(s) to ${state.partner.name} and set explicit franchisee costs (fallback formula)?`
+        )
+      ) {
+        return;
+      }
+      let ok = 0;
+      let fail = 0;
+      showFranSyncMsg(`Linking 0 / ${state.unlinked.length}…`);
+      for (const p of state.unlinked) {
+        try {
+          const vialCents = fallbackFranchiseeCents(p.vial_price);
+          const packCents = fallbackFranchiseeCents(p.pack_price);
+          const put = await fetch(`/api/admin/franchisees/${encodeURIComponent(state.slug)}/links`, {
+            method: 'PUT',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ partner_name: p.name, spbc_name: p.name }),
+          });
+          if (put.status === 401) {
+            showLogin();
+            return;
+          }
+          if (!put.ok) {
+            fail += 1;
+            continue;
+          }
+          const patch = await fetch(`/api/admin/franchisees/${encodeURIComponent(state.slug)}/prices`, {
+            method: 'PATCH',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              partner_name: p.name,
+              franchisee_vial_cents: vialCents,
+              franchisee_pack_cents: packCents,
+            }),
+          });
+          if (!patch.ok) {
+            fail += 1;
+          } else {
+            ok += 1;
+          }
+        } catch (_) {
+          fail += 1;
+        }
+        showFranSyncMsg(`Linking ${ok + fail} / ${state.unlinked.length}…`);
+      }
+      showFranSyncMsg(
+        fail ? `Linked ${ok}, failed ${fail}` : `Linked ${ok} product(s) with explicit costs`,
+        !fail
+      );
+      await loadFranchisees();
+      document.getElementById('franSelect').value = state.slug;
+      renderFranPrices();
+    }
+
+    async function removeFranLink(partnerName) {
+      const slug = document.getElementById('franSelect')?.value;
+      if (!slug || !partnerName) return;
+      if (!window.confirm(`Remove product link "${partnerName}"?`)) return;
+      const res = await fetch(`/api/admin/franchisees/${encodeURIComponent(slug)}/links`, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ partner_name: partnerName }),
+      });
+      if (res.status === 401) {
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        showFranSyncMsg(d.message || d.error || `Remove failed (${res.status})`, false);
+        return;
+      }
+      showFranSyncMsg(`Removed stale link: ${partnerName}`);
+      await loadFranchisees();
+      document.getElementById('franSelect').value = slug;
+      renderFranPrices();
+    }
+
+    async function removeAllStale() {
+      const state = franSyncState();
+      if (!state.slug || !state.stale.length) return;
+      if (!window.confirm(`Remove all ${state.stale.length} stale link(s)?`)) return;
+      let ok = 0;
+      let fail = 0;
+      for (const l of state.stale) {
+        const res = await fetch(`/api/admin/franchisees/${encodeURIComponent(state.slug)}/links`, {
+          method: 'DELETE',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ partner_name: l.partner_name }),
+        });
+        if (res.status === 401) {
+          showLogin();
+          return;
+        }
+        if (res.ok) ok += 1;
+        else fail += 1;
+      }
+      showFranSyncMsg(
+        fail ? `Removed ${ok}, failed ${fail}` : `Removed ${ok} stale link(s)`,
+        !fail
+      );
+      await loadFranchisees();
+      document.getElementById('franSelect').value = state.slug;
+      renderFranPrices();
     }
 
     async function loadFranchisees() {
       try {
+        await ensureProductsCacheForSync();
         const res = await fetch('/api/admin/franchisees', { credentials: 'same-origin' });
         if (res.status === 401) {
           showLogin();
@@ -2375,6 +2626,8 @@
     document.getElementById('franchiseesRefreshBtn').addEventListener('click', () => loadFranchisees());
     document.getElementById('franSelect').addEventListener('change', () => renderFranPrices());
     document.getElementById('franSavePricesBtn').addEventListener('click', () => saveFranPrices());
+    document.getElementById('franLinkAllBtn')?.addEventListener('click', () => linkAllUnlinked());
+    document.getElementById('franRemoveAllStaleBtn')?.addEventListener('click', () => removeAllStale());
     document.getElementById('franMode')?.addEventListener('change', (e) => {
       const dayEl = document.getElementById('franDay');
       if (dayEl) dayEl.disabled = e.target.value !== 'batch';
