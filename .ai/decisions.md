@@ -61,3 +61,10 @@ Append-only log. Newest at bottom.
 - Unit A: calculator `#peptideName` loads from `/api/products` (skip BAC WATER); fallback embeds current non-BAC catalog so dropdown never empty; `data-mg` parsed from name; math/syringe/`?p=` unchanged.
 - Unit B: `stacks.html` + `shared/stacks.js` (8 stacks, research reference ranges only, no therapeutic claims). Cart merge into `spbc_cart_draft` with vial≤10 / kit clamp; optional BAC WATER 3ML = vial count. Dynamic stack cards intentionally omit `.reveal` (would stick at opacity 0 after async inject under `html.spbc-anim`). `_headers` pins `shared/stacks.js` Content-Type.
 - Unit C: DELETE proxy on `functions/api/admin/franchisees/[slug]/links.js`; admin "Sync all products" panel (Link all + remove stale) — explicit click only; costs use fallback formula never NULL. Worker not edited/redeployed. Admin credentials not available in ship agent env — Remy must click Link all / Remove all stale on patriotic to finish 32/32.
+
+### 2026-07-30 - Uniform hero height
+- Claude fix: .page-hero min-height 32rem mobile / 31rem desktop + flex center; no fixed height, no per-page overrides.
+- Grok defect fix on review: added `box-sizing: border-box` on .page-hero so the rem floors are TOTAL height (without it, content-box stacked padding and heroes would be ~640–664px).
+- Cache-buster site-atmosphere.css ?v=13 on all 6 HTML pages. Deploy 1a899832 Source 5077965.
+- Mobile h-scroll (~401 vs 375) is pre-existing `.site-header__nav` overflow, not hero flex.
+- Unit C (patriotic sync) still needs Remy admin session — no secrets touched.
