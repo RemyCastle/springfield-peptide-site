@@ -243,10 +243,25 @@ body.atmosphere label {
 }
 
 /* ── Shared page hero ─────────────────────────────────────── */
+/* Every page hero is the SAME height regardless of how much copy it holds — the
+   padding was already identical, but shorter headings/subtitles gave four different
+   heights (desktop 413–485px, mobile 395–508px). The floor sits just above the
+   tallest current hero at each breakpoint so all pages match exactly instead of only
+   the short ones being padded out; content is centred in the resulting box. Any new
+   page using .page-hero inherits this automatically.
+   Mobile's floor is the larger of the two because copy wraps to more lines there. */
 .page-hero {
   position: relative;
   overflow: hidden;
+  /* border-box so min-height is the TOTAL hero height (padding included).
+     Without this, content-box would stack padding on top of the rem floor
+     and every hero would be ~8–10.5rem taller than the measured targets. */
+  box-sizing: border-box;
   padding: 4.5rem 1rem 3.5rem;
+  min-height: var(--spbc-hero-min, 32rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background:
     radial-gradient(ellipse 80% 60% at 50% 0%, rgba(22, 163, 74, 0.2) 0%, transparent 55%),
     radial-gradient(ellipse 50% 40% at 100% 80%, rgba(234, 179, 8, 0.08) 0%, transparent 50%),
@@ -254,7 +269,11 @@ body.atmosphere label {
   border-bottom: 1px solid var(--border);
 }
 @media (min-width: 768px) {
-  .page-hero { padding: 6rem 1.5rem 4.5rem; }
+  .page-hero {
+    padding: 6rem 1.5rem 4.5rem;
+    /* Above the tallest desktop hero (coaching, ~485px). */
+    --spbc-hero-min: 31rem;
+  }
 }
 
 /* Organic SVG blob layer */
@@ -325,6 +344,7 @@ body.atmosphere label {
 .page-hero-inner {
   position: relative;
   z-index: 2;
+  width: 100%;
   max-width: 42rem;
   margin-inline: auto;
   text-align: center;
