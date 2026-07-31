@@ -56,3 +56,8 @@ Append-only log. Newest at bottom.
 - Franchisee pricing always works: new Pages proxy `PUT /api/admin/franchisees/:slug/links` → worker product-links upsert. Admin UI does PUT-then-PATCH so saving a cost creates the link when missing (fixes `link_not_found` / silent public-price tracking).
 - Add-product modal replaces `prompt()` chain; franchisee cost inputs prefilled with `floor(cents/1.2/50)*50` fallback and recompute live.
 - Worker (spbc-orders) not modified.
+
+### 2026-07-30 — Stacks nav + live calculator + franchisee sync
+- Unit A: calculator `#peptideName` loads from `/api/products` (skip BAC WATER); fallback embeds current non-BAC catalog so dropdown never empty; `data-mg` parsed from name; math/syringe/`?p=` unchanged.
+- Unit B: `stacks.html` + `shared/stacks.js` (8 stacks, research reference ranges only, no therapeutic claims). Cart merge into `spbc_cart_draft` with vial≤10 / kit clamp; optional BAC WATER 3ML = vial count. Dynamic stack cards intentionally omit `.reveal` (would stick at opacity 0 after async inject under `html.spbc-anim`). `_headers` pins `shared/stacks.js` Content-Type.
+- Unit C: DELETE proxy on `functions/api/admin/franchisees/[slug]/links.js`; admin "Sync all products" panel (Link all + remove stale) — explicit click only; costs use fallback formula never NULL. Worker not edited/redeployed. Admin credentials not available in ship agent env — Remy must click Link all / Remove all stale on patriotic to finish 32/32.
