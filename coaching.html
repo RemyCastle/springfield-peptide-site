@@ -368,10 +368,11 @@
   <script>
     const RATE = 100;
 
-    function submitCoach(e) {
+    async function submitCoach(e) {
       e.preventDefault();
       const err = document.getElementById('coachError');
       const ok = document.getElementById('coachOk');
+      const btn = document.getElementById('coachSubmit');
       err.classList.add('hidden');
       ok.classList.add('hidden');
 
@@ -387,8 +388,39 @@
       const focus = document.getElementById('cFocus').value;
       const goals = document.getElementById('cGoals').value.trim();
       const times = document.getElementById('cTimes').value.trim();
-      const total = (Number(hours) * RATE).toFixed(0);
 
+      if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        err.textContent = 'Please enter your name and a valid email.';
+        err.classList.remove('hidden');
+        return false;
+      }
+
+      const total = (Number(hours) * RATE).toFixed(0);
+      const origLabel = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      // Server-side submit — actually delivers to us, no mail client needed.
+      try {
+        const res = await fetch('/api/coaching-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, hours, focus, times, goals }),
+        });
+        if (res.ok) {
+          ok.textContent = 'Request sent — thanks! We’ll email you to confirm your slot. Check your inbox (and spam).';
+          ok.classList.remove('hidden');
+          document.getElementById('coachForm').reset();
+          btn.disabled = false;
+          btn.textContent = origLabel;
+          return false;
+        }
+        // fall through to mailto fallback on server error
+      } catch (_) {
+        // network error — fall through to mailto
+      }
+
+      // Fallback: open the visitor's mail client with a prefilled draft.
       const subject = `SPBC Coaching request — ${hours}h · $${total} · ${focus}`;
       const body = [
         'SPBC Research Coaching Request',
@@ -401,15 +433,12 @@
         '',
         'Goals / context:',
         goals,
-        '',
-        'I understand this is educational research coaching only, not medical advice.',
       ].join('\n');
-
-      const mailto = `mailto:springfieldpeps@proton.me?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.location.href = mailto;
-
-      ok.textContent = 'Email draft opened. Send it to complete your request — we’ll confirm your slot.';
+      window.location.href = `mailto:springfieldpeps@proton.me?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      ok.textContent = 'Opening your email app as a backup — please hit send, or email springfieldpeps@proton.me directly.';
       ok.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = origLabel;
       return false;
     }
   </script>
