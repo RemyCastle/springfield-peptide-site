@@ -505,7 +505,7 @@
             <div class="page-hero-inner">
                 <p class="page-hero-eyebrow">Members-only research collective</p>
                 <h1 class="page-hero-title ducks-font hero-gold-underline">GAINS WITHOUT COMPROMISE</h1>
-                <p class="page-hero-sub">Bulk-ready pricing, transparent discounts, dosage tools, and protocol coaching — built for serious research buyers.</p>
+                <p class="page-hero-sub">Bulk-ready pricing, dosage tools, and protocol coaching — built for serious research buyers.</p>
                 <div class="page-hero-cta">
                     <a href="#prices" class="btn-primary btn-magnetic">View prices</a>
                     <a href="/coaching.html" class="btn-secondary">Coaching · $100/hr</a>
@@ -533,12 +533,9 @@
             <div class="spbc-main max-w-screen-md">
                 <h2 class="ducks-font text-3xl sm:text-4xl md:text-5xl text-center mb-4 sm:mb-6 text-white reveal">PRICE LIST</h2>
                 <div class="depth-card px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5 reveal">
-                    <p class="text-[#EAB308] font-semibold">Single vial rules</p>
+                    <p class="text-[#EAB308] font-semibold">Ordering rules</p>
                     <p class="text-zinc-300"><strong class="text-white">3 vial minimum</strong> when ordering single vials</p>
-                    <p class="text-zinc-300"><strong class="text-white">5+ single vials</strong> → <span class="text-emerald-400 font-semibold">10% off</span> single-vial prices</p>
-                    <p class="text-[#EAB308] font-semibold pt-2">10-pack / kit rules</p>
-                    <p class="text-zinc-300"><strong class="text-white">2+ kits</strong> → <span class="text-emerald-400 font-semibold">10% off</span> kit subtotal</p>
-                    <p class="text-zinc-300"><strong class="text-white">5+ kits</strong> → <span class="text-emerald-400 font-semibold">15% off</span> kit subtotal</p>
+                    <p class="text-zinc-300">Every complete set of 10 units qualifies for the 10-pack / kit rate</p>
                 </div>
 
                 <!-- Search + filter -->
@@ -594,8 +591,6 @@
                         <strong>Payment.</strong> Payment instructions and accepted methods are provided at checkout after you place your order. Include your order number in the payment memo. We confirm payment manually before shipping.<br><br>
                         <strong>Bulk Pricing.</strong> Every complete set of 10 units qualifies for the bulk (10-pack) rate.<br><br>
                         <strong>Single Vial Minimum.</strong> Single-vial orders require a minimum of 3 single vials (can be mixed products).<br><br>
-                        <strong>5+ Single Vial Discount.</strong> Orders of 5 or more single vials receive 10% off the single-vial subtotal (does not apply to 10-packs/kits).<br><br>
-                        <strong>Kit / 10-Pack Discounts.</strong> 2 or more kits/10-packs: 10% off the kit subtotal. 5 or more kits/10-packs: 15% off the kit subtotal (mixed products count toward the total kit count).<br><br>
                         <strong>Shipping & Lost Packages.</strong> US addresses only. Carrier issues are the carrier's responsibility.<br><br>
                         <strong>Legal Disclaimer.</strong> ALL products are strictly for research and educational purposes only. NOT for human or animal consumption.<br><br>
                         <strong>Age Requirement.</strong> You must be 21+.<br><br>
@@ -695,10 +690,10 @@
                 </div>
                 <div id="stickyLines" class="sticky-lines" role="region" aria-label="Cart items"></div>
                 <div class="mb-2.5">
-                    <div class="progress-track" role="progressbar" id="discountProgress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Discount progress">
+                    <div class="progress-track" role="progressbar" id="discountProgress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Order minimum progress">
                         <div id="discountProgressFill" class="progress-fill"></div>
                     </div>
-                    <p id="stickyProgressHint" class="text-[11px] text-zinc-300 mt-1.5 leading-snug sticky-progress-hint">Add items to unlock discounts</p>
+                    <p id="stickyProgressHint" class="text-[11px] text-zinc-300 mt-1.5 leading-snug sticky-progress-hint">Add items to your order</p>
                 </div>
                 <div class="sticky-actions">
                     <button type="button" id="stickyClearBtn" class="btn-clear-cart" aria-label="Clear cart">
@@ -785,16 +780,10 @@
         const VIAL_OPTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // single vials: any qty 1–10
         const PACK_OPTS = [0, 1, 2, 3, 5];
         const MIN_SINGLE_VIALS = 3;
-        const DISCOUNT_VIAL_THRESHOLD = 5;
-        const SINGLE_VIAL_DISCOUNT = 0.10;
-        const KIT_DISCOUNT_TIER1_QTY = 2;
-        const KIT_DISCOUNT_TIER1_RATE = 0.10;
-        const KIT_DISCOUNT_TIER2_QTY = 5;
-        const KIT_DISCOUNT_TIER2_RATE = 0.15;
+        // No volume discounts on SPBC — the single-vial minimum is the only order rule.
 
         let activeFilter = 'all';
         let placingOrder = false;
-        let celebratedDiscountKey = '';
         let stickyExpanded = false;
 
         function prefersReducedMotion() {
@@ -819,7 +808,6 @@
                 card.classList.remove('in-cart');
             });
             clearCartDraft();
-            celebratedDiscountKey = '';
             stickyExpanded = false;
             const bar = document.getElementById('stickyOrderBar');
             if (bar) bar.classList.remove('expanded');
@@ -891,12 +879,6 @@
 
         function money(n) {
             return Number(n).toFixed(2);
-        }
-
-        function kitDiscountRate(kitCount) {
-            if (kitCount >= KIT_DISCOUNT_TIER2_QTY) return KIT_DISCOUNT_TIER2_RATE;
-            if (kitCount >= KIT_DISCOUNT_TIER1_QTY) return KIT_DISCOUNT_TIER1_RATE;
-            return 0;
         }
 
         function optionHtml(values, selected) {
@@ -1218,23 +1200,20 @@
                     });
                 }
             });
-            const vialDiscountEligible = singleVials >= DISCOUNT_VIAL_THRESHOLD;
-            const vialDiscount = vialDiscountEligible ? vialSubtotal * SINGLE_VIAL_DISCOUNT : 0;
-            const kitRate = kitDiscountRate(kitCount);
-            const kitDiscount = kitRate > 0 ? packSubtotal * kitRate : 0;
-            const kitDiscountPct = Math.round(kitRate * 100);
-            const total = vialSubtotal + packSubtotal + nonDiscountSubtotal - vialDiscount - kitDiscount;
+            // No volume discounts on SPBC — every item bills at full price.
+            const vialDiscountEligible = false;
+            const vialDiscount = 0;
+            const kitRate = 0;
+            const kitDiscount = 0;
+            const kitDiscountPct = 0;
+            const total = vialSubtotal + packSubtotal + nonDiscountSubtotal;
 
-            const vialMult = vialDiscountEligible ? (1 - SINGLE_VIAL_DISCOUNT) : 1;
-            const kitMult = 1 - kitRate;
             const items = rawLines.map((r) => {
-                // BAC water is never discounted, whatever the volume tier.
-                const mult = r.isBac ? 1 : (r.kind === 'vial' ? vialMult : kitMult);
                 return {
                     sku: r.sku,
                     name: r.name,
                     qty: r.qty,
-                    unit_price_cents: dollarsToCents(r.unit_price_dollars * mult),
+                    unit_price_cents: dollarsToCents(r.unit_price_dollars),
                 };
             });
 
@@ -1255,47 +1234,21 @@
         }
 
         function discountProgressMeta(t) {
-            // Prefer vial progress when user is building vials; else kit progress
-            if (t.singleVials > 0 || t.kitCount === 0) {
-                if (t.singleVials === 0) {
-                    return { pct: 0, hint: `Min ${MIN_SINGLE_VIALS} singles · 10% off at ${DISCOUNT_VIAL_THRESHOLD}+` };
+            // No discounts — the only gate is the single-vial minimum. Track it.
+            if (t.singleVials === 0) {
+                if (t.kitCount > 0) {
+                    return { pct: 100, hint: 'Ready to order' };
                 }
-                if (t.singleVials < MIN_SINGLE_VIALS) {
-                    const need = MIN_SINGLE_VIALS - t.singleVials;
-                    return {
-                        pct: Math.round((t.singleVials / MIN_SINGLE_VIALS) * 55),
-                        hint: `Add ${need} more single vial${need === 1 ? '' : 's'} for minimum`,
-                    };
-                }
-                if (t.singleVials < DISCOUNT_VIAL_THRESHOLD) {
-                    const need = DISCOUNT_VIAL_THRESHOLD - t.singleVials;
-                    return {
-                        pct: Math.round(55 + (t.singleVials / DISCOUNT_VIAL_THRESHOLD) * 45),
-                        hint: `Add ${need} more for 10% off singles`,
-                    };
-                }
+                return { pct: 0, hint: `Single-vial orders need ${MIN_SINGLE_VIALS} minimum` };
+            }
+            if (t.singleVials < MIN_SINGLE_VIALS) {
+                const need = MIN_SINGLE_VIALS - t.singleVials;
                 return {
-                    pct: 100,
-                    hint: `10% singles discount · −$${money(t.vialDiscount)}`,
+                    pct: Math.round((t.singleVials / MIN_SINGLE_VIALS) * 100),
+                    hint: `Add ${need} more single vial${need === 1 ? '' : 's'} to meet the ${MIN_SINGLE_VIALS}-vial minimum`,
                 };
             }
-            if (t.kitCount < KIT_DISCOUNT_TIER1_QTY) {
-                return {
-                    pct: Math.round((t.kitCount / KIT_DISCOUNT_TIER1_QTY) * 50),
-                    hint: 'Add 1 more kit for 10% off kits',
-                };
-            }
-            if (t.kitCount < KIT_DISCOUNT_TIER2_QTY) {
-                const need = KIT_DISCOUNT_TIER2_QTY - t.kitCount;
-                return {
-                    pct: Math.round(50 + ((t.kitCount - KIT_DISCOUNT_TIER1_QTY) / (KIT_DISCOUNT_TIER2_QTY - KIT_DISCOUNT_TIER1_QTY)) * 50),
-                    hint: `Add ${need} more kit${need === 1 ? '' : 's'} for 15% off`,
-                };
-            }
-            return {
-                pct: 100,
-                hint: `15% kit discount · −$${money(t.kitDiscount)}`,
-            };
+            return { pct: 100, hint: `✓ ${MIN_SINGLE_VIALS}-vial minimum met` };
         }
 
         function updateStickyBar(t) {
@@ -1316,8 +1269,7 @@
             const itemCount = t.items.reduce((s, it) => s + it.qty, 0);
             const prevCount = parseInt(document.getElementById('cartBadge')?.textContent || '0', 10) || 0;
             document.getElementById('stickyCount').textContent =
-                `${itemCount} item${itemCount === 1 ? '' : 's'}` +
-                (t.vialDiscount > 0 || t.kitDiscount > 0 ? ' · discounts applied' : '');
+                `${itemCount} item${itemCount === 1 ? '' : 's'}`;
             const badge = document.getElementById('cartBadge');
             if (badge) {
                 badge.textContent = String(itemCount);
@@ -1371,26 +1323,8 @@
             prog.setAttribute('aria-valuenow', String(meta.pct));
             hint.textContent = meta.hint;
 
-            // Celebrate newly unlocked discount tier once
-            const discKey = [
-                t.vialDiscountEligible ? 'v10' : '',
-                t.kitRate >= KIT_DISCOUNT_TIER2_RATE ? 'k15' : (t.kitRate >= KIT_DISCOUNT_TIER1_RATE ? 'k10' : ''),
-            ].filter(Boolean).join('|');
-            if (discKey && discKey !== celebratedDiscountKey && (t.vialDiscount > 0 || t.kitDiscount > 0)) {
-                celebratedDiscountKey = discKey;
-                hint.classList.add('unlocked');
-                if (!prefersReducedMotion()) {
-                    prog.classList.remove('celebrate');
-                    void prog.offsetWidth;
-                    prog.classList.add('celebrate');
-                    setTimeout(() => prog.classList.remove('celebrate'), 1500);
-                }
-            } else if (!discKey) {
-                celebratedDiscountKey = '';
-                hint.classList.remove('unlocked');
-            } else {
-                hint.classList.toggle('unlocked', meta.pct >= 100 || t.vialDiscount > 0 || t.kitDiscount > 0);
-            }
+            // Mark the minimum-met state (no discounts to celebrate)
+            hint.classList.toggle('unlocked', meta.pct >= 100);
 
             const countBtn = document.getElementById('stickyCountBtn');
             if (countBtn) countBtn.setAttribute('aria-expanded', stickyExpanded ? 'true' : 'false');
@@ -1409,23 +1343,9 @@
                 if (t.vialSubtotal > 0) {
                     orderText += `\nSingle vial subtotal: $${money(t.vialSubtotal)}`;
                 }
-                if (t.vialDiscountEligible && t.vialDiscount > 0) {
-                    orderText += `\n5+ vial discount (10%): -$${money(t.vialDiscount)}`;
-                } else if (t.singleVials > 0 && t.singleVials < DISCOUNT_VIAL_THRESHOLD) {
-                    const need = DISCOUNT_VIAL_THRESHOLD - t.singleVials;
-                    orderText += `\n(Add ${need} more single vial${need === 1 ? '' : 's'} for 10% off singles)`;
-                }
                 orderText += `\nKits / 10-packs: ${t.kitCount}`;
                 if (t.packSubtotal > 0) {
                     orderText += `\n10-pack / kit subtotal: $${money(t.packSubtotal)}`;
-                }
-                if (t.kitDiscount > 0) {
-                    orderText += `\nKit discount (${t.kitDiscountPct}%): -$${money(t.kitDiscount)}`;
-                } else if (t.kitCount === 1) {
-                    orderText += `\n(Add 1 more kit for 10% off kits)`;
-                } else if (t.kitCount >= KIT_DISCOUNT_TIER1_QTY && t.kitCount < KIT_DISCOUNT_TIER2_QTY) {
-                    const need = KIT_DISCOUNT_TIER2_QTY - t.kitCount;
-                    orderText += `\n(Add ${need} more kit${need === 1 ? '' : 's'} for 15% off kits)`;
                 }
                 orderText += `\n\nESTIMATED TOTAL: $${money(t.total)}`;
                 document.getElementById('message').value = orderText.trim();
@@ -1437,19 +1357,15 @@
             let status = '';
             let tone = 'text-zinc-500';
             if (t.singleVials === 0 && t.packSubtotal === 0) {
-                status = `Minimum ${MIN_SINGLE_VIALS} single vials · 10% off at ${DISCOUNT_VIAL_THRESHOLD}+ singles`;
+                status = `Single-vial orders require a minimum of ${MIN_SINGLE_VIALS}`;
                 tone = 'text-zinc-500';
             } else if (t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
                 const need = MIN_SINGLE_VIALS - t.singleVials;
                 status = `Need ${need} more single vial${need === 1 ? '' : 's'} to meet the ${MIN_SINGLE_VIALS}-vial minimum`;
                 tone = 'text-amber-400';
-            } else if (t.vialDiscountEligible) {
-                status = `✓ ${t.singleVials} single vials · 10% discount applied (−$${money(t.vialDiscount)})`;
-                tone = 'text-emerald-400';
             } else if (t.singleVials >= MIN_SINGLE_VIALS) {
-                const need = DISCOUNT_VIAL_THRESHOLD - t.singleVials;
-                status = `✓ Minimum met (${t.singleVials} vials) · add ${need} more for 10% off singles`;
-                tone = 'text-zinc-300';
+                status = `✓ ${t.singleVials} single vials · minimum met`;
+                tone = 'text-emerald-400';
             } else if (t.singleVials === 0) {
                 status = 'No single vials selected';
                 tone = 'text-zinc-500';
@@ -1457,17 +1373,8 @@
 
             let kitStatus = '';
             let kitTone = 'text-zinc-500';
-            if (t.kitCount === 0) {
-                kitStatus = `Kits: 10% off at ${KIT_DISCOUNT_TIER1_QTY}+ · 15% off at ${KIT_DISCOUNT_TIER2_QTY}+`;
-            } else if (t.kitCount >= KIT_DISCOUNT_TIER2_QTY) {
-                kitStatus = `✓ ${t.kitCount} kits · 15% kit discount applied (−$${money(t.kitDiscount)})`;
-                kitTone = 'text-emerald-400';
-            } else if (t.kitCount >= KIT_DISCOUNT_TIER1_QTY) {
-                const need = KIT_DISCOUNT_TIER2_QTY - t.kitCount;
-                kitStatus = `✓ ${t.kitCount} kits · 10% kit discount (−$${money(t.kitDiscount)}) · add ${need} more for 15%`;
-                kitTone = 'text-emerald-400';
-            } else {
-                kitStatus = `${t.kitCount} kit — add 1 more for 10% off kits`;
+            if (t.kitCount > 0) {
+                kitStatus = `✓ ${t.kitCount} kit${t.kitCount === 1 ? '' : 's'} / 10-pack${t.kitCount === 1 ? '' : 's'}`;
                 kitTone = 'text-zinc-300';
             }
 
@@ -1568,18 +1475,6 @@
                     linesEl.appendChild(row);
                 }
             });
-            if (t.vialDiscount > 0) {
-                const d = document.createElement('div');
-                d.className = 'flex justify-between text-emerald-400 text-xs';
-                d.innerHTML = `<span>5+ vial discount (10%)</span><span>−$${money(t.vialDiscount)}</span>`;
-                linesEl.appendChild(d);
-            }
-            if (t.kitDiscount > 0) {
-                const d = document.createElement('div');
-                d.className = 'flex justify-between text-emerald-400 text-xs';
-                d.innerHTML = `<span>Kit discount (${t.kitDiscountPct}%)</span><span>−$${money(t.kitDiscount)}</span>`;
-                linesEl.appendChild(d);
-            }
             linesEl.querySelectorAll('.review-remove').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const pname = btn.getAttribute('data-name');
