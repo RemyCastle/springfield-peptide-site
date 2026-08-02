@@ -1165,11 +1165,15 @@
             let kitCount = 0;
             let vialSubtotal = 0;
             let packSubtotal = 0;
+            // BAC water is a consumable, not a peptide — it never counts toward
+            // volume thresholds and is never discounted. Charged at full price.
+            let nonDiscountSubtotal = 0;
             const lines = [];
             const rawLines = [];
             const cards = document.querySelectorAll('#priceTable .price-card');
             cards.forEach(card => {
                 const name = card.getAttribute('data-name');
+                const isBac = /bac\s*water/i.test(name);
                 const vialPrice = parseFloat(card.getAttribute('data-vial') || 0);
                 const packPrice = parseFloat(card.getAttribute('data-pack') || card.getAttribute('data-kit') || 0);
                 const vialSelect = card.querySelector('select[data-kind="vial"]');
@@ -1178,8 +1182,12 @@
                 const kitQty = parseInt(kitSelect ? kitSelect.value : 0, 10) || 0;
                 if (vialQty > 0) {
                     const line = vialQty * vialPrice;
-                    singleVials += vialQty;
-                    vialSubtotal += line;
+                    if (isBac) {
+                        nonDiscountSubtotal += line;
+                    } else {
+                        singleVials += vialQty;
+                        vialSubtotal += line;
+                    }
                     lines.push({ kind: 'vial', text: `${vialQty}x ${name} (Vial) — $${money(line)}` });
                     rawLines.push({
                         kind: 'vial',
@@ -1187,13 +1195,18 @@
                         sku: skuFrom(name, 'vial'),
                         qty: vialQty,
                         unit_price_dollars: vialPrice,
+                        isBac,
                     });
                 }
                 if (kitQty > 0) {
                     const label = card.hasAttribute('data-kit') && !card.hasAttribute('data-pack') ? 'Kit' : '10-Pack / Kit';
                     const line = kitQty * packPrice;
-                    kitCount += kitQty;
-                    packSubtotal += line;
+                    if (isBac) {
+                        nonDiscountSubtotal += line;
+                    } else {
+                        kitCount += kitQty;
+                        packSubtotal += line;
+                    }
                     lines.push({ kind: 'pack', text: `${kitQty}x ${name} (${label}) — $${money(line)}` });
                     rawLines.push({
                         kind: 'pack',
@@ -1201,6 +1214,7 @@
                         sku: skuFrom(name, 'kit'),
                         qty: kitQty,
                         unit_price_dollars: packPrice,
+                        isBac,
                     });
                 }
             });
@@ -1209,12 +1223,13 @@
             const kitRate = kitDiscountRate(kitCount);
             const kitDiscount = kitRate > 0 ? packSubtotal * kitRate : 0;
             const kitDiscountPct = Math.round(kitRate * 100);
-            const total = vialSubtotal + packSubtotal - vialDiscount - kitDiscount;
+            const total = vialSubtotal + packSubtotal + nonDiscountSubtotal - vialDiscount - kitDiscount;
 
             const vialMult = vialDiscountEligible ? (1 - SINGLE_VIAL_DISCOUNT) : 1;
             const kitMult = 1 - kitRate;
             const items = rawLines.map((r) => {
-                const mult = r.kind === 'vial' ? vialMult : kitMult;
+                // BAC water is never discounted, whatever the volume tier.
+                const mult = r.isBac ? 1 : (r.kind === 'vial' ? vialMult : kitMult);
                 return {
                     sku: r.sku,
                     name: r.name,
