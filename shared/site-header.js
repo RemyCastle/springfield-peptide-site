@@ -40,12 +40,23 @@
     if (next === isScrolled) return;
     isScrolled = next;
     header.classList.toggle('is-scrolled', isScrolled);
+    syncStickyOffset();
+  }
+
+  /** Keep category sticky subheaders parked just below the real header height. */
+  function syncStickyOffset() {
+    if (!header) return;
+    var h = Math.ceil(header.getBoundingClientRect().height);
+    if (h > 0) {
+      document.documentElement.style.setProperty('--spbc-header-sticky-offset', h + 'px');
+    }
   }
 
   function bindOnce() {
     if (bound || !header) return;
     bound = true;
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', syncStickyOffset, { passive: true });
   }
 
   function init() {
@@ -58,6 +69,7 @@
     var y = window.scrollY || window.pageYOffset || 0;
     isScrolled = y > SCROLL_ENTER;
     header.classList.toggle('is-scrolled', isScrolled);
+    syncStickyOffset();
   }
 
   window.spbcHeaderRefresh = function () {

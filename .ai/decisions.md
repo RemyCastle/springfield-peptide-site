@@ -2,6 +2,13 @@
 
 Append-only log. Newest at bottom.
 
+### 2026-08-03 — Denser price list: responsive grid + category groups
+- Decision: `#priceTable` is a category-grouped layout; each group has a sticky subheader and an inner responsive grid (1 col below 640px, 2 at 640+, 3 at 1024+) with `minmax(0,1fr)` tracks. Prices shell uses shared `72rem` `.spbc-main` (removed `max-w-screen-md` constraint).
+- Category map is a single `PRODUCT_CATEGORY_BY_NAME` object in `shared/store.js` keyed by exact product name; unmapped names fall through to **Other research** so new products never disappear.
+- Price cards drop `.reveal` (design.md: never animate product card opacity). Sticky group headings use `z-index: var(--spbc-z-content)` below header 50; `--spbc-header-sticky-offset` is measured from the real header in `site-header.js`.
+- Search/filter hides empty groups + shows `#filterResultCount`. In-cart keeps gold accent (`.in-cart` / qty-flash language).
+- No worker, secret, price, or product-name changes.
+
 ### 2026-07-11
 - Decision: Initialized project memory for local AI system
 - Why: Enable persistent context across Grok + Ollama tandem sessions

@@ -49,7 +49,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared/tailwind.1b9a0fb9.css">
   <link rel="stylesheet" href="/shared/site-header.b830ed0e.css">
-  <link rel="stylesheet" href="/shared/site-atmosphere.31ee1ef4.css">
+  <link rel="stylesheet" href="/shared/site-atmosphere.7d495ddb.css">
 
 </head>
 <body class="atmosphere text-white min-h-screen overflow-x-hidden" data-page="index">
@@ -135,16 +135,16 @@
         <hr class="section-rule" aria-hidden="true">
 
         <section id="prices" class="spbc-section" tabindex="-1">
-            <div class="spbc-main max-w-screen-md">
+            <div class="spbc-main prices-shell">
                 <h2 class="ducks-font text-3xl sm:text-4xl md:text-5xl text-center mb-4 sm:mb-6 text-white reveal">PRICE LIST</h2>
-                <div class="depth-card px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5 reveal">
+                <div class="depth-card px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5 reveal prices-rules-card">
                     <p class="text-[#EAB308] font-semibold">Ordering rules</p>
                     <p class="text-zinc-300"><strong class="text-white">3 vial minimum</strong> when ordering single vials</p>
                     <p class="text-zinc-300">Every complete set of 10 units qualifies for the 10-pack / kit rate</p>
                 </div>
 
                 <!-- Search + filter -->
-                <div class="mb-4 space-y-3 reveal">
+                <div class="mb-4 space-y-3 reveal prices-filter-panel">
                     <div class="relative">
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" aria-hidden="true">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
@@ -156,14 +156,18 @@
                         <button type="button" class="filter-chip" data-filter="vials" aria-pressed="false">Has vials</button>
                         <button type="button" class="filter-chip" data-filter="kit-only" aria-pressed="false">Kit-only</button>
                     </div>
+                    <p id="filterResultCount" class="filter-result-count" hidden aria-live="polite"></p>
                     <p id="filterEmpty" class="hidden text-center text-zinc-500 text-sm py-2">
                         No products match your search.
                         <button type="button" id="clearSearchBtn" class="block mx-auto mt-2 text-[#EAB308] font-semibold underline underline-offset-2">Clear search &amp; filters</button>
                     </p>
                 </div>
 
-                <div id="priceTable" class="flex flex-col gap-3 perspective-root" aria-live="polite">
-                    <div id="priceLoading" class="flex flex-col gap-3" aria-busy="true" aria-label="Loading prices">
+                <div id="priceTable" class="price-table perspective-root" aria-live="polite">
+                    <div id="priceLoading" class="price-table-loading" aria-busy="true" aria-label="Loading prices">
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
                         <div class="skeleton-card"></div>
                         <div class="skeleton-card"></div>
                         <div class="skeleton-card"></div>
@@ -376,11 +380,11 @@
 
   
   
-  <script src="/shared/store.69176ec4.js"></script>
+  <script src="/shared/store.206c8da9.js"></script>
   
   <script src="/shared/age-gate.693d4edd.js" defer></script>
   <script src="/shared/site-atmosphere.2d5cebee.js" defer></script>
-  <script src="/shared/site-header.c8aa2500.js" defer></script>
+  <script src="/shared/site-header.e3bf9e6c.js" defer></script>
 
 </body>
 </html>

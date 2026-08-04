@@ -5,6 +5,74 @@ const CART_KEY = "spbc_cart_draft";
         const MIN_SINGLE_VIALS = 3;
         // No volume discounts on SPBC — the single-vial minimum is the only order rule.
 
+        /**
+         * Single edit point for storefront category grouping.
+         * Keys MUST match product names exactly (join key — never rename products).
+         * Unmapped names fall through to FALLBACK_CATEGORY so new products never disappear.
+         */
+        const FALLBACK_CATEGORY = 'Other research';
+        const PRODUCT_CATEGORY_ORDER = [
+            'GLP-1 / metabolic',
+            'Repair & recovery',
+            'Skin & cosmetic',
+            'Longevity & mitochondrial',
+            'GH secretagogues',
+            'Other research',
+            'Supplies',
+        ];
+        const PRODUCT_CATEGORY_BY_NAME = {
+            'SEMA 5MG': 'GLP-1 / metabolic',
+            'SEMA 10MG': 'GLP-1 / metabolic',
+            'CAGRI  5MG': 'GLP-1 / metabolic',
+            'CAGRI 10MG': 'GLP-1 / metabolic',
+            'TIRZ 10MG': 'GLP-1 / metabolic',
+            'TIRZ 30MG': 'GLP-1 / metabolic',
+            'TIRZ 60MG': 'GLP-1 / metabolic',
+            'RETA 10MG': 'GLP-1 / metabolic',
+            'RETA 30MG': 'GLP-1 / metabolic',
+            'RETA 60 MG': 'GLP-1 / metabolic',
+            'BPC-157 10MG': 'Repair & recovery',
+            'TB-500 10MG': 'Repair & recovery',
+            'KPV 10 MG': 'Repair & recovery',
+            'KLOW 80MG': 'Repair & recovery',
+            'GHK-CU 50MG': 'Skin & cosmetic',
+            'GHK-cu 100MG': 'Skin & cosmetic',
+            'MOTS-C 10MG': 'Longevity & mitochondrial',
+            'MOTS-C 40MG': 'Longevity & mitochondrial',
+            'SS-31 10MG': 'Longevity & mitochondrial',
+            'NAD+ 500MG': 'Longevity & mitochondrial',
+            'NAD+ 1000MG': 'Longevity & mitochondrial',
+            '5-AMINO-1MQ 50MG': 'Longevity & mitochondrial',
+            'GLUTATHIONE 1200MG': 'Longevity & mitochondrial',
+            'IPA 10MG': 'GH secretagogues',
+            'CJC/IPA NO DAC 10MG': 'GH secretagogues',
+            'Tesamorelin': 'GH secretagogues',
+            'PT-141 10 MG': 'Other research',
+            'MT1': 'Other research',
+            'MT2': 'Other research',
+            'DSIP 10MG': 'Other research',
+            'BAC WATER 3ML': 'Supplies',
+            'BAC WATER 10 ML': 'Supplies',
+        };
+
+        function categoryForProduct(name) {
+            if (Object.prototype.hasOwnProperty.call(PRODUCT_CATEGORY_BY_NAME, name)) {
+                return PRODUCT_CATEGORY_BY_NAME[name];
+            }
+            return FALLBACK_CATEGORY;
+        }
+
+        function groupProductsByCategory(products) {
+            const buckets = new Map();
+            PRODUCT_CATEGORY_ORDER.forEach((cat) => buckets.set(cat, []));
+            (products || []).forEach((p) => {
+                const cat = categoryForProduct(p && p.name);
+                if (!buckets.has(cat)) buckets.set(cat, []);
+                buckets.get(cat).push(p);
+            });
+            return buckets;
+        }
+
         let activeFilter = 'all';
         let placingOrder = false;
         let stickyExpanded = false;
@@ -324,6 +392,26 @@ const CART_KEY = "spbc_cart_draft";
                 card.classList.toggle('hidden', !show);
                 if (show) visible += 1;
             });
+            // Hide empty groups (and their sticky subheaders) when filter/search is active
+            document.querySelectorAll('#priceTable .price-group').forEach((group) => {
+                const anyVisible = [...group.querySelectorAll('.price-card')].some(
+                    (c) => !c.classList.contains('hidden')
+                );
+                group.classList.toggle('hidden', !anyVisible);
+            });
+            const filterActive = !!q || activeFilter !== 'all';
+            const countEl = document.getElementById('filterResultCount');
+            if (countEl) {
+                if (filterActive && cards.length) {
+                    countEl.hidden = false;
+                    countEl.textContent = visible === 1
+                        ? '1 product matches'
+                        : `${visible} products match`;
+                } else {
+                    countEl.hidden = true;
+                    countEl.textContent = '';
+                }
+            }
             const empty = document.getElementById('filterEmpty');
             if (empty) empty.classList.toggle('hidden', visible > 0 || !cards.length);
         }
@@ -350,6 +438,46 @@ const CART_KEY = "spbc_cart_draft";
             });
         }
 
+        function buildPriceCard(p, draft) {
+            const name = p.name;
+            const kitOnly = !!p.kit_only;
+            const saved = draft[name] || {};
+            const article = document.createElement('article');
+            // No .reveal — design.md: never animate product card opacity (visibility must not depend on IO).
+            article.className = 'price-card depth-card grid-item';
+            article.setAttribute('data-name', name);
+            if (kitOnly) {
+                article.setAttribute('data-kit', String(p.pack_price));
+            } else {
+                if (p.vial_price != null) article.setAttribute('data-vial', String(p.vial_price));
+                article.setAttribute('data-pack', String(p.pack_price));
+            }
+
+            let body = `<h3 class="price-card-title break-word">${escapeHtml(name)}</h3><div class="price-card-body">`;
+            if (!kitOnly && p.vial_price != null) {
+                body += `
+                    <div class="price-row">
+                        <span class="price-label">Vial</span>
+                        <div class="price-controls">
+                            <span class="price-amount tabular-nums">$${formatPrice(p.vial_price)}</span>
+                            ${buildStepper('vial', VIAL_OPTS, saved.vial, name + ' vial qty')}
+                        </div>
+                    </div>`;
+            }
+            body += `
+                <div class="price-row">
+                    <span class="price-label">${kitOnly ? 'Kit' : '10-Pack / Kit'}</span>
+                    <div class="price-controls">
+                        <span class="price-amount tabular-nums">$${formatPrice(p.pack_price)}</span>
+                        ${buildStepper('pack', kitOnly ? VIAL_OPTS : PACK_OPTS, saved.pack, name + ' kit qty')}
+                    </div>
+                </div>
+            </div>`;
+            article.innerHTML = body;
+            wireStepper(article);
+            return article;
+        }
+
         function renderProducts(products) {
             const root = document.getElementById('priceTable');
             root.innerHTML = '';
@@ -358,43 +486,23 @@ const CART_KEY = "spbc_cart_draft";
                 return;
             }
             const draft = loadCartDraft();
-            products.forEach(p => {
-                const name = p.name;
-                const kitOnly = !!p.kit_only;
-                const saved = draft[name] || {};
-                const article = document.createElement('article');
-                article.className = 'price-card depth-card grid-item p-3 sm:p-4 reveal';
-                article.setAttribute('data-name', name);
-                if (kitOnly) {
-                    article.setAttribute('data-kit', String(p.pack_price));
-                } else {
-                    if (p.vial_price != null) article.setAttribute('data-vial', String(p.vial_price));
-                    article.setAttribute('data-pack', String(p.pack_price));
-                }
-
-                let body = `<h3 class="font-semibold text-white text-base sm:text-lg mb-3 break-word leading-snug">${escapeHtml(name)}</h3><div class="flex flex-col gap-3">`;
-                if (!kitOnly && p.vial_price != null) {
-                    body += `
-                        <div class="price-row">
-                            <span class="price-label text-sm text-zinc-400">Vial</span>
-                            <div class="price-controls">
-                                <span class="font-bold text-[#EAB308] tabular-nums">$${formatPrice(p.vial_price)}</span>
-                                ${buildStepper('vial', VIAL_OPTS, saved.vial, name + ' vial qty')}
-                            </div>
-                        </div>`;
-                }
-                body += `
-                    <div class="price-row">
-                        <span class="price-label text-sm text-zinc-400">${kitOnly ? 'Kit' : '10-Pack / Kit'}</span>
-                        <div class="price-controls">
-                            <span class="font-bold text-[#EAB308] tabular-nums">$${formatPrice(p.pack_price)}</span>
-                            ${buildStepper('pack', kitOnly ? VIAL_OPTS : PACK_OPTS, saved.pack, name + ' kit qty')}
-                        </div>
-                    </div>
-                </div>`;
-                article.innerHTML = body;
-                wireStepper(article);
-                root.appendChild(article);
+            const grouped = groupProductsByCategory(products);
+            grouped.forEach((list, category) => {
+                if (!list.length) return;
+                const section = document.createElement('section');
+                section.className = 'price-group';
+                section.setAttribute('data-category', category);
+                const heading = document.createElement('h3');
+                heading.className = 'price-group-heading';
+                heading.textContent = category;
+                const grid = document.createElement('div');
+                grid.className = 'price-group-grid';
+                list.forEach((p) => {
+                    grid.appendChild(buildPriceCard(p, draft));
+                });
+                section.appendChild(heading);
+                section.appendChild(grid);
+                root.appendChild(section);
             });
             applyProductFilter();
             updateOrder();
@@ -406,7 +514,10 @@ const CART_KEY = "spbc_cart_draft";
         async function loadProducts() {
             const root = document.getElementById('priceTable');
             root.innerHTML = `
-                <div id="priceLoading" class="flex flex-col gap-3" aria-busy="true" aria-label="Loading prices">
+                <div id="priceLoading" class="price-table-loading" aria-busy="true" aria-label="Loading prices">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
                     <div class="skeleton-card"></div>
                     <div class="skeleton-card"></div>
                     <div class="skeleton-card"></div>

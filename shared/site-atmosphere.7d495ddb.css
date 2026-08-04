@@ -1065,25 +1065,163 @@ display: flex;
 flex-wrap: wrap;
 align-items: center;
 justify-content: space-between;
-gap: 0.5rem 0.75rem;
+gap: 0.35rem 0.5rem;
 }
 .price-row .price-label {
 flex: 1 1 auto;
 min-width: 0;
+font-size: 0.8125rem;
+color: var(--text-muted);
 }
 .price-row .price-controls {
 display: flex;
 align-items: center;
-gap: 0.75rem;
+gap: 0.55rem;
 flex-shrink: 0;
 margin-left: auto;
+}
+.price-amount {
+font-weight: 700;
+color: var(--accent-gold);
+font-variant-numeric: tabular-nums;
+font-size: 0.95rem;
 }
 .break-word { overflow-wrap: anywhere; word-break: break-word; }
 /* Inputs: 16px+ prevents iOS auto-zoom */
 
 @media (max-width: 380px) {
-.price-row .price-controls { gap: 0.5rem; }
+.price-row .price-controls { gap: 0.4rem; }
 .qty-select { min-width: 3.25rem; padding: 0.45rem 0.5rem; }
+}
+
+/* ── Price list: responsive grid + sticky category groups ── */
+/* Shell uses shared .spbc-main 72rem; rules/filter stay readable width */
+.prices-shell .prices-rules-card,
+.prices-shell .prices-filter-panel {
+  max-width: 36rem;
+  margin-inline: auto;
+}
+/* Stick category subheaders below site header (z:50). Offset set from measured header
+   height in site-header.js; fallback covers typical brand+nav row (~78px). */
+:root {
+  --spbc-header-sticky-offset: 5rem;
+}
+#priceTable.price-table,
+.price-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+@media (min-width: 640px) {
+  #priceTable.price-table,
+  .price-table {
+    gap: 1.1rem;
+  }
+}
+.price-table-loading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.65rem;
+}
+@media (min-width: 640px) {
+  .price-table-loading {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .price-table-loading {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.price-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.price-group-heading {
+  position: sticky;
+  top: var(--spbc-header-sticky-offset);
+  z-index: var(--spbc-z-content); /* below header (50) — never covers nav */
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  background: rgba(11, 18, 14, 0.96);
+  border: 1px solid var(--border);
+  border-radius: var(--spbc-radius);
+  box-shadow: 0 1px 0 rgba(234, 179, 8, 0.12);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+}
+.price-group-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  min-width: 0;
+}
+@media (min-width: 640px) {
+  .price-group {
+    gap: 0.6rem;
+  }
+  .price-group-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+}
+@media (min-width: 1024px) {
+  .price-group-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+}
+/* Density: tighter card chrome, keep 44px qty targets */
+.price-card.depth-card,
+#priceTable .price-card {
+  padding: 0.55rem 0.65rem;
+  min-width: 0;
+}
+@media (min-width: 640px) {
+  .price-card.depth-card,
+  #priceTable .price-card {
+    padding: 0.65rem 0.75rem;
+  }
+}
+.price-card-title {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.25;
+  margin: 0 0 0.35rem;
+}
+@media (min-width: 640px) {
+  .price-card-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.45rem;
+  }
+}
+.price-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+/* Hard rule: product cards never use reveal opacity hide (hover-lift transform still OK) */
+html.spbc-anim #priceTable .price-card,
+html.spbc-anim #priceTable .price-card.reveal {
+  opacity: 1;
+}
+.filter-result-count {
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.filter-result-count[hidden] {
+  display: none !important;
 }
 
 
@@ -1265,10 +1403,11 @@ border: 1px solid #52525b;
 border-radius: 0.65rem;
 background: #000;
 overflow: hidden;
-min-height: 2.75rem;
+min-height: 2.75rem; /* 44px touch target floor */
 }
 .qty-stepper .qty-btn {
-width: 2.4rem;
+width: 2.75rem; /* ≥44px hit target */
+min-width: 2.75rem;
 min-height: 2.75rem;
 display: inline-flex;
 align-items: center;
@@ -1317,9 +1456,27 @@ text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 0% { opacity: 1; transform: translateY(0); }
 100% { opacity: 0; transform: translateY(-18px); }
 }
+/* In-cart: gold accent so qty>0 cards stay findable in a multi-column grid */
 .price-card.in-cart {
-border-color: rgba(234, 179, 8, 0.55);
-box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.12);
+border-color: rgba(234, 179, 8, 0.7);
+box-shadow:
+  0 0 0 1px rgba(234, 179, 8, 0.22),
+  0 0 18px rgba(234, 179, 8, 0.12);
+background: rgba(27, 40, 32, 0.96) !important;
+}
+.price-card.in-cart::before {
+content: '';
+position: absolute;
+left: 0;
+top: 0.55rem;
+bottom: 0.55rem;
+width: 3px;
+border-radius: 0 2px 2px 0;
+background: var(--accent-gold);
+pointer-events: none;
+}
+.price-card {
+position: relative;
 }
 .review-remove {
 color: #f87171;
