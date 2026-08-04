@@ -1,0 +1,996 @@
+/**
+ * SPBC layered-depth atmosphere — organic biophilic dark forest + gold.
+ * Brand tokens + shell shared by index / calculator / coaching / qr.
+ * v12 — reveal animation progressive enhancement (never hide content without html.spbc-anim)
+ */
+:root {
+  /* Design tokens (ui-ux-pro-max curated) */
+  --bg: #0B120E;
+  --surface: #131C16;
+  --surface-2: #1B2820;
+  --brand: #16A34A;
+  --brand-deep: #006600;
+  --accent-gold: #EAB308;
+  --text: #F2F7F3;
+  --text-muted: #A8B8AC;
+  --border: #263A2C;
+  --destructive: #DC2626;
+
+  /* Legacy aliases (keep continuity for existing selectors) */
+  --spbc-green: var(--brand);
+  --spbc-green-mid: #0d3d1f;
+  --spbc-green-deep: var(--bg);
+  --spbc-gold: var(--accent-gold);
+  --spbc-gold-legacy: #FDD700;
+  --spbc-glass: rgba(19, 28, 22, 0.78);
+  --spbc-glass-border: rgba(234, 179, 8, 0.22);
+  --spbc-surface: var(--surface);
+  --spbc-t-micro: 200ms ease-out;
+  --spbc-t-macro: 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  --spbc-radius: 1rem;
+  --spbc-radius-lg: 1.25rem;
+  --spbc-radius-xl: 1.5rem;
+  --spbc-shadow-layer:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.25);
+  --spbc-shadow-lift:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(234, 179, 8, 0.2),
+    0 0 24px rgba(22, 163, 74, 0.12);
+  /* z-index scale */
+  --spbc-z-atmosphere: 0;
+  --spbc-z-content: 1;
+  --spbc-z-header: 50;
+  --spbc-z-sticky: 60;
+  --spbc-z-gate: 100;
+  --spbc-z-modal: 110;
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-size: 100%;
+  scroll-behavior: smooth;
+}
+
+/* ── Full-page atmosphere ─────────────────────────────────── */
+body.atmosphere {
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -8%, rgba(22, 163, 74, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 90%, rgba(234, 179, 8, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 45% 35% at 0% 60%, rgba(0, 102, 0, 0.22) 0%, transparent 48%),
+    linear-gradient(165deg, #0f1a13 0%, var(--bg) 42%, #070c09 100%);
+  background-color: var(--bg);
+  background-attachment: scroll;
+  color: var(--text);
+  min-height: 100%;
+  position: relative;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 769px) {
+  body.atmosphere { background-attachment: fixed; }
+}
+
+body.atmosphere::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: var(--spbc-z-atmosphere);
+  pointer-events: none;
+  opacity: 0.4;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+#atmosphere-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--spbc-z-atmosphere);
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+body.atmosphere > main,
+body.atmosphere > section,
+body.atmosphere > footer,
+body.atmosphere > #mainContent,
+body.atmosphere > .skip-link {
+  position: relative;
+  z-index: var(--spbc-z-content);
+}
+
+body.atmosphere .site-header { z-index: var(--spbc-z-header); }
+body.atmosphere .sticky-order-bar,
+body.atmosphere .modal-backdrop { z-index: var(--spbc-z-sticky); }
+body.atmosphere #ageGate { z-index: var(--spbc-z-gate); }
+body.atmosphere .modal-sheet { z-index: var(--spbc-z-modal); position: relative; }
+
+/* ── 21+ / research-use age gate (solid black, no blur/particles) ── */
+#ageGate {
+  position: fixed;
+  inset: 0;
+  z-index: var(--spbc-z-gate);
+  background: #000 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  overflow: auto;
+}
+.age-gate__inner {
+  width: 100%;
+  max-width: 28rem;
+  text-align: center;
+  color: #F2F7F3;
+}
+.age-gate__brand {
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+.age-gate__brand-gold { color: #FDD700; }
+.age-gate__brand-white { color: #fff; }
+.age-gate__title {
+  font-family: 'Bebas Neue', 'Inter', system-ui, sans-serif;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #FDD700;
+  margin: 0 0 1rem;
+  line-height: 1.2;
+}
+.age-gate__body {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #c8d4cc;
+  margin: 0 0 1.5rem;
+}
+.age-gate__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+.age-gate__enter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 0.85rem;
+  background: #FDD700;
+  color: #0B120E;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.age-gate__enter:hover,
+.age-gate__enter:focus-visible {
+  background: #fff;
+  outline: none;
+}
+.age-gate__leave {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 0.85rem;
+  background: transparent;
+  color: #F2F7F3;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.age-gate__leave:hover,
+.age-gate__leave:focus-visible {
+  border-color: #FDD700;
+  color: #FDD700;
+  outline: none;
+}
+
+/* Content shell */
+.spbc-main {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+@media (min-width: 640px) {
+  .spbc-main { padding-inline: 1.5rem; }
+}
+.spbc-section {
+  padding-block: 2.5rem;
+}
+@media (min-width: 768px) {
+  .spbc-section { padding-block: 4rem; }
+}
+
+/* ── Typography ───────────────────────────────────────────── */
+.page-hero-title,
+h1.ducks-font,
+h2.ducks-font {
+  font-size: clamp(2rem, 5.5vw, 3.5rem);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+h3.ducks-font {
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  line-height: 1.15;
+}
+body.atmosphere,
+body.atmosphere p,
+body.atmosphere li,
+body.atmosphere label {
+  font-size: max(1rem, 16px);
+  line-height: 1.5;
+}
+
+/* ── Shared page hero ─────────────────────────────────────── */
+/* Every page hero is the SAME height regardless of how much copy it holds — the
+   padding was already identical, but shorter headings/subtitles gave four different
+   heights (desktop 413–485px, mobile 395–508px). The floor sits just above the
+   tallest current hero at each breakpoint so all pages match exactly instead of only
+   the short ones being padded out; content is centred in the resulting box. Any new
+   page using .page-hero inherits this automatically.
+   Mobile's floor is the larger of the two because copy wraps to more lines there. */
+.page-hero {
+  position: relative;
+  overflow: hidden;
+  /* border-box so min-height is the TOTAL hero height (padding included).
+     Without this, content-box would stack padding on top of the rem floor
+     and every hero would be ~8–10.5rem taller than the measured targets. */
+  box-sizing: border-box;
+  padding: 4.5rem 1rem 3.5rem;
+  min-height: var(--spbc-hero-min, 32rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(22, 163, 74, 0.2) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 80%, rgba(234, 179, 8, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(11, 18, 14, 0.2) 0%, rgba(11, 18, 14, 0.85) 100%);
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 768px) {
+  .page-hero {
+    padding: 6rem 1.5rem 4.5rem;
+    /* Above the tallest desktop hero (coaching, ~485px). */
+    --spbc-hero-min: 31rem;
+  }
+}
+
+/* Organic SVG blob layer */
+.page-hero-blobs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.page-hero-blobs svg {
+  position: absolute;
+  width: min(90vw, 720px);
+  height: auto;
+  opacity: 0.55;
+  will-change: transform;
+}
+.page-hero-blobs .blob-a {
+  top: -18%;
+  right: -12%;
+  filter: blur(2px);
+}
+.page-hero-blobs .blob-b {
+  bottom: -22%;
+  left: -16%;
+  width: min(70vw, 520px);
+  opacity: 0.4;
+}
+
+.page-hero::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 56px;
+  background: linear-gradient(to top, var(--bg), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.page-hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translateZ(0);
+  will-change: transform;
+  z-index: 0;
+}
+.page-hero-orb--green {
+  width: min(55vw, 420px);
+  height: min(55vw, 420px);
+  top: -12%;
+  right: -8%;
+  background: radial-gradient(circle, rgba(22, 163, 74, 0.45) 0%, transparent 70%);
+  filter: blur(28px);
+  opacity: 0.85;
+}
+.page-hero-orb--gold {
+  width: min(40vw, 280px);
+  height: min(40vw, 280px);
+  bottom: 5%;
+  left: -5%;
+  border: 2px solid rgba(234, 179, 8, 0.16);
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.1) 0%, transparent 65%);
+  filter: blur(2px);
+  opacity: 0.7;
+}
+
+/* Ambient hero video: poster always; video sources attached after load (see site-atmosphere.js) */
+.page-hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.32;
+  /* poster as LCP-friendly paint while sources wait */
+  background: #0B120E center / cover no-repeat;
+}
+.page-hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 42rem;
+  margin-inline: auto;
+  text-align: center;
+}
+@media (max-width: 767px), (prefers-reduced-motion: reduce) {
+  .page-hero-video {
+    /* Mobile / reduced-motion: poster only via CSS background; never autoplay video */
+  }
+}
+
+/* NOTE the selector: `body.atmosphere p` (mobile legibility floor above)
+   out-specifies a bare `.page-hero-eyebrow`, so the eyebrow was rendering at 16px
+   instead of 12px on every page — wrapping to two lines and inflating the hero.
+   Keep it qualified so the intended size actually wins. */
+body.atmosphere p.page-hero-eyebrow,
+.page-hero-eyebrow {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 0.75rem;
+}
+
+.page-hero-title {
+  font-size: clamp(2rem, 5.5vw, 3.5rem);
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.1;
+  margin: 0 0 0.85rem;
+  position: relative;
+  display: inline-block;
+}
+
+/* Gold accent underline under Bebas headlines */
+.page-hero-title::after,
+.hero-gold-underline::after {
+  content: "";
+  display: block;
+  width: min(8rem, 42%);
+  height: 3px;
+  margin: 0.65rem auto 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.45);
+}
+
+.page-hero-sub {
+  max-width: 42rem;
+  margin: 0 auto 1.5rem;
+  color: var(--text-muted);
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  line-height: 1.55;
+}
+
+.page-hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+/* Glass trust badges (hero) */
+.trust-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: rgba(19, 28, 22, 0.55);
+  border: 1px solid rgba(234, 179, 8, 0.22);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.trust-badge svg {
+  width: 14px;
+  height: 14px;
+  color: var(--accent-gold);
+  flex-shrink: 0;
+}
+
+/* Phone-width hero trim. Home carries a CTA row + trust badges the other pages do
+   not, which pushed its hero past the shared floor and broke the uniform height.
+   Tighten spacing only — no element is removed or hidden.
+   Must follow base .trust-badge rules so min-height/padding/font-size overrides win. */
+@media (max-width: 767px) {
+  .page-hero-sub { margin-bottom: 1rem; }
+  .page-hero-cta { gap: 0.5rem; }
+  .trust-badges { margin-top: 0.85rem; gap: 0.4rem; }
+  .trust-badge { min-height: 2.1rem; padding: 0.3rem 0.6rem; font-size: 0.68rem; }
+}
+
+/* ── Depth cards ──────────────────────────────────────────── */
+.depth-card {
+  border-radius: var(--spbc-radius-lg);
+  background: var(--spbc-glass);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  border: 1px solid var(--spbc-glass-border);
+  box-shadow: var(--spbc-shadow-layer);
+  transition:
+    transform var(--spbc-t-micro),
+    box-shadow var(--spbc-t-micro),
+    border-color var(--spbc-t-micro),
+    background var(--spbc-t-micro);
+}
+
+/* Product + pillar cards: hover lift + gold border glow */
+.price-card,
+.price-card.depth-card,
+.pillar-card,
+.pillar-card.depth-card,
+.grid-item {
+  border-radius: var(--spbc-radius-lg);
+  transition:
+    transform var(--spbc-t-micro),
+    box-shadow var(--spbc-t-micro),
+    border-color var(--spbc-t-micro),
+    background var(--spbc-t-micro);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .depth-card:hover:not(.flat-panel):not(#orderForm) {
+    box-shadow: var(--spbc-shadow-lift);
+    border-color: rgba(234, 179, 8, 0.38);
+  }
+
+  .price-card:hover,
+  .price-card.depth-card:hover,
+  .pillar-card:hover,
+  .pillar-card.depth-card:hover,
+  .grid-item:hover {
+    transform: translateY(-3px);
+    border-color: rgba(234, 179, 8, 0.65);
+    background: rgba(27, 40, 32, 0.92) !important;
+    box-shadow:
+      0 0 0 1px rgba(234, 179, 8, 0.28),
+      0 12px 32px rgba(0, 0, 0, 0.4),
+      0 0 20px rgba(234, 179, 8, 0.18),
+      inset 0 0 0 1px rgba(234, 179, 8, 0.08);
+  }
+}
+
+/* Glass panels (legacy aliases) */
+.glass-panel,
+.price-card,
+.result-card,
+.pillar-card {
+  background: var(--spbc-glass) !important;
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  border-color: var(--spbc-glass-border) !important;
+  border-radius: var(--spbc-radius-lg);
+  box-shadow: var(--spbc-shadow-layer);
+}
+
+/* Flat form panels — solid surface, no glass blur */
+.flat-panel,
+#orderForm {
+  background: rgba(19, 28, 22, 0.96) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--spbc-radius-xl);
+  box-shadow: var(--spbc-shadow-layer);
+  transform: none !important;
+}
+
+/* Nested form inside .flat-panel: no second outer border */
+.flat-panel #coachForm,
+.flat-panel #orderForm,
+#book #coachForm {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+section.bg-zinc-950,
+section.bg-black,
+.bg-black:not(#ageGate),
+main.bg-black {
+  background: transparent !important;
+}
+
+footer {
+  background: rgba(11, 18, 14, 0.72) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+/* ── Button system: primary / secondary / ghost (8 states) ── */
+.btn-primary,
+.btn-secondary,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.7rem 1.35rem;
+  border-radius: 0.85rem;
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  touch-action: manipulation;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform var(--spbc-t-micro),
+    filter var(--spbc-t-micro),
+    box-shadow var(--spbc-t-micro),
+    background var(--spbc-t-micro),
+    border-color var(--spbc-t-micro),
+    color var(--spbc-t-micro),
+    opacity var(--spbc-t-micro);
+}
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible {
+  outline: 3px solid rgba(234, 179, 8, 0.95);
+  outline-offset: 3px;
+}
+.btn-primary:active:not(:disabled):not(.is-loading),
+.btn-secondary:active:not(:disabled):not(.is-loading),
+.btn-ghost:active:not(:disabled):not(.is-loading) {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  color: #0B120E !important;
+  background: linear-gradient(180deg, #f5d76e 0%, var(--accent-gold) 48%, #ca8a04 100%);
+  border: 0;
+  box-shadow:
+    0 4px 18px rgba(234, 179, 8, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.btn-primary:hover:not(:disabled):not(.is-loading) {
+  filter: brightness(1.07);
+  box-shadow:
+    0 6px 24px rgba(234, 179, 8, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.btn-primary:disabled,
+.btn-primary.is-loading {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.25);
+  box-shadow: none;
+  pointer-events: none;
+}
+.btn-primary.is-error {
+  background: linear-gradient(180deg, #fca5a5 0%, #ef4444 50%, #b91c1c 100%);
+  color: #fff !important;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
+}
+.btn-primary.is-success {
+  background: linear-gradient(180deg, #86efac 0%, #22c55e 50%, #15803d 100%);
+  color: #052e16 !important;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+}
+
+.btn-secondary {
+  color: var(--text) !important;
+  background: rgba(19, 28, 22, 0.5);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  font-weight: 700;
+}
+.btn-secondary:hover:not(:disabled):not(.is-loading) {
+  background: rgba(234, 179, 8, 0.1);
+  border-color: var(--accent-gold);
+}
+.btn-secondary:disabled,
+.btn-secondary.is-loading {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn-secondary.is-error {
+  border-color: #f87171;
+  color: #fecaca !important;
+  background: rgba(127, 29, 29, 0.35);
+}
+.btn-secondary.is-success {
+  border-color: #4ade80;
+  color: #bbf7d0 !important;
+  background: rgba(20, 83, 45, 0.35);
+}
+
+.btn-ghost {
+  color: #A8B8AC !important;
+  background: transparent;
+  border: 1px solid transparent;
+  font-weight: 700;
+}
+.btn-ghost:hover:not(:disabled):not(.is-loading) {
+  color: #F2F7F3 !important;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(234, 179, 8, 0.25);
+}
+.btn-ghost:disabled,
+.btn-ghost.is-loading {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn-ghost.is-error { color: #fca5a5 !important; }
+.btn-ghost.is-success { color: #86efac !important; }
+
+.btn-primary.is-loading::after,
+.btn-secondary.is-loading::after,
+.btn-ghost.is-loading::after {
+  content: "";
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spbc-btn-spin 0.7s linear infinite;
+  margin-left: 0.35rem;
+}
+@keyframes spbc-btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+.field-error {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #fca5a5;
+  line-height: 1.35;
+}
+.field-error[hidden] { display: none !important; }
+input.is-invalid,
+select.is-invalid,
+textarea.is-invalid {
+  border-color: #f87171 !important;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.35);
+}
+input.is-valid,
+select.is-valid,
+textarea.is-valid {
+  border-color: rgba(74, 222, 128, 0.55) !important;
+}
+
+.spbc-undo-toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(120%);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.85rem;
+  background: rgba(19, 28, 22, 0.96);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  color: #F2F7F3;
+  font-size: 0.875rem;
+  max-width: min(24rem, calc(100vw - 1.5rem));
+  transition: transform 0.25s ease;
+}
+.spbc-undo-toast.is-visible {
+  transform: translateX(-50%) translateY(0);
+}
+.spbc-undo-toast button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.4rem 0.85rem;
+  border-radius: 0.6rem;
+  font-weight: 800;
+  color: #0B120E;
+  background: linear-gradient(180deg, #f5d76e 0%, #EAB308 50%, #ca8a04 100%);
+  border: 0;
+  cursor: pointer;
+}
+.spbc-sr-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Press-scale micro for interactive controls */
+button:not(:disabled),
+a.btn-primary,
+a.btn-secondary,
+a.btn-ghost,
+.nav-link,
+.filter-chip,
+.copy-btn {
+  cursor: pointer;
+}
+button:not(:disabled):active,
+a.btn-primary:active,
+a.btn-secondary:active,
+a.btn-ghost:active {
+  transform: scale(0.97);
+}
+
+/* Tilt disabled — hover lift only via depth-card rules */
+.tilt-3d {
+  transform-style: flat;
+  will-change: auto;
+}
+.tilt-3d.is-tilting {
+  transition: none;
+}
+
+.perspective-root { perspective: none; }
+
+/* ── Sticky cart / modals ─────────────────────────────────── */
+.sticky-order-inner {
+  background: linear-gradient(180deg, rgba(27, 40, 32, 0.94) 0%, rgba(11, 18, 14, 0.97) 100%) !important;
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  border-color: rgba(234, 179, 8, 0.35) !important;
+}
+.modal-sheet {
+  background: rgba(19, 28, 22, 0.97) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(234, 179, 8, 0.3) !important;
+  position: relative;
+  z-index: var(--spbc-z-modal);
+}
+
+.cart-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.35rem;
+  margin-left: 0.4rem;
+  border-radius: 999px;
+  background: var(--accent-gold);
+  color: #0B120E;
+  font-size: 0.7rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  vertical-align: middle;
+  transition: transform var(--spbc-t-micro);
+}
+.cart-badge.pulse {
+  animation: cart-badge-pulse 300ms ease-out;
+}
+@keyframes cart-badge-pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* ── Scroll reveal (CSS fallback; GSAP enhances when present) ─ */
+/* Content is VISIBLE by default. The hidden start state applies only after JS has
+   confirmed it can actually run the reveal (html.spbc-anim). A blocked CDN, a JS
+   error, or an observer that never fires must never leave the price list invisible. */
+.reveal {
+  transition: opacity var(--spbc-t-macro), transform var(--spbc-t-macro);
+}
+html.spbc-anim .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+}
+html.spbc-anim .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Price/stack cards: never animate opacity. Entrance is CSS hover-lift only. */
+
+/* ── Section divider ──────────────────────────────────────── */
+.section-rule {
+  height: 1px;
+  border: 0;
+  margin: 0 auto;
+  max-width: 72rem;
+  background: linear-gradient(90deg, transparent, rgba(234, 179, 8, 0.28), transparent);
+}
+
+/* ── Focus rings (visible, gold) ──────────────────────────── */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 3px;
+}
+
+/* ── Search glass pill ────────────────────────────────────── */
+.search-glass {
+  background: rgba(11, 18, 14, 0.65) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 999px !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text) !important;
+}
+
+/* ── Result number flash ──────────────────────────────────── */
+.num-flash {
+  animation: num-flash 150ms ease-out;
+}
+@keyframes num-flash {
+  0% { color: #fff; text-shadow: 0 0 12px rgba(234, 179, 8, 0.8); }
+  100% { color: var(--accent-gold); text-shadow: none; }
+}
+
+.tabular-gold {
+  color: var(--accent-gold);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* Filter chips polish */
+.filter-chip {
+  min-height: 44px;
+  cursor: pointer;
+}
+.filter-chip.active {
+  background: var(--accent-gold) !important;
+  color: #0B120E !important;
+  border-color: var(--accent-gold) !important;
+}
+
+/* Gold price highlights (shared) */
+.price-amount,
+.tabular-gold,
+.text-gold,
+[data-price] {
+  color: var(--accent-gold);
+}
+
+/* Muted text utility via tokens */
+body.atmosphere .text-zinc-400,
+body.atmosphere .text-zinc-500 {
+  color: var(--text-muted) !important;
+}
+body.atmosphere .text-zinc-300 {
+  color: #c5d0c8 !important;
+}
+
+/* Brand emerald accents → brand green */
+body.atmosphere .text-emerald-400,
+body.atmosphere .text-emerald-300 {
+  color: #4ade80 !important;
+}
+
+/* Cursor on clickables */
+a,
+button,
+label[for],
+select,
+summary,
+[role="button"],
+.price-card,
+.filter-chip {
+  cursor: pointer;
+}
+
+/* Tap targets */
+.nav-link,
+.filter-chip,
+.btn-primary,
+.btn-secondary,
+.copy-btn,
+.qty-stepper .qty-btn {
+  min-height: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .tilt-3d,
+  .tilt-3d.is-tilting,
+  .depth-card,
+  .price-card,
+  .pillar-card,
+  .grid-item,
+  .reveal,
+  .btn-primary,
+  .btn-secondary,
+  .cart-badge {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .price-card:hover,
+  .price-card.depth-card:hover,
+  .pillar-card:hover,
+  .grid-item:hover {
+    transform: none !important;
+    animation: none !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .cart-badge.pulse { animation: none !important; }
+  .num-flash { animation: none !important; }
+  #atmosphere-canvas { display: none !important; }
+  body.atmosphere { background-attachment: scroll !important; }
+  .page-hero-orb { display: none; }
+  .page-hero-blobs svg { transform: none !important; }
+}

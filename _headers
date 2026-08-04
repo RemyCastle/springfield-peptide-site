@@ -1,4 +1,13 @@
 # Cloudflare Pages static headers
+/*
+  X-Content-Type-Options: nosniff
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
 /robots.txt
   Content-Type: text/plain; charset=utf-8
   Cache-Control: public, max-age=300
@@ -11,32 +20,7 @@
   Content-Type: image/svg+xml
   Cache-Control: public, max-age=86400
 
-/shared/site-header.js
-  Content-Type: application/javascript; charset=utf-8
-  Cache-Control: public, max-age=300, must-revalidate
-
-/shared/site-header.css
-  Content-Type: text/css; charset=utf-8
-  Cache-Control: public, max-age=300, must-revalidate
-
-/shared/site-atmosphere.js
-  Content-Type: application/javascript; charset=utf-8
-  Cache-Control: public, max-age=300, must-revalidate
-
-/shared/site-atmosphere.css
-  Content-Type: text/css; charset=utf-8
-  Cache-Control: public, max-age=300, must-revalidate
-
-/shared/age-gate.js
-  Content-Type: application/javascript; charset=utf-8
-  Cache-Control: public, max-age=300, must-revalidate
-
-/shared/stacks.js
-  Content-Type: application/javascript; charset=utf-8
-  Cache-Control: public, max-age=300, must-revalidate
-
-/shared/tailwind.3f252319.css
-  Content-Type: text/css; charset=utf-8
+/shared/*
   Cache-Control: public, max-age=31536000, immutable
 
 /assets/video/*
