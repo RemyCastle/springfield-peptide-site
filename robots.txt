@@ -3,6 +3,7 @@ User-agent: *
 Allow: /
 Disallow: /calculator.html
 Disallow: /coaching.html
+Disallow: /contact.html
 Disallow: /admin.html
 Disallow: /admin
 Disallow: /api/
