@@ -1,0 +1,261 @@
+
+        <hr class="section-rule" aria-hidden="true">
+
+        <section id="prices" class="spbc-section" tabindex="-1">
+            <div class="spbc-main max-w-screen-md">
+                <h2 class="ducks-font text-3xl sm:text-4xl md:text-5xl text-center mb-4 sm:mb-6 text-white reveal">PRICE LIST</h2>
+                <div class="depth-card px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5 reveal">
+                    <p class="text-[#EAB308] font-semibold">Ordering rules</p>
+                    <p class="text-zinc-300"><strong class="text-white">3 vial minimum</strong> when ordering single vials</p>
+                    <p class="text-zinc-300">Every complete set of 10 units qualifies for the 10-pack / kit rate</p>
+                </div>
+
+                <!-- Search + filter -->
+                <div class="mb-4 space-y-3 reveal">
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+                        </span>
+                        <input type="search" id="productSearch" class="search-field search-glass" placeholder="Search products…" autocomplete="off" enterkeyhint="search" aria-label="Search products">
+                    </div>
+                    <div class="flex flex-wrap gap-2 justify-center" role="group" aria-label="Filter products">
+                        <button type="button" class="filter-chip active" data-filter="all" aria-pressed="true">All</button>
+                        <button type="button" class="filter-chip" data-filter="vials" aria-pressed="false">Has vials</button>
+                        <button type="button" class="filter-chip" data-filter="kit-only" aria-pressed="false">Kit-only</button>
+                    </div>
+                    <p id="filterEmpty" class="hidden text-center text-zinc-500 text-sm py-2">
+                        No products match your search.
+                        <button type="button" id="clearSearchBtn" class="block mx-auto mt-2 text-[#EAB308] font-semibold underline underline-offset-2">Clear search &amp; filters</button>
+                    </p>
+                </div>
+
+                <div id="priceTable" class="flex flex-col gap-3 perspective-root" aria-live="polite">
+                    <div id="priceLoading" class="flex flex-col gap-3" aria-busy="true" aria-label="Loading prices">
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
+                </div>
+                <p id="vialRuleStatus" class="mt-4 text-center text-sm text-zinc-500"></p>
+                <p id="kitRuleStatus" class="mt-2 text-center text-sm text-zinc-500"></p>
+            </div>
+        </section>
+
+        <hr class="section-rule" aria-hidden="true">
+
+        <section class="spbc-section">
+            <div class="spbc-main max-w-md">
+                <div class="depth-card bg-emerald-950/80 border border-emerald-600 text-emerald-300 text-center py-4 px-4 sm:px-6 mb-6 text-sm font-medium break-word reveal">
+                    ORDERS PLACED BY FRIDAY SHIP THE FOLLOWING MONDAY
+                </div>
+
+                <div class="depth-card bg-red-950/80 border border-red-600 text-red-300 text-center py-4 sm:py-5 px-4 sm:px-6 mb-8 text-sm sm:text-base font-bold tracking-wider reveal">
+                    FOR RESEARCH ONLY<br>NOT FOR HUMAN CONSUMPTION
+                </div>
+
+                <div class="mb-8 reveal">
+                    <h3 class="text-[#EAB308] font-bold mb-3 text-center text-sm sm:text-base">
+                        <a href="#terms-section" class="hover:underline">TERMS OF SERVICE &amp; PURCHASE AGREEMENT</a>
+                    </h3>
+                    <div id="terms-section" class="terms-scroll depth-card p-4 sm:p-6 text-xs leading-relaxed text-zinc-300">
+                        By placing an order you agree to all terms below. Please read carefully.<br><br>
+                        <strong>All Sales Are Final.</strong> No refunds, returns, or exchanges after payment is confirmed.<br><br>
+                        <strong>Payment.</strong> Payment instructions and accepted methods are provided at checkout after you place your order. Include your order number in the payment memo. We confirm payment manually before shipping.<br><br>
+                        <strong>Bulk Pricing.</strong> Every complete set of 10 units qualifies for the bulk (10-pack) rate.<br><br>
+                        <strong>Single Vial Minimum.</strong> Single-vial orders require a minimum of 3 single vials (can be mixed products).<br><br>
+                        <strong>Shipping & Lost Packages.</strong> US addresses only. Carrier issues are the carrier's responsibility.<br><br>
+                        <strong>Legal Disclaimer.</strong> ALL products are strictly for research and educational purposes only. NOT for human or animal consumption.<br><br>
+                        <strong>Age Requirement.</strong> You must be 21+.<br><br>
+                        By submitting this form you confirm you have read and agree to all terms.
+                    </div>
+                </div>
+
+                <form id="orderForm" class="flat-panel space-y-4 sm:space-y-5 p-4 sm:p-6" autocomplete="on">
+                    <h3 class="ducks-font text-2xl text-white text-center">Place order</h3>
+                    <p class="text-xs text-zinc-500 text-center -mt-2">Contact, shipping address, then review</p>
+                    <div>
+                        <input type="text" id="name" name="name" placeholder="Name" required autocomplete="name"
+                               class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
+                               aria-describedby="nameError">
+                        <span id="nameError" class="field-error" hidden></span>
+                    </div>
+                    <div>
+                        <input type="email" id="email" name="email" placeholder="Your Email Address" required autocomplete="email" inputmode="email"
+                               class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
+                               aria-describedby="emailError">
+                        <span id="emailError" class="field-error" hidden></span>
+                    </div>
+                    <textarea id="message" rows="6" placeholder="Your order summary will appear here..." readonly
+                              class="w-full bg-black border border-zinc-700 rounded-3xl px-4 sm:px-5 py-3.5 text-sm sm:text-base leading-relaxed"></textarea>
+                    <p id="orderRuleHint" class="text-xs text-zinc-500 text-center break-word px-1"></p>
+                    <p id="savingsLine" class="text-center text-sm tabular-gold hidden" aria-live="polite">Savings: $<span id="savingsAmount">0.00</span></p>
+                    <button type="button" id="clearCartFormBtn" class="btn-clear-cart-form hidden" aria-label="Clear cart">
+                        Clear cart
+                    </button>
+
+                    <fieldset class="space-y-3 pt-1">
+                        <legend class="text-[10px] uppercase tracking-[0.2em] text-[#EAB308]/80 font-semibold w-full text-center mb-1">Shipping address (US only)</legend>
+                        <div>
+                            <input type="text" id="shipLine1" name="ship_line1" placeholder="Street address" required autocomplete="address-line1"
+                                   class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
+                                   aria-describedby="shipLine1Error">
+                            <span id="shipLine1Error" class="field-error" hidden></span>
+                        </div>
+                        <input type="text" id="shipLine2" name="ship_line2" placeholder="Apt, suite, unit (optional)" autocomplete="address-line2"
+                               class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                                <input type="text" id="shipCity" name="ship_city" placeholder="City" required autocomplete="address-level2"
+                                       class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
+                                       aria-describedby="shipCityError">
+                                <span id="shipCityError" class="field-error" hidden></span>
+                            </div>
+                            <div>
+                                <input type="text" id="shipState" name="ship_state" placeholder="State" required maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" autocomplete="address-level1"
+                                       class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base uppercase" style="text-transform:uppercase;"
+                                       aria-describedby="shipStateError">
+                                <span id="shipStateError" class="field-error" hidden></span>
+                            </div>
+                            <div>
+                                <input type="text" id="shipPostal" name="ship_postal" placeholder="ZIP" required pattern="\d{5}(-\d{4})?" title="5-digit ZIP or ZIP+4" autocomplete="postal-code" inputmode="numeric"
+                                       class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
+                                       aria-describedby="shipPostalError">
+                                <span id="shipPostalError" class="field-error" hidden></span>
+                            </div>
+                        </div>
+                        <input type="tel" id="shipPhone" name="ship_phone" placeholder="Phone (optional)" autocomplete="tel" inputmode="tel"
+                               class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                        <input type="hidden" id="shipCountry" name="ship_country" value="US" autocomplete="country">
+                        <p class="text-[11px] text-zinc-500 text-center">US addresses only · browser may offer to autofill saved address</p>
+                    </fieldset>
+
+                    <label class="flex items-start gap-3 text-sm cursor-pointer select-none">
+                        <input type="checkbox" id="agree" class="w-6 h-6 mt-0.5 shrink-0 accent-[#EAB308]">
+                        <span class="text-[#EAB308] font-medium leading-snug">I AGREE TO ALL TERMS</span>
+                    </label>
+
+                    <p id="submitError" class="text-red-400 text-sm text-center hidden break-word"></p>
+                    <p id="submitSuccess" class="text-emerald-400 text-sm text-center hidden"></p>
+                    <button type="submit" id="submitBtn" disabled class="btn-primary w-full text-base sm:text-lg cursor-not-allowed opacity-50">
+                        PLACE ORDER &amp; PAY
+                    </button>
+                    <p class="text-xs text-zinc-500 text-center px-1">You'll get an order number and payment instructions after placing your order</p>
+                </form>
+
+                <div id="orderSuccess" class="hidden mt-6 bg-emerald-950 border border-emerald-600 rounded-3xl p-4 sm:p-6 text-center space-y-3">
+                    <p class="text-emerald-300 font-bold text-lg">Order placed</p>
+                    <div class="flex flex-col items-center gap-2">
+                        <p class="text-[#EAB308] text-xl sm:text-2xl font-bold font-mono break-all" id="successOrderNumber"></p>
+                        <button type="button" id="copyOrderBtn" class="copy-btn" aria-live="polite">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            <span id="copyOrderLabel">Copy order #</span>
+                        </button>
+                    </div>
+                    <p class="text-zinc-300 text-sm break-word">
+                        Next: pay <span id="successTotal" class="text-white font-semibold"></span> on the payment page
+                        (Friends &amp; Family · memo = <strong>code only</strong>).
+                        <span id="successShipNote">Shipping address is on file.</span>
+                    </p>
+                    <div class="flex flex-col gap-2 pt-2">
+                        <a id="successPayLink" href="#" class="bg-[#EAB308] hover:bg-white active:bg-white text-black font-bold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Open payment page</a>
+                        <a id="successShipLink" href="#" class="border border-zinc-600 hover:border-[#EAB308] text-zinc-200 font-semibold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Edit shipping address</a>
+                    </div>
+                    <p class="text-xs text-zinc-500">Payment handles and full steps are on the payment page only</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sticky floating cart bar -->
+        <div id="stickyOrderBar" class="sticky-order-bar" aria-hidden="true">
+            <div class="sticky-order-inner">
+                <div class="flex items-center justify-between gap-3 mb-2">
+                    <div class="min-w-0">
+                        <p class="text-[10px] uppercase tracking-wider text-emerald-300/90 font-semibold">Your order</p>
+                        <button type="button" id="stickyCountBtn" class="sticky-count-btn" aria-expanded="false" aria-controls="stickyLines">
+                            <span class="text-sm text-white font-semibold truncate inline-flex items-center">
+                                <span id="stickyCount">0 items</span>
+                                <span id="cartBadge" class="cart-badge" aria-hidden="true">0</span>
+                            </span>
+                            <span class="text-[10px] text-emerald-200/80 font-medium block">Tap to expand · edit below</span>
+                        </button>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <p class="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">Total</p>
+                        <p id="stickyTotal" class="text-lg font-bold text-[#EAB308] tabular-nums" aria-live="polite">$0.00</p>
+                    </div>
+                </div>
+                <div id="stickyLines" class="sticky-lines" role="region" aria-label="Cart items"></div>
+                <div class="mb-2.5">
+                    <div class="progress-track" role="progressbar" id="discountProgress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Order minimum progress">
+                        <div id="discountProgressFill" class="progress-fill"></div>
+                    </div>
+                    <p id="stickyProgressHint" class="text-[11px] text-zinc-300 mt-1.5 leading-snug sticky-progress-hint">Add items to your order</p>
+                </div>
+                <div class="sticky-actions">
+                    <button type="button" id="stickyClearBtn" class="btn-clear-cart" aria-label="Clear cart">
+                        Clear cart
+                    </button>
+                    <button type="button" id="stickyReviewBtn" class="btn-primary w-full text-sm">
+                        Review order →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order review modal -->
+    <div id="reviewModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="reviewTitle" hidden>
+        <div class="modal-sheet">
+            <div class="flex items-start justify-between gap-3 mb-4">
+                <div>
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-[#EAB308] font-semibold mb-1">Confirm</p>
+                    <h2 id="reviewTitle" class="ducks-font text-2xl text-white">Review order</h2>
+                </div>
+                <button type="button" id="reviewCloseBtn" class="text-zinc-400 hover:text-white text-2xl leading-none px-2 min-h-[2.5rem]" aria-label="Close review">&times;</button>
+            </div>
+            <div id="reviewLines" class="space-y-2 text-sm text-zinc-300 mb-4"></div>
+            <div class="border-t border-zinc-700 pt-3 mb-4 space-y-1.5 text-sm">
+                <div class="flex justify-between gap-2"><span class="text-zinc-400">Email</span><span id="reviewEmail" class="text-white break-all text-right"></span></div>
+                <div class="flex justify-between gap-2"><span class="text-zinc-400">Name</span><span id="reviewName" class="text-white text-right"></span></div>
+                <div class="flex justify-between gap-2 text-base font-bold pt-1"><span class="text-zinc-200">Total</span><span id="reviewTotal" class="text-[#EAB308] tabular-nums"></span></div>
+            </div>
+            <p id="reviewError" class="text-red-400 text-sm text-center hidden mb-3" role="alert"></p>
+            <div class="flex flex-col gap-2">
+                <button type="button" id="reviewConfirmBtn" class="btn-primary w-full">Confirm &amp; place order</button>
+                <button type="button" id="reviewCancelBtn" class="btn-secondary w-full">Go back</button>
+            </div>
+        </div>
+    </div>
+
+    <section id="contact" class="py-12 px-4 sm:px-6 bg-black border-t border-zinc-800" style="scroll-margin-top: 88px;">
+        <div class="max-w-lg mx-auto text-center">
+            <p class="text-[10px] tracking-[0.28em] uppercase text-zinc-500 mb-2">Get in touch</p>
+            <h2 class="ducks-font text-3xl sm:text-4xl text-white mb-3">Contact SPBC</h2>
+            <p class="text-sm text-zinc-400 mb-6 leading-relaxed">
+                Questions about orders, payment, tracking, or the club?
+                Email us — we typically reply within one business day.
+            </p>
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5 sm:p-6 space-y-4 text-left">
+                <div>
+                    <p class="text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Email</p>
+                    <a href="mailto:springfieldpeps@proton.me?subject=SPBC%20question"
+                       class="text-lg sm:text-xl font-bold text-[#EAB308] hover:underline break-all">
+                        springfieldpeps@proton.me
+                    </a>
+                </div>
+                <div class="border-t border-zinc-800 pt-4">
+                    <ul class="text-sm text-zinc-400 space-y-2 leading-relaxed">
+                        <li><strong class="text-zinc-200">Orders &amp; payment</strong> — include your order number if you have one</li>
+                        <li><strong class="text-zinc-200">Tracking / shipping</strong> — name + order code helps us find you fast</li>
+                        <li><strong class="text-zinc-200">Coaching</strong> — use the
+                          <a href="/coaching.html" class="text-[#EAB308] underline underline-offset-2">coaching page</a>
+                          or email with subject “Coaching”</li>
+                    </ul>
+                </div>
+                <a href="mailto:springfieldpeps@proton.me?subject=SPBC%20question"
+                   class="btn-primary inline-flex w-full justify-center py-3 rounded-xl text-sm font-bold">
+                    Email SPBC
+                </a>
+            </div>
+        </div>
+    </section>

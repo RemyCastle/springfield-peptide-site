@@ -269,13 +269,20 @@
   outline-offset: 2px;
 }
 
-/* Active tab: gold fill on the link itself (no absolute pill — avoids scrollWidth growth) */
-/* Contrast: #0B120E on ~#FDD700 is well above 4.5:1 (approx 12.6:1). */
-.nav-link.active,
-.nav-link[aria-current="page"] {
+/* Active tab: gold fill on the link itself (no absolute pill — avoids scrollWidth growth).
+   Qualify under .site-header so body/utility color rules cannot out-specify
+   (same specificity pattern as body.atmosphere p.page-hero-eyebrow).
+   Text #0B120E on #FDD700 ≈ 13.46:1 (WCAG AAA). */
+.site-header .nav-link.active,
+.site-header .nav-link[aria-current="page"] {
   color: #0B120E;
-  background-color: #FDD700;
-  background-image: linear-gradient(180deg, #ffe44d, #FDD700 45%, #e6c200);
+  background-color: var(--spbc-gold-legacy, #FDD700);
+  background-image: linear-gradient(
+    180deg,
+    #ffe44d,
+    var(--spbc-gold-legacy, #FDD700) 45%,
+    #e6c200
+  );
   border-color: rgba(255, 255, 255, 0.28);
   border-radius: 999px;
   box-shadow:

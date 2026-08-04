@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- @include head.html -->
+{{#if page_styles}}
+  <style>
+{{page_styles}}
+  </style>
+{{/if}}
+</head>
+<body class="atmosphere text-white min-h-screen overflow-x-hidden" data-page="{{page}}">
+  <a href="{{skip_href}}" class="skip-link">{{skip_label}}</a>
+
+  <!-- MAIN CONTENT (21+ age gate is injected by shared/age-gate.js) -->
+  <div id="mainContent">
+<!-- @include header.html -->
+
+<!-- @include hero.html -->
+
+{{body}}
+
+<!-- @include footer.html -->
+  </div>
+
+  {{#if stacks_script}}
+  <script src="/shared/{{stacks_js}}"></script>
+  {{/if}}
+{{#if page_scripts}}
+  <script>
+{{page_scripts}}
+  </script>
+{{/if}}
+{{#if page_script_src}}
+  <script src="/shared/{{page_script_src}}"></script>
+{{/if}}
+<!-- @include scripts.html -->
+</body>
+</html>

@@ -1,0 +1,36 @@
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="{{description}}">
+  {{#if robots}}
+  <meta name="robots" content="{{robots}}">
+  {{/if}}
+  <meta name="theme-color" content="#0B120E">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  {{#if canonical}}
+  <link rel="canonical" href="{{canonical}}">
+  {{/if}}
+  {{#if og_title}}
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{canonical}}">
+  <meta property="og:title" content="{{og_title}}">
+  <meta property="og:description" content="{{og_description}}">
+  <meta property="og:image" content="https://springfieldpbc.com/favicon.svg">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{og_title}}">
+  <meta name="twitter:description" content="{{og_description}}">
+  {{/if}}
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>{{title}}</title>
+  {{#if json_ld}}
+  <script type="application/ld+json">
+{{json_ld}}
+  </script>
+  {{/if}}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/{{tailwind_css}}">
+  <link rel="stylesheet" href="/shared/{{site_header_css}}">
+  <link rel="stylesheet" href="/shared/{{site_atmosphere_css}}">

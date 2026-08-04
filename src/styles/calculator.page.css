@@ -1,0 +1,86 @@
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
+      padding-left: env(safe-area-inset-left, 0);
+      padding-right: env(safe-area-inset-right, 0);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .ducks-font {
+      font-family: 'Bebas Neue', Impact, sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .field {
+      width: 100%;
+      background: #0B120E;
+      border: 1px solid #263A2C;
+      border-radius: 1rem;
+      padding: 0.85rem 1.1rem;
+      color: #F2F7F3;
+      font-size: 16px; /* avoids iOS focus zoom */
+      min-height: 2.75rem;
+      touch-action: manipulation;
+    }
+    .field:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.55);
+      border-color: #EAB308;
+    }
+    .field:focus-visible {
+      outline: 2px solid #EAB308;
+      outline-offset: 2px;
+    }
+    .result-card {
+      background: rgba(19, 28, 22, 0.85);
+      border: 1px solid rgba(234, 179, 8, 0.22);
+      border-radius: 1.25rem;
+    }
+    .syringe-wrap {
+      background: linear-gradient(180deg, #1B2820 0%, #131C16 45%, #0B120E 100%);
+      border: 1px solid rgba(234, 179, 8, 0.28);
+      border-radius: 1.25rem;
+      padding: 1.25rem 1rem 1rem;
+    }
+    .syringe-svg {
+      width: 100%;
+      max-width: 420px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .syringe-fill { transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), x 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+    @media (prefers-reduced-motion: reduce) {
+      .syringe-fill { transition: none !important; }
+    }
+    .tick-label {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 8px;
+      fill: rgba(255, 255, 255, 0.45);
+    }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0.5rem;
+      z-index: 200;
+      background: #EAB308;
+      color: #0B120E;
+      font-weight: 700;
+      padding: 0.6rem 1rem;
+      border-radius: 0.75rem;
+      min-height: 44px;
+    }
+    .skip-link:focus {
+      left: 0.5rem;
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+    input, textarea, select, button {
+      font-size: 16px;
+      touch-action: manipulation;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .syringe-fill, button { transition: none !important; }
+    }

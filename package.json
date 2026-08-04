@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
+    "build:pages": "node scripts/build-pages.js",
     "build:css": "tailwindcss -i ./shared/tailwind.input.css -o ./shared/tailwind.build.css --minify && node scripts/hash-tailwind.js",
+    "build:hash": "node scripts/hash-shared.js",
+    "build": "npm run build:css && npm run build:hash && npm run build:pages",
     "watch:css": "tailwindcss -i ./shared/tailwind.input.css -o ./shared/tailwind.build.css --watch"
   },
   "dependencies": {
