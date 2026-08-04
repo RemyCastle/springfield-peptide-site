@@ -2,11 +2,6 @@
 <html lang="en">
 <head>
 <!-- @include head.html -->
-{{#if page_styles}}
-  <style>
-{{page_styles}}
-  </style>
-{{/if}}
 </head>
 <body class="atmosphere text-white min-h-screen overflow-x-hidden" data-page="{{page}}">
   <a href="{{skip_href}}" class="skip-link">{{skip_label}}</a>
@@ -24,15 +19,11 @@
 
   {{#if stacks_script}}
   <script src="/shared/{{stacks_js}}"></script>
+  <script src="/shared/{{stacks_page_js}}"></script>
   {{/if}}
-{{#if page_scripts}}
-  <script>
-{{page_scripts}}
-  </script>
-{{/if}}
-{{#if page_script_src}}
-  <script src="/shared/{{page_script_src}}"></script>
-{{/if}}
+  {{#if page_app_js}}
+  <script src="/shared/{{page_app_js}}"></script>
+  {{/if}}
 <!-- @include scripts.html -->
 </body>
 </html>

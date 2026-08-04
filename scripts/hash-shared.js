@@ -16,6 +16,10 @@ const pairs = [
   ['site-atmosphere.js', 'site-atmosphere'],
   ['age-gate.js', 'age-gate'],
   ['stacks.js', 'stacks'],
+  ['stacks-page.js', 'stacks-page'],
+  ['store.js', 'store'],
+  ['calculator.js', 'calculator'],
+  ['coaching.js', 'coaching'],
 ];
 
 const mapping = {};
@@ -59,6 +63,10 @@ const rewrites = [
   [/\/shared\/site-atmosphere\.[a-f0-9]{8}\.js/g, `/shared/${mapping['site-atmosphere.js']}`],
   [/\/shared\/age-gate\.[a-f0-9]{8}\.js/g, `/shared/${mapping['age-gate.js']}`],
   [/\/shared\/stacks\.[a-f0-9]{8}\.js/g, `/shared/${mapping['stacks.js']}`],
+  [/\/shared\/stacks-page\.[a-f0-9]{8}\.js/g, `/shared/${mapping['stacks-page.js']}`],
+  [/\/shared\/store\.[a-f0-9]{8}\.js/g, `/shared/${mapping['store.js']}`],
+  [/\/shared\/calculator\.[a-f0-9]{8}\.js/g, `/shared/${mapping['calculator.js']}`],
+  [/\/shared\/coaching\.[a-f0-9]{8}\.js/g, `/shared/${mapping['coaching.js']}`],
 ];
 
 for (const hf of htmlFiles) {

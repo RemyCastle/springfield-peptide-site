@@ -61,7 +61,8 @@ function assetTokens() {
     site_atmosphere_js: resolveHashed('site-atmosphere', 'js'),
     age_gate_js: resolveHashed('age-gate', 'js'),
     stacks_js: resolveHashed('stacks', 'js'),
-    // Optional page scripts (Unit C+) — resolve if hashed exists, else empty
+    stacks_page_js: tryHashed('stacks-page', 'js'),
+    // Page scripts (Unit C) — hashed when present
     store_js: tryHashed('store', 'js'),
     calculator_js: tryHashed('calculator', 'js'),
     coaching_js: tryHashed('coaching', 'js'),
@@ -183,11 +184,19 @@ function buildPage(pageName) {
   const page_styles = fs.existsSync(stylePath) ? read(stylePath).trim() : '';
   const page_scripts = fs.existsSync(scriptPath) ? read(scriptPath).trim() : '';
 
+  const assets = assetTokens();
+  const pageAppMap = {
+    index: assets.store_js,
+    calculator: assets.calculator_js,
+    coaching: assets.coaching_js,
+    stacks: '', // stacks uses stacks_script + stacks_page_js
+  };
   const tokens = {
-    ...assetTokens(),
+    ...assets,
     page: pageName,
     page_styles,
     page_scripts,
+    page_app_js: pageAppMap[pageName] || '',
     body: '', // filled after body expand
     ...pageTokens,
   };
