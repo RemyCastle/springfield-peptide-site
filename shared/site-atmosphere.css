@@ -694,10 +694,7 @@ html.spbc-anim .reveal.is-visible {
   transform: none;
 }
 
-/* GSAP will control .grid-item; keep initial state for no-js */
-.grid-item.gsap-ready {
-  will-change: transform, opacity;
-}
+/* Price/stack cards: never animate opacity. Entrance is CSS hover-lift only. */
 
 /* ── Section divider ──────────────────────────────────────── */
 .section-rule {

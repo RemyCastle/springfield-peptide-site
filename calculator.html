@@ -11,9 +11,11 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>Dosage Calculator — Springfield Peptide Buyers Club</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared/site-header.css?v=12">
-  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=15">
+  <link rel="stylesheet" href="/shared/site-atmosphere.css?v=16">
   <style>
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
@@ -391,6 +393,8 @@
     async function loadPeptideCatalog() {
       fillPeptideOptions(FALLBACK_PEPTIDES);
       try {
+        // Cookie before fetch so age-gate (defer) race never causes a second request.
+        document.cookie = 'spbc_member=1; path=/; max-age=31536000; SameSite=Lax';
         const res = await fetch('/api/products', {
           credentials: 'same-origin',
           headers: { 'X-SPBC-Member': '1' },
@@ -652,61 +656,7 @@
     })();
   </script>
   <script src="/shared/age-gate.js?v=2" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
-  <script src="/shared/site-atmosphere.js?v=10" defer></script>
+  <script src="/shared/site-atmosphere.js?v=16" defer></script>
   <script src="/shared/site-header.js?v=10" defer></script>
-  <script>
-  (function () {
-    function reduced() {
-      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    }
-    function init() {
-      if (reduced() || !window.gsap) return;
-      if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
-      function gsapReveal(el) {
-        el.classList.add('is-visible');
-        gsap.set(el, { clearProps: 'opacity,transform' });
-      }
-      document.querySelectorAll('.reveal').forEach(function (el) {
-        if (el.classList.contains('is-visible')) return;
-        if (!window.ScrollTrigger) { gsapReveal(el); return; }
-        gsap.fromTo(el,
-          { opacity: 0, y: 18 },
-          {
-            opacity: 1, y: 0, duration: 0.4, ease: 'power2.out',
-            clearProps: 'opacity,transform',
-            scrollTrigger: { trigger: el, start: 'top 90%', once: true, onEnter: function () { gsapReveal(el); } }
-          }
-        );
-        setTimeout(function () { gsapReveal(el); }, 2000);
-      });
-      var items = document.querySelectorAll('.grid-item');
-      if (items.length) {
-        items.forEach(function (el) {
-          el.classList.add('is-visible');
-          if (el.style.opacity) el.style.opacity = '';
-        });
-        gsap.fromTo(items,
-          { scale: 0.96, y: 12 },
-          {
-            scale: 1, y: 0, duration: 0.35,
-            stagger: { each: 0.04, from: 'start', grid: 'auto' },
-            ease: 'back.out(1.4)', clearProps: 'transform,scale'
-          }
-        );
-      }
-      document.querySelectorAll('.btn-primary, .btn-secondary').forEach(function (btn) {
-        btn.addEventListener('pointerdown', function () { gsap.to(btn, { scale: 0.97, duration: 0.1 }); });
-        btn.addEventListener('pointerup', function () { gsap.to(btn, { scale: 1, duration: 0.18, ease: 'back.out(1.4)' }); });
-        btn.addEventListener('pointerleave', function () { gsap.to(btn, { scale: 1, duration: 0.12 }); });
-      });
-    }
-    function ready() { if (window.gsap) init(); else setTimeout(ready, 40); }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
-    else ready();
-  })();
-  </script>
 </body>
 </html>

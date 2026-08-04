@@ -37,11 +37,12 @@
     }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/shared/site-header.css?v=12">
-    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=15">
+    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=16">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -1098,13 +1099,10 @@
                     <div class="skeleton-card"></div>
                 </div>`;
             try {
-                // Soft member cookie can be dropped (Safari ITP, privacy cleanup) while
-                // localStorage spbc_age_ok remains "1" — re-set once and retry on 401.
-                let res = await fetch('/api/products', { credentials: 'same-origin' });
-                if (res.status === 401) {
-                    document.cookie = 'spbc_member=1; path=/; max-age=31536000; SameSite=Lax';
-                    res = await fetch('/api/products', { credentials: 'same-origin' });
-                }
+                // Cookie before first fetch (age-gate is defer; this inline script races it).
+                // Exactly one /api/products request per page load on the happy path.
+                document.cookie = 'spbc_member=1; path=/; max-age=31536000; SameSite=Lax';
+                const res = await fetch('/api/products', { credentials: 'same-origin' });
                 if (!res.ok) throw new Error('bad status');
                 const data = await res.json();
                 renderProducts(data.products || []);
@@ -1730,124 +1728,7 @@
         onStorefrontReady();
     </script>
     <script src="/shared/age-gate.js?v=2" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
-    <script src="/shared/site-atmosphere.js?v=10" defer></script>
+    <script src="/shared/site-atmosphere.js?v=16" defer></script>
     <script src="/shared/site-header.js?v=11" defer></script>
-    <script>
-    (function () {
-      function prefersReduced() {
-        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      }
-      function initGsap() {
-        if (prefersReduced() || !window.gsap) return;
-        if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
-
-        // Hero blob subtle parallax (transform only)
-        var blobs = document.querySelectorAll('.page-hero-blobs svg');
-        if (blobs.length && window.ScrollTrigger) {
-          blobs.forEach(function (el, i) {
-            gsap.to(el, {
-              y: i === 0 ? 48 : 28,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: '.page-hero',
-                start: 'top top',
-                end: 'bottom top',
-                scrub: true
-              }
-            });
-          });
-        }
-
-        // Section scroll reveals — never leave content at opacity 0 if ScrollTrigger misses
-        function gsapReveal(el) {
-          el.classList.add('is-visible');
-          if (window.gsap) gsap.set(el, { clearProps: 'opacity,transform' });
-        }
-        document.querySelectorAll('.reveal').forEach(function (el) {
-          if (el.classList.contains('is-visible')) return;
-          if (!window.ScrollTrigger) {
-            gsapReveal(el);
-            return;
-          }
-          gsap.fromTo(el,
-            { opacity: 0, y: 20 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.45,
-              ease: 'power2.out',
-              clearProps: 'opacity,transform',
-              scrollTrigger: {
-                trigger: el,
-                start: 'top 88%',
-                once: true,
-                onEnter: function () { gsapReveal(el); }
-              }
-            }
-          );
-          setTimeout(function () { gsapReveal(el); }, 2000);
-        });
-
-        // Card grid stagger — transform only. Never animate opacity (a stuck tween must not hide prices).
-        function staggerCards() {
-          var items = document.querySelectorAll('#priceTable .grid-item:not(.hidden)');
-          if (!items.length) return;
-          items.forEach(function (el) {
-            el.classList.add('is-visible');
-            if (el.style.opacity) el.style.opacity = '';
-          });
-          gsap.fromTo(items,
-            { scale: 0.96, y: 12 },
-            {
-              scale: 1,
-              y: 0,
-              duration: 0.35,
-              stagger: { each: 0.04, from: 'start', grid: 'auto' },
-              ease: 'back.out(1.4)',
-              clearProps: 'transform,scale'
-            }
-          );
-        }
-        var priceRoot = document.getElementById('priceTable');
-        if (priceRoot && window.MutationObserver) {
-          var armed = false;
-          new MutationObserver(function () {
-            if (armed) return;
-            if (!priceRoot.querySelector('.grid-item')) return;
-            armed = true;
-            requestAnimationFrame(staggerCards);
-            setTimeout(function () { armed = false; }, 800);
-          }).observe(priceRoot, { childList: true });
-        }
-
-        // Button press-scale already in CSS; soft GSAP hover for primary (fine pointer only)
-        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-          document.querySelectorAll('.btn-primary, .btn-secondary').forEach(function (btn) {
-            btn.addEventListener('pointerdown', function () {
-              gsap.to(btn, { scale: 0.97, duration: 0.1, ease: 'power1.out' });
-            });
-            btn.addEventListener('pointerup', function () {
-              gsap.to(btn, { scale: 1, duration: 0.18, ease: 'back.out(1.4)' });
-            });
-            btn.addEventListener('pointerleave', function () {
-              gsap.to(btn, { scale: 1, duration: 0.15 });
-            });
-          });
-        }
-      }
-      function whenReady() {
-        if (window.gsap) initGsap();
-        else setTimeout(whenReady, 40);
-      }
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', whenReady);
-      } else {
-        whenReady();
-      }
-    })();
-    </script>
 </body>
 </html>

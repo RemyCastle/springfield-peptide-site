@@ -1,8 +1,9 @@
 /**
  * SPBC layered-depth atmosphere
- * - WebGL particles (three.js optional CDN)
- * - CSS 3D tilt on .price-card / .pillar-card only (max 6°)
- * - Scroll reveal, hero parallax, magnetic CTA, cart pulse helper
+ * - Lightweight 2D canvas particle drift (no three.js)
+ * - Scroll reveal via IntersectionObserver
+ * - Hero orb parallax, magnetic CTA, cart pulse helper
+ * Hard rules: never animate product/stack card opacity; .reveal only hides under html.spbc-anim
  */
 (function () {
   var reduced =
@@ -11,13 +12,13 @@
   var finePointer =
     window.matchMedia &&
     window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  var saveData =
+    (navigator.connection && navigator.connection.saveData) || false;
 
-  // Product cards: no tilt / no move — CSS border highlight + glitch only
   function initTilt() {
     document.querySelectorAll('.price-card, .tilt-3d').forEach(function (el) {
       el.style.transform = '';
       el.classList.remove('is-tilting');
-      // Strip any leftover pointer tilt handlers by cloning if already bound
       if (el.dataset.tiltBound === '1') {
         el.dataset.tiltBound = '0';
       }
@@ -33,7 +34,6 @@
     }).observe(root, { childList: true });
   }
 
-  // ── Scroll reveal ─────────────────────────────────────────
   /** Last-resort: never leave content hidden because an animation did not run. */
   function revealAll(els) {
     (els || document.querySelectorAll('.reveal:not(.is-visible)')).forEach(function (el) {
@@ -60,9 +60,8 @@
       },
       { threshold: 0.15 }
     );
-    els.forEach(function (el, i) {
+    els.forEach(function (el) {
       el.dataset.revealBound = '1';
-      // Stagger siblings in same parent up to 5
       var parent = el.parentElement;
       if (parent) {
         var sibs = parent.querySelectorAll(':scope > .reveal');
@@ -71,17 +70,13 @@
       }
       io.observe(el);
     });
-
-    // Safety net: if the observer has not reported these within 1.5s (hidden tab,
-    // flaky mobile observer, layout the observer never sees), show them anyway.
     setTimeout(function () { revealAll(els); }, 1500);
   }
 
-  // ── Hero parallax (desktop) ───────────────────────────────
   function initHeroParallax() {
     if (reduced) return;
     if (window.innerWidth < 768) return;
-    var orbs = document.querySelectorAll('.page-hero-orb');
+    var orbs = document.querySelectorAll('.page-hero-orb, .page-hero-blobs svg');
     if (!orbs.length) return;
     var ticking = false;
     function onScroll() {
@@ -100,7 +95,6 @@
     onScroll();
   }
 
-  // ── Magnetic primary CTAs ─────────────────────────────────
   function initMagnetic() {
     if (reduced || !finePointer) return;
     document.querySelectorAll('.btn-primary, .btn-magnetic').forEach(function (btn) {
@@ -127,12 +121,13 @@
     });
   }
 
-  // ── Particles ─────────────────────────────────────────────
+  /**
+   * Soft green/gold particle drift — pure 2D canvas (~2KB).
+   * Skips under reduced-motion, save-data, or very narrow viewports.
+   */
   function initParticles() {
-    if (reduced) return;
-    if (typeof THREE === 'undefined') return;
+    if (reduced || saveData) return;
     if (window.innerWidth < 380) return;
-    if (navigator.connection && navigator.connection.saveData) return;
 
     var canvas = document.getElementById('atmosphere-canvas');
     if (!canvas) {
@@ -142,108 +137,116 @@
       document.body.insertBefore(canvas, document.body.firstChild);
     }
 
-    var renderer = new THREE.WebGLRenderer({
-      canvas: canvas,
-      alpha: true,
-      antialias: false,
-      powerPreference: 'low-power',
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    var ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
 
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.z = 18;
-
-    var count = window.innerWidth < 768 ? 40 : 80;
-    var positions = new Float32Array(count * 3);
-    var speeds = new Float32Array(count);
-    for (var i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 36;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 24;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-      speeds[i] = 0.15 + Math.random() * 0.35;
-    }
-    var geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    var points = new THREE.Points(
-      geo,
-      new THREE.PointsMaterial({
-        size: 0.08,
-        color: 0xfdd700,
-        transparent: true,
-        opacity: 0.5,
-        depthWrite: false,
-        sizeAttenuation: true,
-      })
-    );
-    scene.add(points);
-
-    var positions2 = new Float32Array(count * 3);
-    for (var j = 0; j < count; j++) {
-      positions2[j * 3] = (Math.random() - 0.5) * 40;
-      positions2[j * 3 + 1] = (Math.random() - 0.5) * 28;
-      positions2[j * 3 + 2] = (Math.random() - 0.5) * 22;
-    }
-    var geo2 = new THREE.BufferGeometry();
-    geo2.setAttribute('position', new THREE.BufferAttribute(positions2, 3));
-    var points2 = new THREE.Points(
-      geo2,
-      new THREE.PointsMaterial({
-        size: 0.11,
-        color: 0x22c55e,
-        transparent: true,
-        opacity: 0.2,
-        depthWrite: false,
-      })
-    );
-    scene.add(points2);
-
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    var w = 0;
+    var h = 0;
+    var particles = [];
+    var count = window.innerWidth < 768 ? 30 : 60;
     var running = true;
     var visible = true;
-    var t0 = performance.now();
+    var raf = 0;
 
-    function onResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight, false);
+    function resize() {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
-    window.addEventListener('resize', onResize, { passive: true });
 
-    document.addEventListener('visibilitychange', function () {
+    function makeParticle(i) {
+      var gold = i % 3 !== 0;
+      return {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: gold ? 0.6 + Math.random() * 1.1 : 0.9 + Math.random() * 1.4,
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: -0.05 - Math.random() * 0.22,
+        a: gold ? 0.28 + Math.random() * 0.35 : 0.12 + Math.random() * 0.18,
+        gold: gold,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.4 + Math.random() * 0.8
+      };
+    }
+
+    function seed() {
+      particles = [];
+      for (var i = 0; i < count; i++) particles.push(makeParticle(i));
+    }
+
+    function loop() {
+      if (!running) return;
+      raf = requestAnimationFrame(loop);
+      ctx.clearRect(0, 0, w, h);
+      var t = performance.now() * 0.001;
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        p.x += p.vx + Math.sin(t * p.speed + p.phase) * 0.12;
+        p.y += p.vy;
+        if (p.y < -4) {
+          p.y = h + 4;
+          p.x = Math.random() * w;
+        }
+        if (p.x < -4) p.x = w + 4;
+        if (p.x > w + 4) p.x = -4;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.gold
+          ? 'rgba(253, 215, 0,' + p.a.toFixed(3) + ')'
+          : 'rgba(34, 197, 94,' + p.a.toFixed(3) + ')';
+        ctx.fill();
+      }
+    }
+
+    function start() {
+      if (raf) cancelAnimationFrame(raf);
       running = document.visibilityState === 'visible' && visible;
       if (running) loop();
+    }
+
+    function stop() {
+      running = false;
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    }
+
+    resize();
+    seed();
+    start();
+
+    window.addEventListener('resize', function () {
+      var next = window.innerWidth < 768 ? 30 : 60;
+      resize();
+      if (next !== count) {
+        count = next;
+        seed();
+      }
+    }, { passive: true });
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && visible) start();
+      else stop();
     });
 
     if (window.IntersectionObserver) {
       new IntersectionObserver(
         function (entries) {
-          visible = entries[0] && entries[0].isIntersecting;
-          running = document.visibilityState === 'visible' && visible;
-          if (running) loop();
+          visible = !!(entries[0] && entries[0].isIntersecting);
+          if (visible && document.visibilityState === 'visible') start();
+          else stop();
         },
         { threshold: 0.01 }
       ).observe(canvas);
     }
-
-    function loop() {
-      if (!running) return;
-      requestAnimationFrame(loop);
-      var t = (performance.now() - t0) * 0.001;
-      points.rotation.y = t * 0.04;
-      points.rotation.x = Math.sin(t * 0.15) * 0.08;
-      points2.rotation.y = -t * 0.025;
-      var pos = geo.attributes.position.array;
-      for (var k = 0; k < count; k++) {
-        pos[k * 3 + 1] += Math.sin(t * speeds[k] + k) * 0.002;
-      }
-      geo.attributes.position.needsUpdate = true;
-      renderer.render(scene, camera);
-    }
-    loop();
   }
 
-  // Public helper: pulse cart badge
   window.spbcPulseCartBadge = function () {
     if (reduced) return;
     var badge = document.getElementById('cartBadge');
@@ -253,7 +256,6 @@
     badge.classList.add('pulse');
   };
 
-  // Public helper: animate number text
   window.spbcCountTo = function (el, toValue, duration) {
     if (!el) return;
     if (reduced) {
@@ -275,9 +277,6 @@
 
   function boot() {
     document.body.classList.add('atmosphere');
-    // Opt in to the hidden reveal start state only now that this script is running
-    // and can guarantee something will reveal it. Without this class, .reveal
-    // content renders normally — a blocked CDN can never hide the price list.
     if (!reduced && window.IntersectionObserver) {
       document.documentElement.classList.add('spbc-anim');
     }
@@ -286,18 +285,7 @@
     initReveal();
     initHeroParallax();
     initMagnetic();
-    if (typeof THREE !== 'undefined') {
-      initParticles();
-    } else {
-      var tries = 0;
-      var iv = setInterval(function () {
-        tries++;
-        if (typeof THREE !== 'undefined') {
-          clearInterval(iv);
-          initParticles();
-        } else if (tries > 40) clearInterval(iv);
-      }, 50);
-    }
+    initParticles();
   }
 
   if (document.readyState === 'loading') {
