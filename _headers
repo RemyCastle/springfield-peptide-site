@@ -34,3 +34,7 @@
 /shared/stacks.js
   Content-Type: application/javascript; charset=utf-8
   Cache-Control: public, max-age=300, must-revalidate
+
+/shared/tailwind.3f252319.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
