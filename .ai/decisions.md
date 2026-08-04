@@ -87,3 +87,13 @@ Append-only log. Newest at bottom.
 - Asset hash: site-header + site-atmosphere re-hashed via scripts/hash-shared.js.
 - Untouched: secrets, spbc-orders worker, prices/product names, age-gate member cookie + price fetch, admin save-in-place, stacks cart merge.
 
+
+### 2026-08-03 - Structural redesign (one shell, one stylesheet, zero drift)
+- Rollback tag: `pre-redesign-2026-08-03` (502f8b1)
+- Unit A: `src/partials` + `src/pages` + `scripts/build-pages.js`; root HTML GENERATED
+- Unit B: all page CSS → `shared/site-atmosphere.css` (tokens); zero `<style>` / themeable `style=` in public pages
+- Unit C: relocate-only JS → `shared/store.js`, `calculator.js`, `coaching.js`, `stacks-page.js` (hashed)
+- Active nav: `.site-header .nav-link.active` color `#0B120E` on gold; measured contrast **13.46:1**
+- Edge note: custom-domain once served HTML for a hashed CSS URL (immutable cache pollution); rehash + Content-Type pins on `/shared/*`
+- Order modal: works on real form submit path (lines+total); empty when opened without form context (pre-existing; not a redesign regression)
+- No secrets, prices, product names, or spbc-orders worker touched
