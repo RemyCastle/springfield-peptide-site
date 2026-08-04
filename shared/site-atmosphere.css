@@ -1139,6 +1139,14 @@ font-size: 0.95rem;
   gap: 0.5rem;
   min-width: 0;
 }
+/* Filtering adds `.hidden` (Tailwind, one class) which TIES with `.price-group`'s
+   own `display` and loses on source order — so a filtered-out group stayed visible
+   as an empty sticky heading. Qualify these so hiding actually wins. Cards are
+   included defensively in case a future rule gives them a `display`. */
+#priceTable .price-group.hidden,
+#priceTable .price-card.hidden {
+  display: none;
+}
 .price-group-heading {
   position: sticky;
   top: var(--spbc-header-sticky-offset);
