@@ -38,3 +38,6 @@
 /shared/tailwind.3f252319.css
   Content-Type: text/css; charset=utf-8
   Cache-Control: public, max-age=31536000, immutable
+
+/assets/video/*
+  Cache-Control: public, max-age=31536000, immutable

@@ -275,6 +275,52 @@
     requestAnimationFrame(frame);
   };
 
+  /**
+   * Hero ambient video: poster-first, sources ONLY after window.load, and NEVER when
+   * reduced-motion / save-data / 2g / slow-2g / viewport < 768.
+   */
+  function shouldLoadHeroVideo() {
+    if (reduced || saveData) return false;
+    if (window.innerWidth < 768) return false;
+    var conn = navigator.connection;
+    if (conn && conn.effectiveType) {
+      var et = String(conn.effectiveType).toLowerCase();
+      if (et === '2g' || et === 'slow-2g') return false;
+    }
+    return true;
+  }
+
+  function attachHeroVideos() {
+    var vids = document.querySelectorAll('video.page-hero-video[data-src-webm], video.page-hero-video[data-src-mp4]');
+    if (!vids.length) return;
+    if (!shouldLoadHeroVideo()) return;
+    vids.forEach(function (vid) {
+      if (vid.dataset.videoAttached === '1') return;
+      vid.dataset.videoAttached = '1';
+      var webm = vid.getAttribute('data-src-webm');
+      var mp4 = vid.getAttribute('data-src-mp4');
+      if (webm) {
+        var s1 = document.createElement('source');
+        s1.src = webm;
+        s1.type = 'video/webm';
+        vid.appendChild(s1);
+      }
+      if (mp4) {
+        var s2 = document.createElement('source');
+        s2.src = mp4;
+        s2.type = 'video/mp4';
+        vid.appendChild(s2);
+      }
+      vid.muted = true;
+      vid.playsInline = true;
+      vid.loop = true;
+      vid.setAttribute('muted', '');
+      vid.setAttribute('playsinline', '');
+      var play = vid.play();
+      if (play && typeof play.catch === 'function') play.catch(function () { /* autoplay blocked */ });
+    });
+  }
+
   function boot() {
     document.body.classList.add('atmosphere');
     if (!reduced && window.IntersectionObserver) {
@@ -286,6 +332,12 @@
     initHeroParallax();
     initMagnetic();
     initParticles();
+    // Poster paints immediately; video never competes with LCP
+    if (document.readyState === 'complete') {
+      attachHeroVideos();
+    } else {
+      window.addEventListener('load', attachHeroVideos, { once: true });
+    }
   }
 
   if (document.readyState === 'loading') {
