@@ -78,3 +78,12 @@ Append-only log. Newest at bottom.
 - Pre-existing 375 h-scroll (~401 vs 375) still present; not fixed this ship.
 
 - Follow-up: custom domain Cache-Control max-age=14400 (zone, not _headers 300) polluted ?v=14 briefly; bumped to ?v=15. Deploy 0a75612c Source 1823426.
+
+### 2026-08-03 - Nav active on link + unified heroes
+- Bug: Unit D hid `.nav-pill` to kill 375px h-scroll but left no visible active-tab indicator (pill dead, link styles not reliable/desyncable).
+- Fix: remove `.nav-pill` DOM + CSS + movePill JS entirely; style `.nav-link.active` / `[aria-current=page]` with gold gradient + black text on the link itself. Keep `resolveActive` + `spbcHeaderRefresh`.
+- Heroes: calculator gets ambient video (reuses home loop/poster); calculator/stacks/coaching get the same 3 trust badges as index. Coaching price folded into subtitle so structure is eyebrow -> h1 -> sub -> 2 CTAs -> 3 badges -> video.
+- Raised shared `--spbc-hero-min` to 34rem mobile+desktop so uniform height holds with badges on all tabs (min-height only, border-box).
+- Asset hash: site-header + site-atmosphere re-hashed via scripts/hash-shared.js.
+- Untouched: secrets, spbc-orders worker, prices/product names, age-gate member cookie + price fetch, admin save-in-place, stacks cart merge.
+

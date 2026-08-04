@@ -1,6 +1,6 @@
 /**
  * SPBC layered-depth atmosphere
- * - Lightweight 2D canvas particle drift (no three.js)
+ * - Lightweight 2D canvas particle drift (vanilla canvas only)
  * - Scroll reveal via IntersectionObserver
  * - Hero orb parallax, magnetic CTA, cart pulse helper
  * Hard rules: never animate product/stack card opacity; .reveal only hides under html.spbc-anim

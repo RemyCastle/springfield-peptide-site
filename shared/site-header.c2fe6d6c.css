@@ -269,59 +269,19 @@
   outline-offset: 2px;
 }
 
-/* Active tab: filled gold */
-.nav-link.active {
+/* Active tab: gold fill on the link itself (no absolute pill — avoids scrollWidth growth) */
+/* Contrast: #0B120E on ~#FDD700 is well above 4.5:1 (approx 12.6:1). */
+.nav-link.active,
+.nav-link[aria-current="page"] {
   color: #0B120E;
-  background: linear-gradient(180deg, #f5d76e 0%, var(--spbc-gold) 48%, #ca8a04 100%);
+  background-color: #FDD700;
+  background-image: linear-gradient(180deg, #ffe44d, #FDD700 45%, #e6c200);
   border-color: rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
   box-shadow:
     0 0 0 1px rgba(234, 179, 8, 0.45),
     0 0 16px rgba(234, 179, 8, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-/* Sliding pill hidden — border glow replaces it */
-.nav-pill {
-  display: none !important;
-}
-
-@keyframes nav-border-flash {
-  0% {
-    box-shadow:
-      0 0 0 0 rgba(234, 179, 8, 0),
-      0 0 0 0 rgba(234, 179, 8, 0);
-  }
-  35% {
-    box-shadow:
-      0 0 0 2px rgba(234, 179, 8, 0.5),
-      0 0 22px rgba(234, 179, 8, 0.55);
-  }
-  100% {
-    box-shadow:
-      0 0 0 1px rgba(234, 179, 8, 0.22),
-      0 0 14px rgba(234, 179, 8, 0.28);
-  }
-}
-
-@keyframes nav-active-flash {
-  0% {
-    box-shadow:
-      0 0 0 0 rgba(234, 179, 8, 0),
-      0 0 0 0 rgba(234, 179, 8, 0),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  }
-  40% {
-    box-shadow:
-      0 0 0 3px rgba(234, 179, 8, 0.55),
-      0 0 28px rgba(234, 179, 8, 0.7),
-      inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  }
-  100% {
-    box-shadow:
-      0 0 0 1px rgba(234, 179, 8, 0.45),
-      0 0 16px rgba(234, 179, 8, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -330,10 +290,6 @@
   .site-header__brand-text,
   .nav-link {
     transition: none !important;
-  }
-  .nav-link:hover:not(.active),
-  .nav-link.active {
-    animation: none !important;
   }
   .site-header__brand:hover {
     transform: none;

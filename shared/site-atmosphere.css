@@ -271,8 +271,8 @@ body.atmosphere label {
 @media (min-width: 768px) {
   .page-hero {
     padding: 6rem 1.5rem 4.5rem;
-    /* Above the tallest desktop hero (coaching, ~485px). */
-    --spbc-hero-min: 31rem;
+    /* Above the tallest desktop hero (coaching + badges). */
+    --spbc-hero-min: 34rem;
   }
 }
 
@@ -457,11 +457,14 @@ body.atmosphere p.page-hero-eyebrow,
   flex-shrink: 0;
 }
 
-/* Phone-width hero trim. Home carries a CTA row + trust badges the other pages do
-   not, which pushed its hero past the shared floor and broke the uniform height.
-   Tighten spacing only — no element is removed or hidden.
+/* Phone-width hero trim. All public heroes share CTA + 3 trust badges; tighten
+   spacing so the shared --spbc-hero-min floor still fits without clipping.
    Must follow base .trust-badge rules so min-height/padding/font-size overrides win. */
 @media (max-width: 767px) {
+  .page-hero {
+    /* Tallest mobile hero after badges on all tabs (coaching + price lines). */
+    --spbc-hero-min: 34rem;
+  }
   .page-hero-sub { margin-bottom: 1rem; }
   .page-hero-cta { gap: 0.5rem; }
   .trust-badges { margin-top: 0.85rem; gap: 0.4rem; }
@@ -840,7 +843,7 @@ a.btn-ghost:active {
   100% { transform: scale(1); }
 }
 
-/* ── Scroll reveal (CSS fallback; GSAP enhances when present) ─ */
+/* ── Scroll reveal (CSS + IntersectionObserver only) ─ */
 /* Content is VISIBLE by default. The hidden start state applies only after JS has
    confirmed it can actually run the reveal (html.spbc-anim). A blocked CDN, a JS
    error, or an observer that never fires must never leave the price list invisible. */
