@@ -570,68 +570,211 @@ footer {
   color: var(--text-muted);
 }
 
-/* ── Buttons ──────────────────────────────────────────────── */
-.btn-primary {
+/* ── Button system: primary / secondary / ghost (8 states) ── */
+.btn-primary,
+.btn-secondary,
+.btn-ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4rem;
   min-height: 44px;
   min-width: 44px;
-  padding: 0.7rem 1.4rem;
+  padding: 0.7rem 1.35rem;
   border-radius: 0.85rem;
   font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  touch-action: manipulation;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform var(--spbc-t-micro),
+    filter var(--spbc-t-micro),
+    box-shadow var(--spbc-t-micro),
+    background var(--spbc-t-micro),
+    border-color var(--spbc-t-micro),
+    color var(--spbc-t-micro),
+    opacity var(--spbc-t-micro);
+}
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible {
+  outline: 3px solid rgba(234, 179, 8, 0.95);
+  outline-offset: 3px;
+}
+.btn-primary:active:not(:disabled):not(.is-loading),
+.btn-secondary:active:not(:disabled):not(.is-loading),
+.btn-ghost:active:not(:disabled):not(.is-loading) {
+  transform: scale(0.97);
+}
+
+.btn-primary {
   color: #0B120E !important;
   background: linear-gradient(180deg, #f5d76e 0%, var(--accent-gold) 48%, #ca8a04 100%);
   border: 0;
   box-shadow:
     0 4px 18px rgba(234, 179, 8, 0.32),
     inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  transition: transform var(--spbc-t-micro), filter var(--spbc-t-micro), box-shadow var(--spbc-t-micro);
-  touch-action: manipulation;
-  text-decoration: none;
-  cursor: pointer;
 }
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled):not(.is-loading) {
   filter: brightness(1.07);
   box-shadow:
     0 6px 24px rgba(234, 179, 8, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
-.btn-primary:active { transform: scale(0.97); }
-.btn-primary:disabled {
-  opacity: 0.45;
+.btn-primary:disabled,
+.btn-primary.is-loading {
+  opacity: 0.5;
   cursor: not-allowed;
-  filter: grayscale(0.3);
+  filter: grayscale(0.25);
   box-shadow: none;
+  pointer-events: none;
+}
+.btn-primary.is-error {
+  background: linear-gradient(180deg, #fca5a5 0%, #ef4444 50%, #b91c1c 100%);
+  color: #fff !important;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
+}
+.btn-primary.is-success {
+  background: linear-gradient(180deg, #86efac 0%, #22c55e 50%, #15803d 100%);
+  color: #052e16 !important;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
 }
 
 .btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0.7rem 1.25rem;
-  border-radius: 0.85rem;
-  font-weight: 700;
   color: var(--text) !important;
   background: rgba(19, 28, 22, 0.5);
   border: 1px solid rgba(234, 179, 8, 0.4);
-  transition: background var(--spbc-t-micro), border-color var(--spbc-t-micro), transform var(--spbc-t-micro);
-  touch-action: manipulation;
-  text-decoration: none;
-  cursor: pointer;
+  font-weight: 700;
 }
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled):not(.is-loading) {
   background: rgba(234, 179, 8, 0.1);
   border-color: var(--accent-gold);
 }
-.btn-secondary:active { transform: scale(0.97); }
+.btn-secondary:disabled,
+.btn-secondary.is-loading {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn-secondary.is-error {
+  border-color: #f87171;
+  color: #fecaca !important;
+  background: rgba(127, 29, 29, 0.35);
+}
+.btn-secondary.is-success {
+  border-color: #4ade80;
+  color: #bbf7d0 !important;
+  background: rgba(20, 83, 45, 0.35);
+}
+
+.btn-ghost {
+  color: #A8B8AC !important;
+  background: transparent;
+  border: 1px solid transparent;
+  font-weight: 700;
+}
+.btn-ghost:hover:not(:disabled):not(.is-loading) {
+  color: #F2F7F3 !important;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(234, 179, 8, 0.25);
+}
+.btn-ghost:disabled,
+.btn-ghost.is-loading {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn-ghost.is-error { color: #fca5a5 !important; }
+.btn-ghost.is-success { color: #86efac !important; }
+
+.btn-primary.is-loading::after,
+.btn-secondary.is-loading::after,
+.btn-ghost.is-loading::after {
+  content: "";
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spbc-btn-spin 0.7s linear infinite;
+  margin-left: 0.35rem;
+}
+@keyframes spbc-btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+.field-error {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #fca5a5;
+  line-height: 1.35;
+}
+.field-error[hidden] { display: none !important; }
+input.is-invalid,
+select.is-invalid,
+textarea.is-invalid {
+  border-color: #f87171 !important;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.35);
+}
+input.is-valid,
+select.is-valid,
+textarea.is-valid {
+  border-color: rgba(74, 222, 128, 0.55) !important;
+}
+
+.spbc-undo-toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(120%);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.85rem;
+  background: rgba(19, 28, 22, 0.96);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  color: #F2F7F3;
+  font-size: 0.875rem;
+  max-width: min(24rem, calc(100vw - 1.5rem));
+  transition: transform 0.25s ease;
+}
+.spbc-undo-toast.is-visible {
+  transform: translateX(-50%) translateY(0);
+}
+.spbc-undo-toast button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.4rem 0.85rem;
+  border-radius: 0.6rem;
+  font-weight: 800;
+  color: #0B120E;
+  background: linear-gradient(180deg, #f5d76e 0%, #EAB308 50%, #ca8a04 100%);
+  border: 0;
+  cursor: pointer;
+}
+.spbc-sr-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* Press-scale micro for interactive controls */
 button:not(:disabled),
 a.btn-primary,
 a.btn-secondary,
+a.btn-ghost,
 .nav-link,
 .filter-chip,
 .copy-btn {
@@ -639,7 +782,8 @@ a.btn-secondary,
 }
 button:not(:disabled):active,
 a.btn-primary:active,
-a.btn-secondary:active {
+a.btn-secondary:active,
+a.btn-ghost:active {
   transform: scale(0.97);
 }
 

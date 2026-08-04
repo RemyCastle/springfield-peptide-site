@@ -40,8 +40,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/shared/tailwind.3f252319.css">
-    <link rel="stylesheet" href="/shared/site-header.css?v=12">
-    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=17">
+    <link rel="stylesheet" href="/shared/site-header.css?v=13">
+    <link rel="stylesheet" href="/shared/site-atmosphere.css?v=18">
     <style>
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         body {
@@ -607,10 +607,18 @@
                 <form id="orderForm" class="flat-panel space-y-4 sm:space-y-5 p-4 sm:p-6" autocomplete="on">
                     <h3 class="ducks-font text-2xl text-white text-center">Place order</h3>
                     <p class="text-xs text-zinc-500 text-center -mt-2">Contact, shipping address, then review</p>
-                    <input type="text" id="name" name="name" placeholder="Name" required autocomplete="name"
-                           class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
-                    <input type="email" id="email" name="email" placeholder="Your Email Address" required autocomplete="email" inputmode="email"
-                           class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                    <div>
+                        <input type="text" id="name" name="name" placeholder="Name" required autocomplete="name"
+                               class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
+                               aria-describedby="nameError">
+                        <span id="nameError" class="field-error" hidden></span>
+                    </div>
+                    <div>
+                        <input type="email" id="email" name="email" placeholder="Your Email Address" required autocomplete="email" inputmode="email"
+                               class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
+                               aria-describedby="emailError">
+                        <span id="emailError" class="field-error" hidden></span>
+                    </div>
                     <textarea id="message" rows="6" placeholder="Your order summary will appear here..." readonly
                               class="w-full bg-black border border-zinc-700 rounded-3xl px-4 sm:px-5 py-3.5 text-sm sm:text-base leading-relaxed"></textarea>
                     <p id="orderRuleHint" class="text-xs text-zinc-500 text-center break-word px-1"></p>
@@ -621,17 +629,33 @@
 
                     <fieldset class="space-y-3 pt-1">
                         <legend class="text-[10px] uppercase tracking-[0.2em] text-[#EAB308]/80 font-semibold w-full text-center mb-1">Shipping address (US only)</legend>
-                        <input type="text" id="shipLine1" name="ship_line1" placeholder="Street address" required autocomplete="address-line1"
-                               class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                        <div>
+                            <input type="text" id="shipLine1" name="ship_line1" placeholder="Street address" required autocomplete="address-line1"
+                                   class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
+                                   aria-describedby="shipLine1Error">
+                            <span id="shipLine1Error" class="field-error" hidden></span>
+                        </div>
                         <input type="text" id="shipLine2" name="ship_line2" placeholder="Apt, suite, unit (optional)" autocomplete="address-line2"
                                class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <input type="text" id="shipCity" name="ship_city" placeholder="City" required autocomplete="address-level2"
-                                   class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
-                            <input type="text" id="shipState" name="ship_state" placeholder="State" required maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" autocomplete="address-level1"
-                                   class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base uppercase" style="text-transform:uppercase;">
-                            <input type="text" id="shipPostal" name="ship_postal" placeholder="ZIP" required pattern="\d{5}(-\d{4})?" title="5-digit ZIP or ZIP+4" autocomplete="postal-code" inputmode="numeric"
-                                   class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
+                            <div>
+                                <input type="text" id="shipCity" name="ship_city" placeholder="City" required autocomplete="address-level2"
+                                       class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
+                                       aria-describedby="shipCityError">
+                                <span id="shipCityError" class="field-error" hidden></span>
+                            </div>
+                            <div>
+                                <input type="text" id="shipState" name="ship_state" placeholder="State" required maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" autocomplete="address-level1"
+                                       class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base uppercase" style="text-transform:uppercase;"
+                                       aria-describedby="shipStateError">
+                                <span id="shipStateError" class="field-error" hidden></span>
+                            </div>
+                            <div>
+                                <input type="text" id="shipPostal" name="ship_postal" placeholder="ZIP" required pattern="\d{5}(-\d{4})?" title="5-digit ZIP or ZIP+4" autocomplete="postal-code" inputmode="numeric"
+                                       class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
+                                       aria-describedby="shipPostalError">
+                                <span id="shipPostalError" class="field-error" hidden></span>
+                            </div>
                         </div>
                         <input type="tel" id="shipPhone" name="ship_phone" placeholder="Phone (optional)" autocomplete="tel" inputmode="tel"
                                class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
@@ -796,11 +820,98 @@
             return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         }
 
+        let cartUndoTimer = null;
+        let cartUndoSnapshot = null;
+
+        function applyCartMap(map) {
+            document.querySelectorAll('#priceTable .price-card').forEach(card => {
+                const name = card.getAttribute('data-name') || '';
+                const entry = map[name] || { vial: 0, pack: 0 };
+                const vialSel = card.querySelector('select[data-kind="vial"]');
+                const packSel = card.querySelector('select[data-kind="pack"]');
+                if (vialSel) {
+                    const val = entry.vial || 0;
+                    const allowed = [...vialSel.options].map(o => parseInt(o.value, 10));
+                    vialSel.value = allowed.includes(val) ? String(val) : '0';
+                    syncStepperFromSelect(vialSel);
+                }
+                if (packSel) {
+                    const val = entry.pack || 0;
+                    const allowed = [...packSel.options].map(o => parseInt(o.value, 10));
+                    packSel.value = allowed.includes(val) ? String(val) : '0';
+                    syncStepperFromSelect(packSel);
+                }
+                const has = (entry.vial || 0) > 0 || (entry.pack || 0) > 0;
+                card.classList.toggle('in-cart', has);
+            });
+        }
+
+        function snapshotCartMap() {
+            const map = {};
+            document.querySelectorAll('#priceTable .price-card').forEach(card => {
+                const name = card.getAttribute('data-name') || '';
+                if (!name) return;
+                const vialSel = card.querySelector('select[data-kind="vial"]');
+                const packSel = card.querySelector('select[data-kind="pack"]');
+                const vial = vialSel ? (parseInt(vialSel.value, 10) || 0) : 0;
+                const pack = packSel ? (parseInt(packSel.value, 10) || 0) : 0;
+                if (vial || pack) map[name] = { vial, pack };
+            });
+            return map;
+        }
+
+        function showUndoToast(message) {
+            let toast = document.getElementById('spbcUndoToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'spbcUndoToast';
+                toast.className = 'spbc-undo-toast';
+                toast.setAttribute('role', 'status');
+                toast.innerHTML = '<span class="spbc-undo-msg"></span><button type="button" id="spbcUndoBtn">Undo</button>';
+                document.body.appendChild(toast);
+                document.getElementById('spbcUndoBtn').addEventListener('click', function () {
+                    if (!cartUndoSnapshot) return;
+                    applyCartMap(cartUndoSnapshot);
+                    try { localStorage.setItem('spbc_cart_draft', JSON.stringify(cartUndoSnapshot)); } catch (e) {}
+                    cartUndoSnapshot = null;
+                    if (cartUndoTimer) { clearTimeout(cartUndoTimer); cartUndoTimer = null; }
+                    toast.classList.remove('is-visible');
+                    updateOrder();
+                    announceCart('Cart restored');
+                });
+            }
+            toast.querySelector('.spbc-undo-msg').textContent = message;
+            toast.classList.add('is-visible');
+            if (cartUndoTimer) clearTimeout(cartUndoTimer);
+            cartUndoTimer = setTimeout(function () {
+                toast.classList.remove('is-visible');
+                cartUndoSnapshot = null;
+                cartUndoTimer = null;
+            }, 5000);
+        }
+
+        function announceCart(msg) {
+            let live = document.getElementById('spbcCartLive');
+            if (!live) {
+                live = document.createElement('div');
+                live.id = 'spbcCartLive';
+                live.className = 'spbc-sr-live';
+                live.setAttribute('aria-live', 'polite');
+                live.setAttribute('aria-atomic', 'true');
+                document.body.appendChild(live);
+            }
+            live.textContent = '';
+            requestAnimationFrame(function () { live.textContent = msg; });
+        }
+
         function clearCart(opts) {
             const skipConfirm = opts && opts.skipConfirm;
             const t = tallyOrder();
             if (!t.lines.length) return;
-            if (!skipConfirm && !window.confirm('Clear your entire cart?')) return;
+            // 5s Undo toast instead of bare confirm (skipConfirm still wipes immediately)
+            if (!skipConfirm) {
+                cartUndoSnapshot = snapshotCartMap();
+            }
             document.querySelectorAll('#priceTable .price-card').forEach(card => {
                 card.querySelectorAll('select.qty-select').forEach(sel => {
                     sel.value = '0';
@@ -820,6 +931,10 @@
             const countBtn = document.getElementById('stickyCountBtn');
             if (countBtn) countBtn.setAttribute('aria-expanded', 'false');
             updateOrder();
+            if (!skipConfirm) {
+                showUndoToast('Cart cleared');
+                announceCart('Cart cleared. Undo available for 5 seconds.');
+            }
         }
 
         function syncStepperFromSelect(sel) {
@@ -1281,7 +1396,13 @@
                     window.spbcPulseCartBadge();
                 }
             }
-            document.getElementById('stickyTotal').textContent = `$${money(t.total)}`;
+            const totalEl = document.getElementById('stickyTotal');
+            const prevTotal = totalEl ? totalEl.textContent : '';
+            const nextTotal = `$${money(t.total)}`;
+            if (totalEl) totalEl.textContent = nextTotal;
+            if (hasItems && nextTotal !== prevTotal) {
+                announceCart(`${itemCount} item${itemCount === 1 ? '' : 's'}, total ${nextTotal}`);
+            }
 
             // Savings line + count-up
             const savings = (t.vialDiscount || 0) + (t.kitDiscount || 0);
@@ -1677,6 +1798,49 @@
         document.getElementById('stickyClearBtn').addEventListener('click', onClearCartClick);
         document.getElementById('clearCartFormBtn').addEventListener('click', onClearCartClick);
 
+        // Inline validation on blur (aria-describedby error text, no alert)
+        (function wireFieldValidation() {
+            function setFieldState(id, ok, msg) {
+                const el = document.getElementById(id);
+                const err = document.getElementById(id + 'Error');
+                if (!el) return;
+                el.classList.toggle('is-invalid', !ok);
+                el.classList.toggle('is-valid', ok && !!el.value.trim());
+                el.setAttribute('aria-invalid', ok ? 'false' : 'true');
+                if (err) {
+                    if (ok) {
+                        err.hidden = true;
+                        err.textContent = '';
+                    } else {
+                        err.hidden = false;
+                        err.textContent = msg || 'This field is required.';
+                    }
+                }
+            }
+            const rules = {
+                name: (v) => v.trim().length >= 2 || 'Enter your name (at least 2 characters).',
+                email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'Enter a valid email address.',
+                shipLine1: (v) => v.trim().length >= 3 || 'Street address is required.',
+                shipCity: (v) => v.trim().length >= 2 || 'City is required.',
+                shipState: (v) => /^[A-Za-z]{2}$/.test(v.trim()) || 'Use a 2-letter state code (e.g. MO).',
+                shipPostal: (v) => /^\d{5}(-\d{4})?$/.test(v.trim()) || 'Enter a valid ZIP (12345 or 12345-6789).',
+            };
+            Object.keys(rules).forEach(function (id) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('blur', function () {
+                    const result = rules[id](el.value || '');
+                    setFieldState(id, result === true, typeof result === 'string' ? result : '');
+                });
+                el.addEventListener('input', function () {
+                    if (el.classList.contains('is-invalid')) {
+                        const result = rules[id](el.value || '');
+                        if (result === true) setFieldState(id, true);
+                    }
+                });
+            });
+        })();
+
         document.getElementById('stickyCountBtn').addEventListener('click', () => {
             if (!tallyOrder().lines.length) return;
             stickyExpanded = !stickyExpanded;
@@ -1733,7 +1897,7 @@
         onStorefrontReady();
     </script>
     <script src="/shared/age-gate.js?v=2" defer></script>
-    <script src="/shared/site-atmosphere.js?v=17" defer></script>
-    <script src="/shared/site-header.js?v=11" defer></script>
+    <script src="/shared/site-atmosphere.js?v=18" defer></script>
+    <script src="/shared/site-header.js?v=12" defer></script>
 </body>
 </html>
