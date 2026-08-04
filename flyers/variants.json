@@ -1,0 +1,153 @@
+{
+  "_notes": [
+    "Copy discipline: SPBC sells research chemicals. Nothing here may imply human use,",
+    "consumption, dosing, results, physique, healing or health benefit. No unverifiable",
+    "numbers, no fake testimonials, no prices (they change - the QR carries the live list).",
+    "Every variant carries the research-only + 21+ line. Do not remove it."
+  ],
+  "shared": {
+    "brand": "SPRINGFIELD PEPTIDE BUYERS CLUB",
+    "url": "springfieldpbc.com",
+    "qrTarget": "https://springfieldpbc.com",
+    "cta": "Scan for the current price list",
+    "compliance": "Research chemicals for laboratory research use only. NOT for human or veterinary consumption. Must be 21+ to order.",
+    "email": "springfieldpeps@proton.me"
+  },
+  "variants": [
+    {
+      "id": "01-sourced-not-resold-dark",
+      "theme": "dark",
+      "layout": "hero-center",
+      "headline": "SOURCED,\nNOT RESOLD",
+      "subhead": "This is not a marketplace. One buyer who finds the suppliers, checks the batches, and buys at volume.",
+      "points": ["Suppliers vetted before anything is listed", "Batch documentation kept on file", "Volume pricing passed to members", "Straight answers by email"]
+    },
+    {
+      "id": "02-one-buyer-dark",
+      "theme": "dark",
+      "layout": "rule-left",
+      "headline": "ONE BUYER.\nVETTED SUPPLIERS.",
+      "subhead": "I do the sourcing so you are not gambling on a stranger's listing.",
+      "points": ["No anonymous resellers", "Same supplier, order after order", "Per-vial and kit pricing published openly", "3 vial minimum on singles"]
+    },
+    {
+      "id": "03-not-a-marketplace-dark",
+      "theme": "dark",
+      "layout": "stacked",
+      "headline": "NOT A MARKETPLACE.\nA BUYERS CLUB.",
+      "subhead": "Members buy through one vetted channel instead of guessing between sellers.",
+      "points": ["Sourcing done once, properly", "Current list always on the site", "Email a real person, get a real reply"]
+    },
+    {
+      "id": "04-i-buy-you-save-light",
+      "theme": "light",
+      "layout": "minimal",
+      "headline": "I BUY DIRECT.\nMEMBERS PAY LESS.",
+      "subhead": "A buyers club, not a storefront. Volume pricing without the middle layer.",
+      "points": ["Vetted suppliers only", "Transparent per-vial pricing", "No account needed to view the list"]
+    },
+    {
+      "id": "05-tear-tabs-light",
+      "theme": "light",
+      "layout": "tear-tabs",
+      "headline": "SPRINGFIELD\nPEPTIDE BUYERS CLUB",
+      "subhead": "One buyer. Vetted suppliers. Volume pricing. Take a tab and scan it later.",
+      "points": ["Suppliers checked before listing", "Current price list on the site"]
+    },
+    {
+      "id": "06-what-you-get-dark",
+      "theme": "dark",
+      "layout": "checklist",
+      "headline": "HOW THIS\nWORKS",
+      "subhead": "Straightforward: I source, verify and buy at volume. You order from the published list.",
+      "points": ["1. Scan and read the current list", "2. Pick vials or a 10 pack kit", "3. Order and get payment steps by email", "4. Questions go to a person, not a bot"]
+    },
+    {
+      "id": "07-scan-first-light",
+      "theme": "light",
+      "layout": "qr-dominant",
+      "headline": "SCAN FOR THE\nCURRENT LIST",
+      "subhead": "Springfield Peptide Buyers Club. One buyer, vetted suppliers, volume pricing.",
+      "points": ["Prices published openly", "No marketplace guesswork"]
+    },
+    {
+      "id": "08-vetted-checklist-dark",
+      "theme": "dark",
+      "layout": "checklist",
+      "headline": "VETTED\nBEFORE LISTED",
+      "subhead": "Nothing goes on the list until the supplier and the batch paperwork check out.",
+      "points": ["Supplier vetted", "Batch documentation on file", "Consistent source, not spot buys", "Pricing shown per vial and per kit"]
+    },
+    {
+      "id": "09-two-up-light",
+      "theme": "light",
+      "layout": "two-up",
+      "headline": "BUYERS CLUB,\nNOT A MARKET",
+      "subhead": "One buyer sourcing vetted suppliers at volume. Scan for the current list.",
+      "points": ["Vetted suppliers", "Open pricing", "21+ research use only"],
+      "note": "Two identical half-sheet flyers on one 8.5x11 page - cut along the centre line for 2 per sheet."
+    },
+    {
+      "id": "10-big-type-dark",
+      "theme": "dark",
+      "layout": "big-type",
+      "headline": "SOURCED.\nVERIFIED.\nVOLUME.",
+      "subhead": "Springfield Peptide Buyers Club. One buyer, vetted suppliers, volume pricing.",
+      "points": ["Scan for the current price list"]
+    },
+    {
+      "id": "11-art-side-panel-dark",
+      "theme": "dark",
+      "layout": "art-side",
+      "art": "molecular-lattice-portrait.jpg",
+      "headline": "ONE CHANNEL.\nVETTED SOURCE.",
+      "subhead": "A buyers club, not a marketplace. Suppliers checked before anything is listed.",
+      "points": ["Batch documentation on file", "Volume pricing on the site", "Email a real person"]
+    },
+    {
+      "id": "12-art-diagonal-dark",
+      "theme": "dark",
+      "layout": "art-diagonal",
+      "art": "peptide-chain-geometry.jpg",
+      "headline": "SOURCED.\nNOT RESOLD.",
+      "subhead": "One buyer finds the suppliers, checks the batches, and buys at volume.",
+      "points": ["No anonymous resellers", "Open per-vial pricing", "Scan for the current list"]
+    },
+    {
+      "id": "13-art-top-band-dark",
+      "theme": "dark",
+      "layout": "art-top-band",
+      "art": "topo-contours-wide.jpg",
+      "headline": "BUYERS CLUB,\nNOT A MARKET.",
+      "subhead": "Members buy through one vetted channel instead of guessing between sellers.",
+      "points": ["Suppliers vetted before listing", "Current list always on the site", "Straight answers by email"]
+    },
+    {
+      "id": "14-art-framed-dark",
+      "theme": "dark",
+      "layout": "art-framed",
+      "art": "lab-glass-abstract.jpg",
+      "headline": "VETTED\nBEFORE LISTED",
+      "subhead": "Nothing goes on the list until the supplier and the batch paperwork check out.",
+      "points": ["Consistent source, not spot buys", "Pricing shown per vial and kit"]
+    },
+    {
+      "id": "15-art-duotone-bleed-dark",
+      "theme": "dark",
+      "layout": "art-duotone-bleed",
+      "art": "duotone-wash-wide.jpg",
+      "headline": "SOURCED.\nVERIFIED.\nVOLUME.",
+      "subhead": "Springfield Peptide Buyers Club. One buyer, vetted suppliers, volume pricing.",
+      "points": ["Scan for the current price list"]
+    },
+    {
+      "id": "16-art-split-screen-dark",
+      "theme": "dark",
+      "layout": "art-split",
+      "art": "carbon-fibre-graphite.jpg",
+      "headline": "I BUY DIRECT.\nMEMBERS PAY LESS.",
+      "subhead": "A buyers club, not a storefront. Volume pricing without the middle layer.",
+      "points": ["Vetted suppliers only", "Transparent pricing on the site", "No account needed to view the list"]
+    }
+  ]
+}
