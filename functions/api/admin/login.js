@@ -3,11 +3,56 @@ import {
   createSessionCookie,
   timingSafeEqualStr,
 } from '../../lib/auth.js';
+import { verifyCredential } from '../../lib/adminCredential.js';
 
 /** Shared master login with Patriotic: remy + MASTER_ADMIN_PASSWORD */
 const DEFAULT_MASTER_USER = 'remy';
 
 export async function onRequestPost({ request, env }) {
+  /**
+   * Preferred path: the hashed credential in D1, set through first-run setup and
+   * rotatable from the admin UI. The env-var paths below stay as a fallback so this
+   * change cannot lock anyone out mid-migration — but once a D1 credential exists it
+   * is the only thing that matters.
+   */
+  {
+    let body;
+    try {
+      body = await request.clone().json();
+    } catch {
+      body = null;
+    }
+    if (body) {
+      const stored = await verifyCredential(
+        env,
+        String(body.username || ''),
+        String(body.password || '')
+      );
+      if (stored) {
+        if (!stored.ok) {
+          return json({ error: 'Invalid username or password' }, 401);
+        }
+        if (!env.ADMIN_SESSION_SECRET) {
+          return json({ error: 'Admin auth is not configured' }, 500);
+        }
+        const cookie = await createSessionCookie(env);
+        return json(
+          {
+            ok: true,
+            user: {
+              username: String(stored.username || '').toLowerCase(),
+              display_name: stored.username,
+              role: 'master',
+              must_change_password: false,
+            },
+          },
+          200,
+          { 'Set-Cookie': cookie }
+        );
+      }
+    }
+  }
+
   const masterUser = String(env.MASTER_ADMIN_USERNAME || DEFAULT_MASTER_USER)
     .replace(/^\uFEFF/, '')
     .trim()

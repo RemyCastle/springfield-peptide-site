@@ -145,6 +145,42 @@
       </p>
     </section>
 
+    <!-- FIRST-RUN SETUP (only shown when no admin credential exists) -->
+    <section id="setupSection" class="hidden max-w-sm mx-auto">
+      <p class="text-center text-[10px] uppercase tracking-[0.22em] text-emerald-300/80 mb-2">First-run setup</p>
+      <h1 class="ducks-font text-3xl sm:text-4xl text-[#FDD700] text-center mb-2">Set your password</h1>
+      <p class="text-center text-zinc-500 text-xs mb-6">
+        No admin password is set. Enter the setup code from your Pages secrets, then pick a username and password.
+      </p>
+      <form id="setupForm" class="admin-card space-y-4 p-5 sm:p-6">
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1" for="setupToken">Setup code</label>
+          <input id="setupToken" name="setupToken" type="password" autocomplete="off" required class="admin-input">
+          <p class="text-[11px] text-zinc-500 mt-1">The value of the <code>ADMIN_SETUP_TOKEN</code> secret.</p>
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1" for="setupUser">Username</label>
+          <input id="setupUser" name="setupUser" autocomplete="username" required class="admin-input" value="remy">
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1" for="setupPass">New password</label>
+          <input id="setupPass" name="setupPass" type="password" autocomplete="new-password" required class="admin-input">
+          <p class="text-[11px] text-zinc-500 mt-1">At least 12 characters. No leading or trailing spaces.</p>
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1" for="setupPass2">Confirm password</label>
+          <input id="setupPass2" name="setupPass2" type="password" autocomplete="new-password" required class="admin-input">
+        </div>
+        <p id="setupError" class="text-red-500 text-sm hidden break-word"></p>
+        <p id="setupNote" class="text-emerald-400 text-sm hidden break-word"></p>
+        <button type="submit" class="btn-primary-admin">Set password &amp; sign in</button>
+      </form>
+      <p class="text-center text-zinc-600 text-xs mt-6">
+        Stored hashed in the database — not as a plaintext secret. Delete
+        <code>ADMIN_SETUP_TOKEN</code> afterwards.
+      </p>
+    </section>
+
     <!-- APP (after login) -->
     <section id="appSection" class="hidden">
       <!-- Tabs -->
@@ -1518,17 +1554,51 @@
       return opts.join('');
     }
 
+    const setupSection = document.getElementById('setupSection');
+
     function showLogin() {
       loginSection.classList.remove('hidden');
+      setupSection.classList.add('hidden');
       appSection.classList.add('hidden');
       headerActions.classList.add('hidden');
     }
 
+    function showSetup(note) {
+      setupSection.classList.remove('hidden');
+      loginSection.classList.add('hidden');
+      appSection.classList.add('hidden');
+      headerActions.classList.add('hidden');
+      const n = document.getElementById('setupNote');
+      if (note) {
+        n.textContent = note;
+        n.classList.remove('hidden');
+      }
+    }
+
     function showApp() {
       loginSection.classList.add('hidden');
+      setupSection.classList.add('hidden');
       appSection.classList.remove('hidden');
       headerActions.classList.remove('hidden');
       setTabStyles();
+    }
+
+    /** No credential configured anywhere → offer first-run setup instead of a dead login. */
+    async function checkSetupState() {
+      try {
+        const res = await fetch('/api/admin/setup', { credentials: 'same-origin' });
+        if (!res.ok) return false;
+        const data = await res.json().catch(() => ({}));
+        if (!data.needs_setup) return false;
+        showSetup(
+          data.token_configured
+            ? ''
+            : 'ADMIN_SETUP_TOKEN is not set on the Pages project yet. Set it, redeploy, then reload this page.'
+        );
+        return true;
+      } catch (_) {
+        return false;
+      }
     }
 
     async function checkSession() {
@@ -1546,8 +1616,46 @@
           return;
         }
       } catch (_) {}
+      if (await checkSetupState()) return;
       showLogin();
     }
+
+    document.getElementById('setupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('setupError');
+      const fail = (m) => {
+        err.textContent = m;
+        err.classList.remove('hidden');
+      };
+      err.classList.add('hidden');
+      const pass = document.getElementById('setupPass').value;
+      if (pass !== document.getElementById('setupPass2').value) {
+        return fail('The two passwords do not match.');
+      }
+      const res = await fetch('/api/admin/setup', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          setup_token: document.getElementById('setupToken').value,
+          username: document.getElementById('setupUser').value,
+          password: pass,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return fail(data.message || data.error || 'Could not complete setup.');
+      document.getElementById('setupToken').value = '';
+      document.getElementById('setupPass').value = '';
+      document.getElementById('setupPass2').value = '';
+      if (data.signed_in) {
+        const who = document.getElementById('adminWho');
+        if (who) who.textContent = (data.user?.username || 'Remy') + ' · master';
+        showApp();
+        await switchTab('orders');
+      } else {
+        showLogin();
+      }
+    });
 
     // ---------- Orders ----------
     function showOrdersError(msg) {
