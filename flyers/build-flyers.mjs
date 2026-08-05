@@ -17,6 +17,7 @@ import path from 'node:path';
 import os from 'node:os';
 import QRCode from 'qrcode';
 import { chromium } from 'playwright';
+import { brandCss, brandBarHtml, brandMiniHtml, tabBrandHtml } from './brand.mjs';
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 const OUT = path.join(os.homedir(), 'Desktop', 'SPBC-Gym-Flyers');
@@ -377,6 +378,19 @@ function css(theme) {
   /* reserve space under copy so body text never sits under the QR */
   .art-split .half-solid .copy-spacer { flex: 1; min-height: 2.4in; }
   .art-split .compliance { font-size: 7.2pt; margin-top: 0; padding-top: 0.08in; }
+
+  /* Brand lockup (badge + wordmark) — see brand.mjs. Appended last so it wins. */
+  ${brandCss(theme)}
+
+  /* The lockup takes real vertical space, so headlines step down to keep the
+     hierarchy (headline still ~2x the wordmark) and to avoid overflow. */
+  h1 { font-size: 50pt; }
+  .l-minimal h1 { font-size: 60pt; }
+  .l-big-type h1 { font-size: 68pt; }
+  .l-qr-dominant h1 { font-size: 42pt; }
+  .l-tear-tabs h1 { font-size: 36pt; }
+  .l-hero-center h1 { font-size: 46pt; }
+  .half h1 { font-size: 26pt; }
   `;
 }
 
@@ -387,7 +401,7 @@ function copyBlock(v, s) {
     '<span class="gold">$1</span>'
   );
   return `<div class="copy">
-    <p class="brand">${esc(s.brand)}</p>
+    ${brandBarHtml()}
     <h1>${headline}</h1>
     <p class="sub">${esc(v.subhead)}</p>
     ${pts ? `<ul>${pts}</ul>` : ''}
@@ -396,6 +410,7 @@ function copyBlock(v, s) {
 
 function asideBlock(s, qr) {
   return `<div class="aside">
+    ${brandMiniHtml()}
     <div class="qr">${qr}</div>
     <p class="cta">${esc(s.cta)}</p>
     <p class="url">${esc(s.url)}</p>
@@ -418,7 +433,7 @@ function pageHtml(v, s, qr) {
     inner = `<div class="two-up">${half}${half}</div>`;
   } else if (v.layout === 'tear-tabs') {
     const tabs = Array.from({ length: 8 })
-      .map(() => `<div class="tab">${qr}<span>${esc(s.url)}</span></div>`)
+      .map(() => `<div class="tab">${tabBrandHtml()}${qr}<span>${esc(s.url)}</span></div>`)
       .join('');
     inner = `<div class="sheet l-tear-tabs"><div class="rule-top"></div>
         <div class="body">${copyBlock(v, s)}${asideBlock(s, qr)}</div>

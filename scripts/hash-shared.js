@@ -20,7 +20,6 @@ const pairs = [
   ['store.js', 'store'],
   ['calculator.js', 'calculator'],
   ['coaching.js', 'coaching'],
-  ['titration.js', 'titration'],
 ];
 
 const mapping = {};
@@ -51,7 +50,6 @@ for (const [srcName, base] of pairs) {
 const htmlFiles = [
   'index.html',
   'calculator.html',
-  'titration.html',
   'stacks.html',
   'coaching.html',
   'contact.html',
