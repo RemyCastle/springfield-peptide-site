@@ -1,0 +1,120 @@
+<main id="titration-main" class="spbc-main spbc-section">
+
+  <p class="plan-disclaimer depth-card">
+    <strong>You enter the numbers.</strong> This tool does not recommend, suggest or prefill any amount.
+    It only calculates the consequences of the values you type. Research planning only &mdash; these are
+    research chemicals, not for human or veterinary consumption.
+  </p>
+
+  <!-- ── Setup ─────────────────────────────────────────────── -->
+  <section class="plan-block depth-card" aria-labelledby="planSetupHead">
+    <h2 id="planSetupHead" class="plan-head ducks-font">1 · Vial setup</h2>
+    <div class="plan-grid">
+      <label class="field-label" for="planCompound">Compound
+        <select id="planCompound" class="field" autocomplete="off">
+          <option value="">Custom / other</option>
+        </select>
+        <span class="field-hint">Pulled from the live price list</span>
+      </label>
+      <label class="field-label" for="planVialMg">Vial size (mg)
+        <input id="planVialMg" class="field" type="number" min="0" step="0.1" inputmode="decimal" autocomplete="off">
+        <span class="field-hint">Total peptide in one vial</span>
+      </label>
+      <label class="field-label" for="planBacMl">BAC water (mL)
+        <input id="planBacMl" class="field" type="number" min="0.1" max="3" step="0.1" inputmode="decimal" value="2" autocomplete="off">
+        <span class="field-hint">Max 3.0 mL per vial</span>
+      </label>
+      <label class="field-label" for="planFreq">Doses per week
+        <input id="planFreq" class="field" type="number" min="1" max="14" step="1" inputmode="numeric" value="1" autocomplete="off">
+        <span class="field-hint">How often you plan to draw</span>
+      </label>
+    </div>
+    <p id="planConc" class="plan-conc" aria-live="polite"></p>
+  </section>
+
+  <!-- ── Schedule ──────────────────────────────────────────── -->
+  <section class="plan-block depth-card" aria-labelledby="planStepsHead">
+    <div class="plan-head-row">
+      <h2 id="planStepsHead" class="plan-head ducks-font">2 · Your steps</h2>
+      <div class="plan-head-actions">
+        <button type="button" id="planAddStep" class="btn-secondary btn-sm">+ Add step</button>
+        <button type="button" id="planClearSteps" class="btn-ghost btn-sm">Clear all</button>
+      </div>
+    </div>
+    <p class="field-hint plan-steps-hint">
+      Add a row for each block of your plan. Amounts are yours to decide &mdash; every field starts empty.
+    </p>
+
+    <div class="plan-table-wrap">
+      <table class="plan-table">
+        <thead>
+          <tr>
+            <th scope="col">Step</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Unit</th>
+            <th scope="col">Weeks</th>
+            <th scope="col">Units to draw</th>
+            <th scope="col">Volume</th>
+            <th scope="col"><span class="sr-only">Remove</span></th>
+          </tr>
+        </thead>
+        <tbody id="planStepRows"></tbody>
+      </table>
+    </div>
+    <p id="planStepsEmpty" class="plan-empty">No steps yet. Add one to start planning.</p>
+  </section>
+
+  <!-- ── Graphics ──────────────────────────────────────────── -->
+  <section class="plan-block depth-card" aria-labelledby="planChartHead">
+    <h2 id="planChartHead" class="plan-head ducks-font">3 · Your schedule</h2>
+    <figure class="plan-figure">
+      <figcaption class="field-hint">Amount per step, in the unit you entered</figcaption>
+      <svg id="planChart" class="plan-chart" viewBox="0 0 720 240" role="img"
+           aria-label="Step chart of the amounts you entered per step"></svg>
+    </figure>
+    <figure class="plan-figure">
+      <figcaption class="field-hint">U-100 syringe at the selected step</figcaption>
+      <svg id="planSyringe" class="plan-syringe" viewBox="0 0 720 120" role="img"
+           aria-label="Syringe fill for the selected step"></svg>
+      <label class="field-label plan-step-pick" for="planStepPick">Show step
+        <select id="planStepPick" class="field"></select>
+      </label>
+    </figure>
+    <figure class="plan-figure">
+      <figcaption class="field-hint">Vial use across the schedule</figcaption>
+      <svg id="planTimeline" class="plan-timeline" viewBox="0 0 720 130" role="img"
+           aria-label="Timeline of vial use across the schedule"></svg>
+    </figure>
+  </section>
+
+  <!-- ── What to buy ───────────────────────────────────────── -->
+  <section class="plan-block depth-card" aria-labelledby="planBuyHead">
+    <h2 id="planBuyHead" class="plan-head ducks-font">4 · What the schedule needs</h2>
+    <dl class="plan-results" aria-live="polite">
+      <div><dt>Total peptide</dt><dd id="outTotalMg">—</dd></div>
+      <div><dt>Total draws</dt><dd id="outDraws">—</dd></div>
+      <div><dt>Doses per vial</dt><dd id="outDosesPerVial">—</dd></div>
+      <div><dt>Vials needed</dt><dd id="outVials">—</dd></div>
+      <div><dt>Schedule length</dt><dd id="outWeeks">—</dd></div>
+      <div><dt>One vial lasts</dt><dd id="outVialLasts">—</dd></div>
+    </dl>
+    <p id="planBuyNote" class="plan-buy-note"></p>
+    <div class="plan-buy-actions">
+      <button type="button" id="planAddToCart" class="btn-primary" disabled>Add vials to cart</button>
+      <button type="button" id="planAddKit" class="btn-secondary" disabled>Add a 10-pack kit instead</button>
+      <button type="button" id="planShare" class="btn-ghost">Copy shareable link</button>
+    </div>
+    <p id="planCartMsg" class="plan-cart-msg" role="status" aria-live="polite"></p>
+    <p class="field-hint">
+      Quantities come from your own numbers. Single vials have a 3-vial minimum; a 10-pack kit is
+      cheaper per vial once you need several. Current prices are on the
+      <a href="/#prices" class="plan-link">price list</a>.
+    </p>
+  </section>
+
+  <p class="plan-footnote">
+    Formula: concentration (mcg/mL) = (vial mg × 1000) ÷ BAC mL. Units on a U-100 syringe =
+    (amount in mcg ÷ concentration) × 100. Vials needed = total peptide ÷ vial size, rounded up.
+    Nothing here is guidance &mdash; it is arithmetic on the values you supplied.
+  </p>
+</main>

@@ -20,6 +20,7 @@ const pairs = [
   ['store.js', 'store'],
   ['calculator.js', 'calculator'],
   ['coaching.js', 'coaching'],
+  ['titration.js', 'titration'],
 ];
 
 const mapping = {};
@@ -50,8 +51,10 @@ for (const [srcName, base] of pairs) {
 const htmlFiles = [
   'index.html',
   'calculator.html',
+  'titration.html',
   'stacks.html',
   'coaching.html',
+  'contact.html',
   'admin.html',
   'qr.html',
 ];
@@ -67,6 +70,7 @@ const rewrites = [
   [/\/shared\/store\.[a-f0-9]{8}\.js/g, `/shared/${mapping['store.js']}`],
   [/\/shared\/calculator\.[a-f0-9]{8}\.js/g, `/shared/${mapping['calculator.js']}`],
   [/\/shared\/coaching\.[a-f0-9]{8}\.js/g, `/shared/${mapping['coaching.js']}`],
+  [/\/shared\/titration\.[a-f0-9]{8}\.js/g, `/shared/${mapping['titration.js']}`],
 ];
 
 for (const hf of htmlFiles) {

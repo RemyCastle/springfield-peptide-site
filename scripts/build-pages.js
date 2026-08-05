@@ -24,7 +24,7 @@ const PAGES = path.join(SRC, 'pages');
 const STYLES = path.join(SRC, 'styles');
 const SCRIPTS = path.join(SRC, 'scripts');
 
-const PAGE_NAMES = ['index', 'calculator', 'stacks', 'coaching', 'contact'];
+const PAGE_NAMES = ['index', 'calculator', 'titration', 'stacks', 'coaching', 'contact'];
 
 function read(p) {
   return fs.readFileSync(p, 'utf8');
@@ -66,6 +66,7 @@ function assetTokens() {
     store_js: tryHashed('store', 'js'),
     calculator_js: tryHashed('calculator', 'js'),
     coaching_js: tryHashed('coaching', 'js'),
+    titration_js: tryHashed('titration', 'js'),
   };
 }
 
@@ -188,6 +189,7 @@ function buildPage(pageName) {
   const pageAppMap = {
     index: assets.store_js,
     calculator: assets.calculator_js,
+    titration: assets.titration_js,
     coaching: assets.coaching_js,
     stacks: '', // stacks uses stacks_script + stacks_page_js
   };
