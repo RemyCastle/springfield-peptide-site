@@ -669,6 +669,7 @@
       if (tab === 'products') {
         await loadSuppliersCache();
         await loadProductsFranSelector();
+        await loadVendorCostIndex();
         await loadProducts();
       }
       if (tab === 'suppliers') await loadSuppliers();
@@ -813,6 +814,7 @@
             alert('Bot unreachable — match not saved.');
           } finally {
             sel.disabled = false;
+            vendorCostIndex = null; // price list must reflect the new match
             await loadVendorMatch();
           }
         });
@@ -2599,6 +2601,89 @@
       products.forEach((p) => productList.appendChild(productCard(p)));
     }
 
+    /* ---- Vendor cost shown beside franchisee pricing ---- */
+    // spbc product name (normalised) -> [{vendor, price, kit_price, stock, matched}]
+    let vendorCostIndex = null;
+
+    function vNormKey(s) {
+      return String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    }
+
+    async function loadVendorCostIndex(force) {
+      if (vendorCostIndex && !force) return vendorCostIndex;
+      const idx = new Map();
+      try {
+        const res = await fetch('/api/admin/vendor-links', { credentials: 'same-origin' });
+        if (res.ok) {
+          const data = await res.json();
+          (data.vendors || []).forEach((v) => {
+            const byId = new Map(v.products.map((p) => [Number(p.id), p]));
+            // explicit matches first — they win over a same-name guess
+            (v.links || []).forEach((l) => {
+              const vp = byId.get(Number(l.vendor_product_id));
+              if (!vp) return;
+              const k = vNormKey(l.spbc_name);
+              if (!idx.has(k)) idx.set(k, []);
+              idx.get(k).push({ vendor: v.title, ...vp, matched: true });
+            });
+            // then products whose name already lines up
+            v.products.forEach((vp) => {
+              const k = vNormKey(vp.name);
+              const list = idx.get(k) || [];
+              if (!list.some((e) => e.vendor === v.title)) {
+                list.push({ vendor: v.title, ...vp, matched: false });
+                idx.set(k, list);
+              }
+            });
+          });
+        }
+      } catch (e) {
+        /* vendor costs are advisory — never block the price list */
+      }
+      vendorCostIndex = idx;
+      return idx;
+    }
+
+    function vendorCostHtml(p) {
+      const entries = (vendorCostIndex && vendorCostIndex.get(vNormKey(p.name))) || [];
+      if (!entries.length) {
+        return `
+          <div class="border border-emerald-500/20 rounded-xl p-3 bg-emerald-950/10">
+            <p class="text-[11px] font-semibold text-emerald-300/70 uppercase tracking-wide mb-1">Vendor cost</p>
+            <p class="text-xs text-zinc-500">No vendor carries this yet.</p>
+          </div>`;
+      }
+      const cheapest = entries.reduce((a, b) => (Number(a.price) <= Number(b.price) ? a : b));
+      const rows = entries
+        .slice(0, 3)
+        .map((e) => {
+          const isLow = e === cheapest && entries.length > 1;
+          return `<div class="flex justify-between text-xs ${isLow ? 'text-emerald-200' : 'text-zinc-400'}">
+            <span>${escapeHtml(e.vendor)}${e.matched ? '' : ' <span class="text-zinc-600">(same name)</span>'}</span>
+            <span>$${Number(e.price).toFixed(2)}${e.kit_price ? ` · kit $${Number(e.kit_price).toFixed(2)}` : ''}
+              <span class="text-zinc-600">· ${e.stock}</span></span>
+          </div>`;
+        })
+        .join('');
+      // Margin against what this franchisee pays us, when a link exists
+      const link = franLinkForProductName(p.name);
+      let marginLine = '';
+      if (link && link.franchisee_vial_cents != null) {
+        const fran = Number(link.franchisee_vial_cents) / 100;
+        const m = fran - Number(cheapest.price);
+        const pct = fran > 0 ? (m / fran) * 100 : 0;
+        marginLine = `<p class="text-[11px] mt-2 ${m >= 0 ? 'text-emerald-300' : 'text-red-400'}">
+          Margin at fran price: $${m.toFixed(2)} (${pct.toFixed(0)}%)</p>`;
+      }
+      return `
+        <div class="border border-emerald-500/40 rounded-xl p-3 bg-emerald-950/20">
+          <p class="text-[11px] font-semibold text-emerald-300 uppercase tracking-wide mb-1">
+            Vendor cost <span class="text-zinc-500 font-normal normal-case">(what you pay)</span>
+          </p>
+          ${rows}${marginLine}
+        </div>`;
+    }
+
     function productsFranPricingHtml(p) {
       const slug = document.getElementById('productsFranSelect')?.value || '';
       if (!slug) {
@@ -2674,6 +2759,7 @@
           </div>
         </div>
         ${productsFranPricingHtml(p)}
+        ${vendorCostHtml(p)}
         <div>
           <label class="block text-xs text-zinc-500 mb-1">
             Supplier <span class="text-amber-500/90">(admin only → Telegram)</span>
