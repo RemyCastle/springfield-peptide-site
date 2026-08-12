@@ -712,19 +712,42 @@
           'Set one up with /newvendor in the bot.</div>';
         return;
       }
-      // Our catalog drives the rows; each vendor gets a column of pickers.
-      const ours = (productsCache || []).map((p) => p.name).sort();
+      // Our catalog drives the rows. Load it if the admin came straight here
+      // without opening Price list first (otherwise every table is empty).
+      if (!productsCache || !productsCache.length) {
+        try {
+          const pr = await fetch('/api/admin/products', { credentials: 'same-origin' });
+          if (pr.ok) {
+            const pd = await pr.json();
+            productsCache = pd.products || pd || [];
+          }
+        } catch (e) {
+          /* fall through to the empty-state message below */
+        }
+      }
+      const ours = (productsCache || [])
+        .filter((p) => p && p.name)
+        .map((p) => p.name)
+        .sort();
+      if (!ours.length) {
+        body.innerHTML =
+          '<div class="text-amber-400">Could not load the SPBC catalog — ' +
+          'open the Price list tab once, then come back.</div>';
+        return;
+      }
       const html = vendors
         .map((v) => {
           const linked = new Map(
             (v.links || []).map((l) => [String(l.spbc_name).toLowerCase(), l])
           );
-          const opts = v.products
-            .map(
-              (p) =>
-                `<option value="${p.id}">${escapeHtml(p.name)} · $${p.price} · ${p.stock} in stock</option>`
-            )
-            .join('');
+          const optsFor = (selectedId) =>
+            v.products
+              .map(
+                (p) =>
+                  `<option value="${p.id}"${Number(p.id) === Number(selectedId) ? ' selected' : ''}>` +
+                  `${escapeHtml(p.name)} · $${p.price} · ${p.stock} in stock</option>`
+              )
+              .join('');
           const rows = ours
             .map((name) => {
               const cur = linked.get(name.toLowerCase());
@@ -742,7 +765,7 @@
                 <td class="py-2">
                   <select data-shop="${v.shop_chat_id}" data-name="${escapeHtml(name)}"
                           class="vmatch bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs">
-                    <option value="">— none —</option>${opts}
+                    <option value=""${cur ? '' : ' selected'}>— none —</option>${optsFor(cur ? cur.vendor_product_id : 0)}
                   </select>
                 </td>
               </tr>`;
@@ -759,15 +782,8 @@
         .join('');
       body.innerHTML = html;
 
-      // Pre-select current matches, then save on change
-      vendors.forEach((v) => {
-        (v.links || []).forEach((l) => {
-          const sel = body.querySelector(
-            `select.vmatch[data-shop="${v.shop_chat_id}"][data-name="${CSS.escape(l.spbc_name)}"]`
-          );
-          if (sel) sel.value = String(l.vendor_product_id);
-        });
-      });
+      // Current matches are pre-selected in the markup above (the stored key
+      // is lower-cased, so a selector lookup by display name never matched).
       body.querySelectorAll('select.vmatch').forEach((sel) => {
         sel.addEventListener('change', async () => {
           const payload = {
