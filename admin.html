@@ -193,10 +193,9 @@
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Price list
         </button>
-        <button type="button" data-tab="suppliers" id="tabSuppliers"
-                class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
-          Suppliers
-        </button>
+<!-- Suppliers tab retired: vendor shops (Vendor match) replaced it. The
+     suppliers API and the Supplier dropdown on Price list still work, so
+     existing product→supplier assignments and Telegram routing are intact. -->
         <button type="button" data-tab="vendors" id="tabVendors"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Vendor match
@@ -387,10 +386,16 @@
       <div id="vendorsPanel" class="hidden">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <h1 class="ducks-font text-3xl text-[#FDD700]">Vendor match</h1>
-          <button id="reloadVendorsBtn" type="button"
-                  class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm">
-            ↻ Reload
-          </button>
+          <div class="flex gap-2">
+            <button id="addVendorBtn" type="button"
+                    class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
+              + Add vendor
+            </button>
+            <button id="reloadVendorsBtn" type="button"
+                    class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm">
+              ↻ Reload
+            </button>
+          </div>
         </div>
         <p class="text-xs text-zinc-500 mb-4">
           Tell the bot which of a vendor's products is <em>our</em> product.
@@ -822,6 +827,51 @@
     }
 
     document.getElementById('reloadVendorsBtn')?.addEventListener('click', loadVendorMatch);
+
+    document.getElementById('addVendorBtn')?.addEventListener('click', async () => {
+      const name = prompt("New vendor's name (e.g. Unicorn Magic Factory)");
+      if (!name || !name.trim()) return;
+      const btn = document.getElementById('addVendorBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating…';
+      try {
+        const res = await fetch('/api/admin/vendor-create', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name.trim() }),
+        });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok || !d.ok) {
+          alert(d.message || d.error || 'Could not create that vendor');
+          return;
+        }
+        // Their shop exists now and can be stocked before they ever claim it.
+        const body = document.getElementById('vendorsBody');
+        if (body) {
+          const note = document.createElement('div');
+          note.className =
+            'border border-emerald-500/40 rounded-xl p-3 bg-emerald-950/20 mb-6 text-xs';
+          note.innerHTML =
+            `<p class="font-bold text-emerald-300 mb-2">Created ${escapeHtml(d.title)}</p>` +
+            (d.panel_link
+              ? `<p class="mb-1">Stock it: <a class="text-emerald-300 underline" target="_blank" rel="noopener" href="${escapeHtml(d.panel_link)}">open their panel</a></p>`
+              : '') +
+            (d.handover_link
+              ? `<p>Send them this to claim it:<br><code class="text-zinc-300 break-all">${escapeHtml(d.handover_link)}</code></p>`
+              : '') +
+            `<p class="text-zinc-500 mt-2">Shop id ${d.shop_chat_id}</p>`;
+          body.prepend(note);
+        }
+        vendorCostIndex = null;
+        await loadVendorMatch();
+      } catch (e) {
+        alert('Bot unreachable — vendor not created.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '+ Add vendor';
+      }
+    });
 
     /* ---------- Sales & profit report ---------- */
 
@@ -2983,7 +3033,7 @@
     // ---------- Events ----------
     document.getElementById('tabOrders').addEventListener('click', () => switchTab('orders'));
     document.getElementById('tabProducts').addEventListener('click', () => switchTab('products'));
-    document.getElementById('tabSuppliers').addEventListener('click', () => switchTab('suppliers'));
+    document.getElementById('tabSuppliers')?.addEventListener('click', () => switchTab('suppliers'));
     document.getElementById('tabVendors')?.addEventListener('click', () => switchTab('vendors'));
     document.getElementById('tabFranchisees').addEventListener('click', () => switchTab('franchisees'));
     document.getElementById('tabReport')?.addEventListener('click', () => switchTab('report'));
