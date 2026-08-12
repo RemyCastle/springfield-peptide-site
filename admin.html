@@ -197,6 +197,10 @@
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Suppliers
         </button>
+        <button type="button" data-tab="vendors" id="tabVendors"
+                class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+          Vendor match
+        </button>
         <button type="button" data-tab="franchisees" id="tabFranchisees"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Franchisees
@@ -377,6 +381,25 @@
         </div>
         <p id="editorMsg" class="text-sm mb-4 hidden"></p>
         <div id="productList" class="flex flex-col gap-3"></div>
+      </div>
+
+      <!-- VENDOR MATCH -->
+      <div id="vendorsPanel" class="hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Vendor match</h1>
+          <button id="reloadVendorsBtn" type="button"
+                  class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm">
+            ↻ Reload
+          </button>
+        </div>
+        <p class="text-xs text-zinc-500 mb-4">
+          Tell the bot which of a vendor's products is <em>our</em> product.
+          Routing matches by name on its own — set a match here when a vendor
+          names things differently (our <strong class="text-emerald-400">HGH 360IU</strong>
+          is her <strong class="text-emerald-400">H36</strong>), otherwise she
+          can fill the order but never gets quoted.
+        </p>
+        <div id="vendorsBody" class="text-sm text-zinc-400">Loading…</div>
       </div>
 
       <!-- SUPPLIERS -->
@@ -633,6 +656,8 @@
       ordersPanel.classList.toggle('hidden', activeTab !== 'orders');
       productsPanel.classList.toggle('hidden', activeTab !== 'products');
       suppliersPanel.classList.toggle('hidden', activeTab !== 'suppliers');
+      const vp = document.getElementById('vendorsPanel');
+      if (vp) vp.classList.toggle('hidden', activeTab !== 'vendors');
       franchiseesPanel.classList.toggle('hidden', activeTab !== 'franchisees');
       if (reportPanel) reportPanel.classList.toggle('hidden', activeTab !== 'report');
     }
@@ -647,9 +672,133 @@
         await loadProducts();
       }
       if (tab === 'suppliers') await loadSuppliers();
+      if (tab === 'vendors') await loadVendorMatch();
       if (tab === 'franchisees') await loadFranchisees();
       if (tab === 'report') await loadReport();
     }
+
+    /* ---------- Vendor match (SPBC product → vendor's product) ---------- */
+
+    async function loadVendorMatch() {
+      const body = document.getElementById('vendorsBody');
+      if (!body) return;
+      body.textContent = 'Loading vendor catalogs…';
+      let data;
+      try {
+        const res = await fetch('/api/admin/vendor-links', {
+          credentials: 'same-origin',
+        });
+        if (res.status === 401) {
+          showLogin();
+          return;
+        }
+        data = await res.json();
+        if (!res.ok || !data.ok) {
+          body.innerHTML =
+            '<div class="text-amber-400">Could not reach the bot: ' +
+            escapeHtml(data.message || data.error || res.status) +
+            '</div>';
+          return;
+        }
+      } catch (e) {
+        body.innerHTML = '<div class="text-amber-400">Bot unreachable.</div>';
+        return;
+      }
+
+      const vendors = data.vendors || [];
+      if (!vendors.length) {
+        body.innerHTML =
+          '<div class="text-zinc-500">No vendor shops with stock yet. ' +
+          'Set one up with /newvendor in the bot.</div>';
+        return;
+      }
+      // Our catalog drives the rows; each vendor gets a column of pickers.
+      const ours = (productsCache || []).map((p) => p.name).sort();
+      const html = vendors
+        .map((v) => {
+          const linked = new Map(
+            (v.links || []).map((l) => [String(l.spbc_name).toLowerCase(), l])
+          );
+          const opts = v.products
+            .map(
+              (p) =>
+                `<option value="${p.id}">${escapeHtml(p.name)} · $${p.price} · ${p.stock} in stock</option>`
+            )
+            .join('');
+          const rows = ours
+            .map((name) => {
+              const cur = linked.get(name.toLowerCase());
+              const auto = v.products.find(
+                (p) => p.name.trim().toLowerCase() === name.trim().toLowerCase()
+              );
+              const status = cur
+                ? `<span class="text-emerald-400">matched → ${escapeHtml(cur.vendor_product_name || '?')}</span>`
+                : auto
+                  ? '<span class="text-zinc-500">auto (same name)</span>'
+                  : '<span class="text-zinc-600">not carried</span>';
+              return `<tr class="border-t border-zinc-800">
+                <td class="py-2 pr-3 text-zinc-200">${escapeHtml(name)}</td>
+                <td class="py-2 pr-3">${status}</td>
+                <td class="py-2">
+                  <select data-shop="${v.shop_chat_id}" data-name="${escapeHtml(name)}"
+                          class="vmatch bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs">
+                    <option value="">— none —</option>${opts}
+                  </select>
+                </td>
+              </tr>`;
+            })
+            .join('');
+          return `<div class="mb-8">
+            <h2 class="text-lg font-bold text-white mb-2">${escapeHtml(v.title)}
+              <span class="text-xs text-zinc-500">(${v.products.length} products)</span></h2>
+            <table class="w-full text-xs"><thead><tr class="text-zinc-500 text-left">
+              <th class="pb-2">Our product</th><th class="pb-2">Status</th><th class="pb-2">Their product</th>
+            </tr></thead><tbody>${rows}</tbody></table>
+          </div>`;
+        })
+        .join('');
+      body.innerHTML = html;
+
+      // Pre-select current matches, then save on change
+      vendors.forEach((v) => {
+        (v.links || []).forEach((l) => {
+          const sel = body.querySelector(
+            `select.vmatch[data-shop="${v.shop_chat_id}"][data-name="${CSS.escape(l.spbc_name)}"]`
+          );
+          if (sel) sel.value = String(l.vendor_product_id);
+        });
+      });
+      body.querySelectorAll('select.vmatch').forEach((sel) => {
+        sel.addEventListener('change', async () => {
+          const payload = {
+            spbc_name: sel.dataset.name,
+            shop_chat_id: Number(sel.dataset.shop),
+          };
+          if (sel.value) payload.vendor_product_id = Number(sel.value);
+          else payload.clear = true;
+          sel.disabled = true;
+          try {
+            const res = await fetch('/api/admin/vendor-links', {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            const d = await res.json();
+            if (!res.ok || !d.ok) {
+              alert(d.message || d.error || 'Could not save that match');
+            }
+          } catch (e) {
+            alert('Bot unreachable — match not saved.');
+          } finally {
+            sel.disabled = false;
+            await loadVendorMatch();
+          }
+        });
+      });
+    }
+
+    document.getElementById('reloadVendorsBtn')?.addEventListener('click', loadVendorMatch);
 
     /* ---------- Sales & profit report ---------- */
 
