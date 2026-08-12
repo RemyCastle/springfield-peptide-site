@@ -705,6 +705,11 @@
         return;
       }
 
+      // Must match the bot's key exactly: collapse whitespace, lower-case.
+      // Our catalog has names like "CAGRI  5MG" (double space) — comparing raw
+      // meant a saved match never showed up and looked like it hadn't saved.
+      const normKey = (s) => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+
       const vendors = data.vendors || [];
       if (!vendors.length) {
         body.innerHTML =
@@ -738,7 +743,7 @@
       const html = vendors
         .map((v) => {
           const linked = new Map(
-            (v.links || []).map((l) => [String(l.spbc_name).toLowerCase(), l])
+            (v.links || []).map((l) => [normKey(l.spbc_name), l])
           );
           const optsFor = (selectedId) =>
             v.products
@@ -750,9 +755,9 @@
               .join('');
           const rows = ours
             .map((name) => {
-              const cur = linked.get(name.toLowerCase());
+              const cur = linked.get(normKey(name));
               const auto = v.products.find(
-                (p) => p.name.trim().toLowerCase() === name.trim().toLowerCase()
+                (p) => normKey(p.name) === normKey(name)
               );
               const status = cur
                 ? `<span class="text-emerald-400">matched → ${escapeHtml(cur.vendor_product_name || '?')}</span>`
