@@ -2762,7 +2762,21 @@
             <p class="text-xs text-zinc-500">Select a franchisee above.</p>
           </div>`;
       }
-      const candidates = franLinksForProduct(p);
+      const candidatesRaw = franLinksForProduct(p);
+      /**
+       * Default to the link their storefront actually reads.
+       *
+       * Their server maps partner_name -> link and looks it up by THEIR product name, so
+       * a link named after OUR product is invisible to them even when it holds the price.
+       * Prefer a link whose partner_name differs from our name (their own naming), which
+       * is the row that governs what they see and pay.
+       */
+      const ourName = String(p.name || '').trim().toLowerCase();
+      const candidates = candidatesRaw.slice().sort((a, b) => {
+        const aTheirs = String(a.partner_name || '').trim().toLowerCase() !== ourName ? 0 : 1;
+        const bTheirs = String(b.partner_name || '').trim().toLowerCase() !== ourName ? 0 : 1;
+        return aTheirs - bTheirs;
+      });
       const link = candidates[0] || null;
 
       /**
