@@ -3062,7 +3062,11 @@
 
     function onProductsFranSelectChange() {
       syncProductsFranLinks();
+      // Re-rendering every card is necessary here (each needs its franchisee block), but
+      // it throws you back to the top of a 35-product list, which reads as a page reload.
+      const y = window.scrollY;
       renderProducts(productsCache);
+      window.scrollTo({ top: y, behavior: 'instant' });
     }
 
     function readCard(card) {
