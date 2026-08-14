@@ -2620,6 +2620,25 @@
       productsFranLinks = partner?.product_links || [];
     }
 
+    /**
+     * ALL of the franchisee's links that point at this SPBC product.
+     *
+     * Their product name is often NOT ours ("RETATRUTIDE 30MG" → "RETA 30MG"), and
+     * franchisee prices are keyed on THEIR name. Matching only by name is what created
+     * duplicate links: saving from here minted a second link named after the SPBC
+     * product while their real link stayed unpriced. Match on product id first (survives
+     * renames), then name, and return every hit so the operator can choose which of
+     * their products the price routes to.
+     */
+    function franLinksForProduct(product) {
+      const name = String(product?.name || '');
+      const id = product?.id;
+      return productsFranLinks.filter((l) => {
+        if (id != null && l.spbc_product_id != null) return Number(l.spbc_product_id) === Number(id);
+        return l.spbc_name === name;
+      });
+    }
+
     function franLinkForProductName(productName) {
       const name = String(productName || '');
       return productsFranLinks.find((l) => l.spbc_name === name) || null;
@@ -2743,14 +2762,57 @@
             <p class="text-xs text-zinc-500">Select a franchisee above.</p>
           </div>`;
       }
-      const link = franLinkForProductName(p.name);
-      if (!link) {
+      const candidates = franLinksForProduct(p);
+      const link = candidates[0] || null;
+
+      /**
+       * Route the price to one of THEIR products. Their name for this product is often
+       * different from ours, and franchisee prices are keyed on their name — so the
+       * operator picks the target instead of the UI assuming the names match.
+       */
+      const routeOptions = candidates
+        .map(
+          (l) =>
+            `<option value="${escapeAttr(l.partner_name)}">${escapeHtml(l.partner_name)}${
+              l.franchisee_vial_cents == null && l.franchisee_pack_cents == null
+                ? ' · no price set'
+                : ''
+            }</option>`
+        )
+        .join('');
+      const newOption = `<option value="__new__">+ New link named "${escapeHtml(p.name)}"</option>`;
+
+      if (!candidates.length) {
         return `
-          <div class="border border-violet-500/30 rounded-xl p-3 bg-violet-950/15">
-            <p class="text-[11px] font-semibold text-violet-300 uppercase tracking-wide mb-1">Franchisee price</p>
-            <p class="text-xs text-zinc-500">Not mapped for this franchisee (no product link).</p>
+          <div class="border border-violet-500/30 rounded-xl p-3 space-y-2 bg-violet-950/15"
+               data-fran-block data-partner-name="" data-spbc-name="${escapeAttr(p.name)}">
+            <p class="text-[11px] font-semibold text-violet-300 uppercase tracking-wide">Franchisee price</p>
+            <p class="text-xs text-zinc-500">
+              No link for this product yet. Saving creates one named
+              <strong class="text-violet-200">${escapeHtml(p.name)}</strong>.
+            </p>
+            <select data-fran-route class="hidden"><option value="__new__" selected>new</option></select>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-violet-200/80 mb-1">Fran vial $</label>
+                <input data-fran-field="vial" type="number" step="0.01" min="0" inputmode="decimal"
+                       placeholder="base"
+                       class="w-full bg-black border border-violet-500/50 rounded-xl px-3 py-2 text-sm text-violet-100">
+              </div>
+              <div>
+                <label class="block text-xs text-violet-200/80 mb-1">Fran pack $</label>
+                <input data-fran-field="pack" type="number" step="0.01" min="0" inputmode="decimal"
+                       placeholder="base"
+                       class="w-full bg-black border border-violet-500/50 rounded-xl px-3 py-2 text-sm text-violet-100">
+              </div>
+            </div>
+            <button type="button" data-action="save-fran-price"
+                    class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-2 rounded-xl text-sm">
+              Create link &amp; save price
+            </button>
           </div>`;
       }
+
       return `
         <div class="border border-violet-500/40 rounded-xl p-3 space-y-2 bg-violet-950/25"
              data-fran-block
@@ -2759,6 +2821,17 @@
           <p class="text-[11px] font-semibold text-violet-300 uppercase tracking-wide">
             Franchisee price <span class="text-zinc-500 font-normal normal-case">(blank = SPBC price)</span>
           </p>
+          ${
+            candidates.length > 1
+              ? `<p class="text-[11px] text-amber-300">${candidates.length} of their products point at this item — price the right one.</p>`
+              : ''
+          }
+          <label class="block text-xs text-violet-200/80">Route price to their product
+            <select data-fran-route
+                    class="mt-1 w-full bg-black border border-violet-500/50 rounded-xl px-3 py-2 text-sm text-violet-100">
+              ${routeOptions}${newOption}
+            </select>
+          </label>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs text-violet-200/80 mb-1">Fran vial $</label>
@@ -2878,15 +2951,39 @@
         showMsg('Select a franchisee first', false);
         return;
       }
-      // No existing link is NOT a blocker — saving a price creates the link, keyed on
-      // the SPBC product name. Previously this bailed out, which is how a product could
-      // stay without an override and silently track the public price.
-      const partner_name =
-        block.getAttribute('data-partner-name') ||
-        card.querySelector('[data-field="name"]').value.trim();
+      /**
+       * Price the product the operator ROUTED to, not whatever matches our own name.
+       * Assuming the names matched is what created duplicate links: it minted a second
+       * link named after the SPBC product while the franchisee's real link stayed
+       * unpriced, so their storefront never saw the change.
+       */
+      const route = block.querySelector('[data-fran-route]');
+      const routed = route ? route.value : '';
+      const isNew = routed === '__new__' || (!routed && !block.getAttribute('data-partner-name'));
+      const partner_name = isNew
+        ? card.querySelector('[data-field="name"]').value.trim()
+        : routed || block.getAttribute('data-partner-name');
       if (!partner_name) {
         showMsg('Product needs a name before franchisee pricing', false);
         return;
+      }
+      // Creating a parallel link when they already have one for this product is the bug,
+      // not a feature — make the operator confirm it.
+      if (isNew) {
+        const existingNames = franLinksForProduct({
+          id: Number(card.dataset.id),
+          name: card.querySelector('[data-field="name"]').value.trim(),
+        }).map((l) => l.partner_name);
+        if (
+          existingNames.length &&
+          !confirm(
+            `They already sell this as: ${existingNames.join(', ')}.\n\n` +
+              `Create an ADDITIONAL link named "${partner_name}"? ` +
+              `Their storefront reads the existing one — a duplicate will not show up there.`
+          )
+        ) {
+          return;
+        }
       }
       const vial = dollarInputToCents(block.querySelector('[data-fran-field="vial"]')?.value);
       const pack = dollarInputToCents(block.querySelector('[data-fran-field="pack"]')?.value);
@@ -2908,7 +3005,7 @@
       }
       // Save in place — no reload, no re-render. Update the local link cache so the
       // shown value and the "no override" badge stay accurate until the next load.
-      const existing = productsFranLinks.find((l) => l.spbc_name === partner_name);
+      const existing = productsFranLinks.find((l) => l.partner_name === partner_name);
       if (existing) {
         if (vial !== undefined) existing.franchisee_vial_cents = vial;
         if (pack !== undefined) existing.franchisee_pack_cents = pack;
