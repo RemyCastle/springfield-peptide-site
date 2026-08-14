@@ -6,6 +6,15 @@ const CART_KEY = "spbc_cart_draft";
         // No volume discounts on SPBC — the single-vial minimum is the only order rule.
 
         /**
+         * Public storefront is KITS ONLY. Single vials remain available to franchisees,
+         * who order through the spbc-orders worker, not this page — do not "restore"
+         * vial steppers here without checking that decision.
+         */
+        const PUBLIC_KITS_ONLY = true;
+        /** Reconstitution water auto-added, one kit per peptide kit. Must match the product name exactly. */
+        const AUTO_BAC_NAME = 'BAC WATER 2.5ML';
+
+        /**
          * Single edit point for storefront category grouping.
          * Keys MUST match product names exactly (join key — never rename products).
          * Unmapped names fall through to FALLBACK_CATEGORY so new products never disappear.
@@ -454,7 +463,9 @@ const CART_KEY = "spbc_cart_draft";
             }
 
             let body = `<h3 class="price-card-title break-word">${escapeHtml(name)}</h3><div class="price-card-body">`;
-            if (!kitOnly && p.vial_price != null) {
+            // Kits only on the public storefront — franchisees still buy single vials
+            // through the orders worker, which this page does not serve.
+            if (!PUBLIC_KITS_ONLY && !kitOnly && p.vial_price != null) {
                 body += `
                     <div class="price-row">
                         <span class="price-label">Vial</span>
@@ -622,6 +633,52 @@ const CART_KEY = "spbc_cart_draft";
                     });
                 }
             });
+
+            /**
+             * Automatic BAC water on every kit purchase (direct SPBC customers only).
+             *
+             * Public storefront is kits-only, and each peptide kit needs reconstitution
+             * water, so one BAC kit is added per peptide kit rather than leaving the
+             * customer to remember it. It is added as a VISIBLE line so the total the
+             * customer approves is the total they pay — never a silent server-side
+             * addition. Franchisee ordering runs through the spbc-orders worker and is
+             * untouched by this.
+             *
+             * If the customer already put BAC in the cart themselves, that counts
+             * toward the requirement — we top up to the kit count, never double-charge.
+             */
+            if (kitCount > 0) {
+                const bacCard = document.querySelector(
+                    `#priceTable .price-card[data-name="${AUTO_BAC_NAME}"]`
+                );
+                if (bacCard) {
+                    const bacPrice = parseFloat(
+                        bacCard.getAttribute('data-pack') || bacCard.getAttribute('data-kit') || 0
+                    );
+                    const alreadyChosen = rawLines
+                        .filter((r) => r.isBac && r.kind === 'pack' && r.name.startsWith(AUTO_BAC_NAME))
+                        .reduce((n, r) => n + r.qty, 0);
+                    const need = Math.max(0, kitCount - alreadyChosen);
+                    if (need > 0 && bacPrice > 0) {
+                        const line = need * bacPrice;
+                        nonDiscountSubtotal += line;
+                        lines.push({
+                            kind: 'pack',
+                            text: `${need}x ${AUTO_BAC_NAME} (Kit) — $${money(line)} · included with every kit`,
+                        });
+                        rawLines.push({
+                            kind: 'pack',
+                            name: `${AUTO_BAC_NAME} (Kit)`,
+                            sku: skuFrom(AUTO_BAC_NAME, 'kit'),
+                            qty: need,
+                            unit_price_dollars: bacPrice,
+                            isBac: true,
+                            autoAdded: true,
+                        });
+                    }
+                }
+            }
+
             // No volume discounts on SPBC — every item bills at full price.
             const vialDiscountEligible = false;
             const vialDiscount = 0;
@@ -656,6 +713,17 @@ const CART_KEY = "spbc_cart_draft";
         }
 
         function discountProgressMeta(t) {
+            // Kits-only storefront: single vials can never appear, so the old 3-vial
+            // minimum copy would just confuse. Track "has a kit yet" instead.
+            if (PUBLIC_KITS_ONLY) {
+                if (t.kitCount > 0) {
+                    return {
+                        pct: 100,
+                        hint: `Ready to order · BAC water included with ${t.kitCount === 1 ? 'your kit' : 'each kit'}`,
+                    };
+                }
+                return { pct: 0, hint: 'Add a kit to start your order' };
+            }
             // No discounts — the only gate is the single-vial minimum. Track it.
             if (t.singleVials === 0) {
                 if (t.kitCount > 0) {
