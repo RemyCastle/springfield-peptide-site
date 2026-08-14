@@ -2955,6 +2955,29 @@
       if (franSave) {
         franSave.addEventListener('click', () => saveProductFranPrice(card));
       }
+      /**
+       * Re-read the routed link's own prices. Without this the inputs keep showing the
+       * previously selected link's values, and saving would copy those onto a different
+       * product — silently changing a price the operator never typed.
+       */
+      const franRoute = card.querySelector('[data-fran-route]');
+      if (franRoute) {
+        franRoute.addEventListener('change', () => {
+          const block = card.querySelector('[data-fran-block]');
+          const vialEl = block?.querySelector('[data-fran-field="vial"]');
+          const packEl = block?.querySelector('[data-fran-field="pack"]');
+          if (!block || !vialEl || !packEl) return;
+          if (franRoute.value === '__new__') {
+            vialEl.value = '';
+            packEl.value = '';
+            return;
+          }
+          const target = productsFranLinks.find((l) => l.partner_name === franRoute.value);
+          vialEl.value = centsToDollarInput(target ? target.franchisee_vial_cents : null);
+          packEl.value = centsToDollarInput(target ? target.franchisee_pack_cents : null);
+          block.setAttribute('data-partner-name', franRoute.value);
+        });
+      }
       return card;
     }
 
