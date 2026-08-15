@@ -37,6 +37,12 @@ export async function onRequestPut({ request, env, params }) {
     return json({ error: 'partner_name and spbc_name required' }, 400);
   }
 
+  // Forward the catalog id when the caller knows it. Dropping it here made the worker
+  // re-derive the id from spbc_name, which fails whenever our name and theirs differ.
+  const rawId = body.spbc_product_id;
+  const spbcProductId =
+    rawId != null && Number.isFinite(Number(rawId)) ? Number(rawId) : null;
+
   const result = await proxyOrdersAdmin(
     env,
     `/admin/partners/${encodeURIComponent(slug)}/product-links`,
@@ -46,6 +52,7 @@ export async function onRequestPut({ request, env, params }) {
         partner_name: partnerName,
         spbc_name: spbcName,
         partner_sku: body.partner_sku ?? null,
+        spbc_product_id: spbcProductId,
       }),
     }
   );

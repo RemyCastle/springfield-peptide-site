@@ -2588,6 +2588,7 @@
         franchiseesCache = data.partners || [];
         fillProductsFranSelect();
         syncProductsFranLinks();
+        await loadFranCatalogNames();
       } catch {
         sel.innerHTML = '<option value="">(failed to load franchisees)</option>';
         productsFranLinks = [];
@@ -2618,6 +2619,43 @@
       const slug = document.getElementById('productsFranSelect')?.value || '';
       const partner = franchiseesCache.find((p) => p.slug === slug);
       productsFranLinks = partner?.product_links || [];
+    }
+
+    /**
+     * THEIR product names, lower-cased. Empty until the catalog loads, and every check
+     * below treats empty as "unknown" rather than "orphan" — mislabelling every link as
+     * dead would be worse than not labelling at all.
+     */
+    let franCatalogNames = new Set();
+
+    /** Does their storefront actually read this link? */
+    function franLinkIsLive(link) {
+      if (!franCatalogNames.size) return true;
+      return franCatalogNames.has(String(link?.partner_name || '').trim().toLowerCase());
+    }
+
+    async function loadFranCatalogNames() {
+      const slug = document.getElementById('productsFranSelect')?.value || '';
+      if (!slug) {
+        franCatalogNames = new Set();
+        return;
+      }
+      try {
+        const res = await fetch(
+          `/api/admin/franchisees/${encodeURIComponent(slug)}/catalog`,
+          { credentials: 'same-origin' }
+        );
+        if (!res.ok) {
+          franCatalogNames = new Set();
+          return;
+        }
+        const data = await res.json();
+        franCatalogNames = new Set(
+          (data.names || []).map((n) => String(n).trim().toLowerCase())
+        );
+      } catch {
+        franCatalogNames = new Set();
+      }
     }
 
     /**
@@ -2768,14 +2806,13 @@
        *
        * Their server maps partner_name -> link and looks it up by THEIR product name, so
        * a link named after OUR product is invisible to them even when it holds the price.
-       * Prefer a link whose partner_name differs from our name (their own naming), which
-       * is the row that governs what they see and pay.
+       * Rank by whether partner_name is in THEIR catalog — 22 of 43 links were not, and
+       * every franchisee price set from here had been landing on one of those.
        */
-      const ourName = String(p.name || '').trim().toLowerCase();
       const candidates = candidatesRaw.slice().sort((a, b) => {
-        const aTheirs = String(a.partner_name || '').trim().toLowerCase() !== ourName ? 0 : 1;
-        const bTheirs = String(b.partner_name || '').trim().toLowerCase() !== ourName ? 0 : 1;
-        return aTheirs - bTheirs;
+        const aLive = franLinkIsLive(a) ? 0 : 1;
+        const bLive = franLinkIsLive(b) ? 0 : 1;
+        return aLive - bLive;
       });
       const link = candidates[0] || null;
 
@@ -2785,14 +2822,17 @@
        * operator picks the target instead of the UI assuming the names match.
        */
       const routeOptions = candidates
-        .map(
-          (l) =>
-            `<option value="${escapeAttr(l.partner_name)}">${escapeHtml(l.partner_name)}${
-              l.franchisee_vial_cents == null && l.franchisee_pack_cents == null
-                ? ' · no price set'
-                : ''
-            }</option>`
-        )
+        .map((l) => {
+          const noPrice =
+            l.franchisee_vial_cents == null && l.franchisee_pack_cents == null
+              ? ' · no price set'
+              : '';
+          // Naming an orphan outright: a price saved here changes nothing on their site.
+          const dead = franCatalogNames.size && !franLinkIsLive(l) ? ' · NOT IN THEIR CATALOG' : '';
+          return `<option value="${escapeAttr(l.partner_name)}">${escapeHtml(
+            l.partner_name
+          )}${noPrice}${dead}</option>`;
+        })
         .join('');
       const newOption = `<option value="__new__">+ New link named "${escapeHtml(p.name)}"</option>`;
 
@@ -3022,6 +3062,19 @@
           return;
         }
       }
+      // Saving onto a name their catalog does not contain is a silent no-op on their side.
+      if (
+        !isNew &&
+        franCatalogNames.size &&
+        !franCatalogNames.has(partner_name.trim().toLowerCase()) &&
+        !confirm(
+          `"${partner_name}" is not a product in their catalog.\n\n` +
+            `Their storefront looks prices up by their own product name, so saving here ` +
+            `will NOT change what they pay. Save anyway?`
+        )
+      ) {
+        return;
+      }
       const vial = dollarInputToCents(block.querySelector('[data-fran-field="vial"]')?.value);
       const pack = dollarInputToCents(block.querySelector('[data-fran-field="pack"]')?.value);
       if (vial === undefined || pack === undefined) {
@@ -3033,7 +3086,9 @@
           slug,
           partner_name,
           block.querySelector('[data-fran-field="vial"]')?.value ?? '',
-          block.querySelector('[data-fran-field="pack"]')?.value ?? ''
+          block.querySelector('[data-fran-field="pack"]')?.value ?? '',
+          card.querySelector('[data-field="name"]').value.trim(),
+          card.dataset.id
         );
       } catch (e) {
         if (/\b401\b/.test(String(e.message))) return showLogin();
@@ -3060,11 +3115,16 @@
       flashSaved(card, 'save-fran-price');
     }
 
-    function onProductsFranSelectChange() {
+    async function onProductsFranSelectChange() {
       syncProductsFranLinks();
       // Re-rendering every card is necessary here (each needs its franchisee block), but
       // it throws you back to the top of a 35-product list, which reads as a page reload.
       const y = window.scrollY;
+      renderProducts(productsCache);
+      window.scrollTo({ top: y, behavior: 'instant' });
+      // Then again once we know which of their products are real, so routing defaults and
+      // the orphan labels are correct. Render twice rather than block the first paint.
+      await loadFranCatalogNames();
       renderProducts(productsCache);
       window.scrollTo({ top: y, behavior: 'instant' });
     }
@@ -3343,12 +3403,33 @@
      * worker's franchisee PATCH fails with link_not_found when no link exists, which
      * is how a product ends up with NULL overrides silently tracking the public price.
      */
-    async function saveFranchiseePrice(slug, productName, vialDollars, packDollars) {
+    async function saveFranchiseePrice(
+      slug,
+      productName,
+      vialDollars,
+      packDollars,
+      spbcName,
+      spbcProductId
+    ) {
+      /**
+       * `spbc_name` must stay OUR catalog name. Sending the franchisee's name here
+       * overwrote it on every save — "RETA 30MG" became "RETATRUTIDE 30MG" — severing
+       * the link from the catalog product it prices. Verified against production: the
+       * PUT returned spbc_product_id: null and the row's spbc_name was clobbered.
+       *
+       * Callers that ARE creating a link for our own product pass nothing and keep the
+       * old behaviour, where the two names are legitimately identical.
+       */
+      const catalogName = spbcName || productName;
+      const linkBody = { partner_name: productName, spbc_name: catalogName };
+      if (spbcProductId != null && Number.isFinite(Number(spbcProductId))) {
+        linkBody.spbc_product_id = Number(spbcProductId);
+      }
       const put = await fetch(`/api/admin/franchisees/${encodeURIComponent(slug)}/links`, {
         method: 'PUT',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ partner_name: productName, spbc_name: productName }),
+        body: JSON.stringify(linkBody),
       });
       if (!put.ok) {
         const d = await put.json().catch(() => ({}));
