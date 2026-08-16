@@ -10,8 +10,11 @@
     "build": "npm run build:css && npm run build:hash && npm run build:pages",
     "watch:css": "tailwindcss -i ./shared/tailwind.input.css -o ./shared/tailwind.build.css --watch"
   },
+  "overrides": {
+    "nanoid": "^3.3.18"
+  },
   "dependencies": {
-    "express": "^4.21.2",
+    "express": "^5.2.1",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
