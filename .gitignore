@@ -16,3 +16,6 @@ node_modules/
 .ai/*-smoke*.cjs
 .ai/verify-*.json
 .ai/.verify-state.json
+# Scraped page dumps kept for redesign reference — ~12 MB, regenerable
+.ai/extract/
+.ai/pre-redesign-html/
