@@ -614,6 +614,8 @@ const CART_KEY = "spbc_cart_draft";
             });
             syncKitOnlyChip();
             applyProductFilter();
+            // Stack-written pack qty must land on kit steppers before saveCartDraft.
+            applyCartMap(loadCartDraft());
             updateOrder();
             if (typeof window.spbcAtmosphereRefresh === 'function') {
                 window.spbcAtmosphereRefresh();
