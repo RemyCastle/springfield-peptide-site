@@ -59,6 +59,35 @@
     window.addEventListener('resize', syncStickyOffset, { passive: true });
   }
 
+  function cartDraft() {
+    try {
+      var raw = localStorage.getItem('spbc_cart_draft');
+      if (!raw) return {};
+      var data = JSON.parse(raw);
+      return data && typeof data === 'object' ? data : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function cartCount(draft) {
+    return Object.keys(draft || {}).reduce(function (n, name) {
+      var e = draft[name] || {};
+      return n + (Number(e.pack) || 0) + (Number(e.vial) || 0);
+    }, 0);
+  }
+
+  function refreshCartChip() {
+    if (!header) return;
+    var chip = header.querySelector('[data-header-cart]');
+    var countEl = header.querySelector('[data-header-cart-count]');
+    if (!chip || !countEl) return;
+    var n = cartCount(cartDraft());
+    countEl.textContent = String(n);
+    if (n > 0) chip.removeAttribute('hidden');
+    else chip.setAttribute('hidden', '');
+  }
+
   function init() {
     header = document.querySelector('[data-site-header]');
     if (!header) return;
@@ -70,11 +99,17 @@
     isScrolled = y > SCROLL_ENTER;
     header.classList.toggle('is-scrolled', isScrolled);
     syncStickyOffset();
+    refreshCartChip();
   }
 
   window.spbcHeaderRefresh = function () {
     init();
   };
+
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'spbc_cart_draft') refreshCartChip();
+  });
+  window.addEventListener('spbc-cart-changed', refreshCartChip);
 
   function boot() {
     var fontsReady = document.fonts && document.fonts.ready

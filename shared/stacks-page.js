@@ -3,11 +3,29 @@
       const CART_KEY = 'spbc_cart_draft';
       const VIAL_MAX = 10;
       const KIT_ALLOWED = new Set([0, 1, 2, 3, 5]);
-      const BAC_NAME = window.SPBC_STACKS_BAC_PRODUCT || 'BAC WATER 3ML';
+      const BAC_PREFERRED = window.SPBC_STACKS_BAC_PRODUCT || 'BAC WATER 2.5ML';
+      const BAC_FALLBACKS = [BAC_PREFERRED, 'BAC WATER 2.5ML', 'BAC WATER 3ML'];
 
-      /** @type {Record<string, {vial_price:number, pack_price:number, name:string}>} */
+      /** @type {Record<string, {vial_price:number, pack_price:number, name:string, kit_only?:boolean}>} */
       let catalogByName = {};
       let catalogLoaded = false;
+
+      /** Public storefront sells kits. Live catalog often has vial_price null (shows as $0 if we read it). */
+      function sellUnitPrice(p) {
+        if (!p) return null;
+        const pack = Number(p.pack_price);
+        if (Number.isFinite(pack) && pack > 0) return pack;
+        const vial = Number(p.vial_price);
+        if (Number.isFinite(vial) && vial > 0) return vial;
+        return 0;
+      }
+
+      function resolveBacName() {
+        for (const name of BAC_FALLBACKS) {
+          if (name && catalogByName[name]) return name;
+        }
+        return BAC_PREFERRED;
+      }
 
       function money(n) {
         const num = Number(n);
@@ -61,23 +79,26 @@
             localStorage.removeItem(CART_KEY);
           }
         } catch (_) { /* quota */ }
+        try { window.dispatchEvent(new CustomEvent('spbc-cart-changed')); } catch (_) { /* ignore */ }
       }
 
       /**
-       * Merge stack lines into existing cart (ADD quantities; never wipe).
-       * @param {{product:string, vials:number}[]} lines
+       * Merge stack lines into existing cart (ADD kit quantities; never wipe).
+       * Public storefront is kits-only — writing vial qty is invisible on Home and
+       * then get wiped when Home rebuilds the draft from kit steppers.
+       * @param {{product:string, kits:number}[]} lines
        */
       function mergeIntoCart(lines) {
         const draft = loadCart();
         for (const line of lines) {
           if (!line || !line.product) continue;
           if (!catalogByName[line.product]) continue; // never add nonexistent names
-          const addVial = clampVial(line.vials);
-          if (addVial <= 0) continue;
+          const addKit = clampKit(line.kits);
+          if (addKit <= 0) continue;
           const prev = draft[line.product] || { vial: 0, pack: 0 };
           draft[line.product] = {
-            vial: clampVial((Number(prev.vial) || 0) + addVial),
-            pack: clampKit(prev.pack || 0),
+            vial: clampVial(prev.vial || 0),
+            pack: clampKit((Number(prev.pack) || 0) + addKit),
           };
         }
         // drop zero lines
@@ -92,7 +113,7 @@
       function stackVialCount(stack) {
         return (stack.items || []).reduce((sum, it) => {
           if (!catalogByName[it.product]) return sum;
-          return sum + clampVial(it.vials);
+          return sum + clampKit(it.vials);
         }, 0);
       }
 
@@ -115,13 +136,14 @@
             known = false;
             continue;
           }
-          total += (Number(p.vial_price) || 0) * clampVial(it.vials);
+          total += (sellUnitPrice(p) || 0) * clampKit(it.vials);
         }
         if (includeBac) {
-          const bac = catalogByName[BAC_NAME];
-          const bacQty = clampVial(stackVialCount(stack));
+          const bacName = resolveBacName();
+          const bac = catalogByName[bacName];
+          const bacQty = clampKit(stackVialCount(stack));
           if (bac && bacQty > 0) {
-            total += (Number(bac.vial_price) || 0) * bacQty;
+            total += (sellUnitPrice(bac) || 0) * bacQty;
           } else if (bacQty > 0 && !bac) {
             known = false;
           }
@@ -148,16 +170,18 @@
           const bacDefault = true;
           const { total, known } = computeTotal(stack, bacDefault);
           const vialCount = stackVialCount(stack);
-          const bacP = catalogByName[BAC_NAME];
-          const bacLinePrice = bacP ? (Number(bacP.vial_price) || 0) * clampVial(vialCount) : null;
+          const bacName = resolveBacName();
+          const bacP = catalogByName[bacName];
+          const bacLinePrice = bacP ? (sellUnitPrice(bacP) || 0) * clampKit(vialCount) : null;
 
           const itemsHtml = (stack.items || []).map((it) => {
             const p = catalogByName[it.product];
             const miss = catalogLoaded && !p;
-            const line = p ? (Number(p.vial_price) || 0) * clampVial(it.vials) : null;
+            const qty = clampKit(it.vials);
+            const line = p ? (sellUnitPrice(p) || 0) * qty : null;
             return `<div class="stack-item-row${miss ? ' opacity-60' : ''}">
               <div>
-                <p class="text-sm font-semibold text-white">${escapeHtml(it.product)} <span class="text-zinc-400 font-normal">×${clampVial(it.vials)} vial${clampVial(it.vials) === 1 ? '' : 's'}</span>
+                <p class="text-sm font-semibold text-white">${escapeHtml(it.product)} <span class="text-zinc-400 font-normal">×${qty} kit${qty === 1 ? '' : 's'}</span>
                   ${miss ? '<span class="ml-1 text-amber-400 text-xs font-bold">currently unavailable</span>' : ''}
                 </p>
                 <p class="text-[11px] text-zinc-500 mt-0.5 leading-snug">${escapeHtml(it.refRange || '')}</p>
@@ -168,10 +192,10 @@
 
           const bacRow = `<div class="stack-item-row bac-price-row" data-stack-bac-row="${escapeHtml(stack.id)}">
             <div>
-              <p class="text-sm font-semibold text-white">${escapeHtml(BAC_NAME)} <span class="text-zinc-400 font-normal bac-qty">×${clampVial(vialCount)} vial${clampVial(vialCount) === 1 ? '' : 's'}</span>
+              <p class="text-sm font-semibold text-white">${escapeHtml(bacName)} <span class="text-zinc-400 font-normal bac-qty">×${clampKit(vialCount)} kit${clampKit(vialCount) === 1 ? '' : 's'}</span>
                 ${catalogLoaded && !bacP ? '<span class="ml-1 text-amber-400 text-xs font-bold">currently unavailable</span>' : ''}
               </p>
-              <p class="text-[11px] text-zinc-500 mt-0.5">1 × 3 mL per stack vial (research reconstitution)</p>
+              <p class="text-[11px] text-zinc-500 mt-0.5">One kit per peptide kit (same BAC the price list adds at checkout)</p>
             </div>
             <div class="text-right text-sm text-zinc-300 whitespace-nowrap bac-line-price">${bacLinePrice == null ? '—' : money(bacLinePrice)}</div>
           </div>`;
@@ -193,7 +217,7 @@
             </div>
             <label class="bac-check mb-3 text-sm text-zinc-300">
               <input type="checkbox" class="bac-toggle" data-stack-id="${escapeHtml(stack.id)}" ${bacDefault ? 'checked' : ''} ${available ? '' : 'disabled'}>
-              <span>Add bacteriostatic water <span class="text-zinc-500">(${escapeHtml(BAC_NAME)} — 1 per vial)</span></span>
+              <span>Add bacteriostatic water <span class="text-zinc-500">(${escapeHtml(bacName)} — 1 kit per peptide kit)</span></span>
             </label>
             <div class="flex items-end justify-between gap-3 mb-3">
               <div>
@@ -234,36 +258,83 @@
         if (el) el.textContent = known ? money(total) : '—';
       }
 
+      function showStacksToast(message) {
+        let toast = document.getElementById('spbcUndoToast');
+        if (!toast) {
+          toast = document.createElement('div');
+          toast.id = 'spbcUndoToast';
+          toast.className = 'spbc-undo-toast';
+          toast.setAttribute('role', 'status');
+          toast.innerHTML = '<span class="spbc-undo-msg"></span><a class="spbc-toast-link" href="/#prices">View cart</a>';
+          document.body.appendChild(toast);
+        }
+        const msg = toast.querySelector('.spbc-undo-msg');
+        if (msg) msg.textContent = message;
+        toast.classList.add('is-visible');
+        window.setTimeout(function () { toast.classList.remove('is-visible'); }, 4000);
+      }
+
       function onAddStack(stackId) {
         const stack = (window.SPBC_STACKS || []).find((s) => s.id === stackId);
         if (!stack) return;
+        if (!catalogLoaded) {
+          showStacksToast('Catalog is still loading — try again in a moment.');
+          return;
+        }
         if (!stackAvailable(stack)) {
-          alert('This stack has products that are currently unavailable.');
+          showStacksToast('This stack has products that are currently unavailable.');
           return;
         }
         const card = document.querySelector(`[data-stack-card][data-stack-id="${stackId}"]`);
         const includeBac = !!card?.querySelector('.bac-toggle')?.checked;
         const lines = (stack.items || [])
           .filter((it) => catalogByName[it.product])
-          .map((it) => ({ product: it.product, vials: clampVial(it.vials) }));
+          .map((it) => ({ product: it.product, kits: clampKit(it.vials) }));
+        const bacName = resolveBacName();
         if (includeBac) {
-          const bacQty = clampVial(stackVialCount(stack));
-          if (bacQty > 0 && catalogByName[BAC_NAME]) {
-            lines.push({ product: BAC_NAME, vials: bacQty });
+          const bacQty = clampKit(stackVialCount(stack));
+          if (bacQty > 0 && catalogByName[bacName]) {
+            lines.push({ product: bacName, kits: bacQty });
           }
         }
         if (!lines.length) {
-          alert('No available products to add.');
+          showStacksToast('No available products to add.');
           return;
         }
         const { total } = computeTotal(stack, includeBac);
-        const summary = lines.map((l) => `${l.product} ×${l.vials}`).join('\n');
+        const summary = lines.map((l) => `${l.product} ×${l.kits} kit${l.kits === 1 ? '' : 's'}`).join('\n');
         const ok = window.confirm(
           `Add this research stack to your cart?\n\n${stack.name}\n${summary}\n\nApprox. total: ${money(total)}\n\n(Existing cart quantities are kept and increased — nothing is wiped.)`
         );
         if (!ok) return;
         mergeIntoCart(lines);
-        window.location.href = '/#prices';
+        renderCartStrip();
+        showStacksToast(stack.name + ' added — ' + money(total));
+        window.setTimeout(function () {
+          window.location.href = '/#prices';
+        }, 350);
+      }
+
+      function cartUnitCount(draft) {
+        return Object.keys(draft || {}).reduce((n, name) => {
+          const e = draft[name] || {};
+          return n + (Number(e.pack) || 0) + (Number(e.vial) || 0);
+        }, 0);
+      }
+
+      function renderCartStrip() {
+        const el = document.getElementById('stacksCartStrip');
+        const countEl = document.getElementById('stacksCartCount');
+        if (!el || !countEl) return;
+        const draft = loadCart();
+        const n = cartUnitCount(draft);
+        if (n <= 0) {
+          el.hidden = true;
+          countEl.textContent = '0 items';
+          return;
+        }
+        el.hidden = false;
+        countEl.textContent = n === 1 ? '1 item' : n + ' items';
       }
 
       async function loadCatalog() {
@@ -294,9 +365,15 @@
         renderStacks();
         // hide/show bac rows for default checked state
         (window.SPBC_STACKS || []).forEach((s) => updateCardTotals(s.id));
+        renderCartStrip();
       }
 
       renderStacks();
+      renderCartStrip();
+      window.addEventListener('storage', function (e) {
+        if (e.key === CART_KEY) renderCartStrip();
+      });
+      window.addEventListener('spbc-cart-changed', renderCartStrip);
       loadCatalog();
     })();
   

@@ -162,15 +162,48 @@
   }
 }
 
+.site-header__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.site-header__cart {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #0B120E;
+  background: linear-gradient(180deg, #ffe44d, #FDD700 45%, #e6c200);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+  box-shadow: 0 0 14px rgba(234, 179, 8, 0.28);
+}
+.site-header__cart[hidden] {
+  display: none !important;
+}
+.site-header__cart-count {
+  font-variant-numeric: tabular-nums;
+}
+
 .site-header__nav {
   position: relative;
   display: flex;
   align-items: center;
   gap: 0.2rem;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
   padding: 0.15rem;
-  border-radius: 999px;
+  border-radius: 1rem;
   background: rgba(0, 0, 0, 0.28);
   border: 1px solid rgba(38, 58, 44, 0.95);
   box-shadow:
@@ -178,17 +211,10 @@
     0 4px 12px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  /* Fit within viewport — never force page horizontal scroll */
-  max-width: min(100%, calc(100vw - 1.5rem));
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-  scroll-snap-type: x proximity;
-}
-.site-header__nav::-webkit-scrollbar {
-  display: none;
+  /* Wrap on phones so Contact is reachable — no hamburger overlay */
+  max-width: 100%;
+  width: 100%;
+  overflow: visible;
 }
 
 .nav-link {
@@ -219,8 +245,7 @@
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  flex: 0 0 auto;
-  scroll-snap-align: center;
+  flex: 1 1 auto;
 }
 
 @media (min-width: 375px) {
@@ -241,17 +266,25 @@
 }
 
 @media (min-width: 640px) {
+  .site-header__top {
+    width: auto;
+    flex: 1 1 auto;
+  }
   .site-header__nav {
     gap: 0.35rem;
     padding: 0.2rem;
     max-width: none;
+    width: auto;
     overflow-x: visible;
     justify-content: center;
+    flex-wrap: nowrap;
+    border-radius: 999px;
   }
   .nav-link {
     font-size: 0.72rem;
     padding: 0.55rem 0.9rem;
     min-height: 44px;
+    flex: 0 0 auto;
   }
 }
 

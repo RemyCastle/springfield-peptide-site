@@ -104,3 +104,12 @@ Append-only log. Newest at bottom.
 - Edge note: custom-domain once served HTML for a hashed CSS URL (immutable cache pollution); rehash + Content-Type pins on `/shared/*`
 - Order modal: works on real form submit path (lines+total); empty when opened without form context (pre-existing; not a redesign regression)
 - No secrets, prices, product names, or spbc-orders worker touched
+
+### 2026-08-20 — Stacks kit prices, shared cart, wrapping nav
+- Live `/api/products` (member): TIRZ 30MG / RETA 30MG have `vial_price` null and `pack_price` 415 / 515. CAGRI 10MG still has vial 41 / pack 545. BAC WATER 3ML vial is 5. That is why stacks showed "$0" on the main peptide, "$41" on CAGRI, and totals of $5 / $51 (BAC vial ± CAGRI vial only).
+- Public storefront is kits-only (`PUBLIC_KITS_ONLY`). Stacks now price and add **pack/kit** qty using `pack_price` (fall back to a positive vial price only if pack is missing). BAC line uses `BAC WATER 2.5ML` (same SKU Home auto-adds), falling back to 3ML if needed.
+- Add-stack wrote `{vial:N, pack:0}`. Home has no vial steppers, so `saveCartDraft()` rebuilt an empty draft and wiped `spbc_cart_draft`. Writers now merge kit qty; Home restores vial-only drafts onto the kit stepper; save is a merge and no-ops while `#priceTable` has no cards.
+- Header cart chip + stacks cart strip read the same `spbc_cart_draft` key (`spbc-cart-changed` + `storage`).
+- 375px nav: wrap the pill row (no hamburger overlay). Desktop ≥640px stays a single nowrap row.
+- Sticky cart: the whole head (including "Tap to expand") toggles lines. When the order-summary textarea is in view the bar docks compact so it does not cover `#message`.
+- No D1 / admin / secret / worker changes.

@@ -171,22 +171,20 @@
         <!-- Sticky floating cart bar -->
         <div id="stickyOrderBar" class="sticky-order-bar" aria-hidden="true">
             <div class="sticky-order-inner">
-                <div class="flex items-center justify-between gap-3 mb-2">
-                    <div class="min-w-0">
+                <button type="button" id="stickyCountBtn" class="sticky-order-head sticky-count-btn" aria-expanded="false" aria-controls="stickyLines">
+                    <div class="min-w-0 text-left">
                         <p class="text-[10px] uppercase tracking-wider text-emerald-300/90 font-semibold">Your order</p>
-                        <button type="button" id="stickyCountBtn" class="sticky-count-btn" aria-expanded="false" aria-controls="stickyLines">
-                            <span class="text-sm text-white font-semibold truncate inline-flex items-center">
-                                <span id="stickyCount">0 items</span>
-                                <span id="cartBadge" class="cart-badge" aria-hidden="true">0</span>
-                            </span>
-                            <span class="text-[10px] text-emerald-200/80 font-medium block">Tap to expand · edit below</span>
-                        </button>
+                        <span class="text-sm text-white font-semibold truncate inline-flex items-center">
+                            <span id="stickyCount">0 items</span>
+                            <span id="cartBadge" class="cart-badge" aria-hidden="true">0</span>
+                        </span>
+                        <span class="sticky-expand-hint">Tap to expand · edit below</span>
                     </div>
                     <div class="text-right shrink-0">
                         <p class="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">Total</p>
                         <p id="stickyTotal" class="text-lg font-bold text-[#EAB308] tabular-nums" aria-live="polite">$0.00</p>
                     </div>
-                </div>
+                </button>
                 <div id="stickyLines" class="sticky-lines" role="region" aria-label="Cart items"></div>
                 <div class="mb-2.5">
                     <div class="progress-track" role="progressbar" id="discountProgress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Order minimum progress">
