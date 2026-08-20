@@ -186,7 +186,7 @@
                 </p>
                 <p class="text-[11px] text-zinc-500 mt-0.5 leading-snug">${escapeHtml(it.refRange || '')}</p>
               </div>
-              <div class="text-right text-sm text-zinc-300 whitespace-nowrap">${miss ? '—' : money(line)}</div>
+              <div class="text-right text-sm text-zinc-300 whitespace-nowrap">${!catalogLoaded ? '…' : (miss ? '—' : money(line))}</div>
             </div>`;
           }).join('');
 
