@@ -86,14 +86,16 @@
        * Merge stack lines into existing cart (ADD kit quantities; never wipe).
        * Public storefront is kits-only — writing vial qty is invisible on Home and
        * then get wiped when Home rebuilds the draft from kit steppers.
-       * @param {{product:string, kits:number}[]} lines
+       * Accepts `kits` or legacy `vials` (stack data still uses vials as the qty field).
+       * @param {{product:string, kits?:number, vials?:number}[]} lines
        */
       function mergeIntoCart(lines) {
         const draft = loadCart();
         for (const line of lines) {
           if (!line || !line.product) continue;
           if (!catalogByName[line.product]) continue; // never add nonexistent names
-          const addKit = clampKit(line.kits);
+          const rawQty = line.kits != null ? line.kits : line.vials;
+          const addKit = clampKit(rawQty);
           if (addKit <= 0) continue;
           const prev = draft[line.product] || { vial: 0, pack: 0 };
           draft[line.product] = {
@@ -235,13 +237,23 @@
             </p>
           </article>`;
         }).join('');
+      }
 
-        // Wire events
-        grid.querySelectorAll('.bac-toggle').forEach((cb) => {
-          cb.addEventListener('change', () => updateCardTotals(cb.getAttribute('data-stack-id')));
+      function bindGridOnce() {
+        const grid = document.getElementById('stacksGrid');
+        if (!grid || grid.dataset.addBound === '1') return;
+        grid.dataset.addBound = '1';
+        // Delegation survives renderStacks() innerHTML replacements.
+        grid.addEventListener('click', function (e) {
+          const btn = e.target && e.target.closest ? e.target.closest('[data-add-stack]') : null;
+          if (!btn || btn.disabled || btn.getAttribute('disabled') !== null) return;
+          e.preventDefault();
+          onAddStack(btn.getAttribute('data-add-stack'));
         });
-        grid.querySelectorAll('[data-add-stack]').forEach((btn) => {
-          btn.addEventListener('click', () => onAddStack(btn.getAttribute('data-add-stack')));
+        grid.addEventListener('change', function (e) {
+          const cb = e.target && e.target.closest ? e.target.closest('.bac-toggle') : null;
+          if (!cb) return;
+          updateCardTotals(cb.getAttribute('data-stack-id'));
         });
       }
 
@@ -275,44 +287,46 @@
       }
 
       function onAddStack(stackId) {
-        const stack = (window.SPBC_STACKS || []).find((s) => s.id === stackId);
-        if (!stack) return;
-        if (!catalogLoaded) {
-          showStacksToast('Catalog is still loading — try again in a moment.');
-          return;
-        }
-        if (!stackAvailable(stack)) {
-          showStacksToast('This stack has products that are currently unavailable.');
-          return;
-        }
-        const card = document.querySelector(`[data-stack-card][data-stack-id="${stackId}"]`);
-        const includeBac = !!card?.querySelector('.bac-toggle')?.checked;
-        const lines = (stack.items || [])
-          .filter((it) => catalogByName[it.product])
-          .map((it) => ({ product: it.product, kits: clampKit(it.vials) }));
-        const bacName = resolveBacName();
-        if (includeBac) {
-          const bacQty = clampKit(stackVialCount(stack));
-          if (bacQty > 0 && catalogByName[bacName]) {
-            lines.push({ product: bacName, kits: bacQty });
+        try {
+          const stack = (window.SPBC_STACKS || []).find((s) => s.id === stackId);
+          if (!stack) {
+            showStacksToast('Could not find that stack — refresh and try again.');
+            return;
           }
+          if (!catalogLoaded) {
+            showStacksToast('Catalog is still loading — try again in a moment.');
+            return;
+          }
+          if (!stackAvailable(stack)) {
+            showStacksToast('This stack has products that are currently unavailable.');
+            return;
+          }
+          const card = document.querySelector('[data-stack-card][data-stack-id="' + stackId + '"]');
+          const includeBac = !!(card && card.querySelector('.bac-toggle') && card.querySelector('.bac-toggle').checked);
+          const lines = (stack.items || [])
+            .filter((it) => catalogByName[it.product])
+            .map((it) => ({ product: it.product, kits: clampKit(it.vials) }));
+          const bacName = resolveBacName();
+          if (includeBac) {
+            const bacQty = clampKit(stackVialCount(stack));
+            if (bacQty > 0 && catalogByName[bacName]) {
+              lines.push({ product: bacName, kits: bacQty });
+            }
+          }
+          if (!lines.length) {
+            showStacksToast('No available products to add.');
+            return;
+          }
+          const { total } = computeTotal(stack, includeBac);
+          mergeIntoCart(lines);
+          renderCartStrip();
+          if (typeof window.spbcHeaderRefresh === 'function') {
+            window.spbcHeaderRefresh();
+          }
+          showStacksToast(stack.name + ' added — ' + money(total));
+        } catch (err) {
+          showStacksToast('Could not add this stack — try again.');
         }
-        if (!lines.length) {
-          showStacksToast('No available products to add.');
-          return;
-        }
-        const { total } = computeTotal(stack, includeBac);
-        const summary = lines.map((l) => `${l.product} ×${l.kits} kit${l.kits === 1 ? '' : 's'}`).join('\n');
-        const ok = window.confirm(
-          `Add this research stack to your cart?\n\n${stack.name}\n${summary}\n\nApprox. total: ${money(total)}\n\n(Existing cart quantities are kept and increased — nothing is wiped.)`
-        );
-        if (!ok) return;
-        mergeIntoCart(lines);
-        renderCartStrip();
-        showStacksToast(stack.name + ' added — ' + money(total));
-        window.setTimeout(function () {
-          window.location.href = '/#prices';
-        }, 350);
       }
 
       function cartUnitCount(draft) {
@@ -368,6 +382,7 @@
         renderCartStrip();
       }
 
+      bindGridOnce();
       renderStacks();
       renderCartStrip();
       window.addEventListener('storage', function (e) {

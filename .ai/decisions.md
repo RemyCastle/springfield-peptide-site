@@ -120,3 +120,8 @@ Append-only log. Newest at bottom.
 - Terms + `#vialRuleStatus` match kits-only (no 3-vial minimum). Kit-only filter chip is hidden on the public kits-only storefront so it cannot empty the catalog.
 - `/titration.html` is a built retired-notice page (no planner JS). Live had been 200-serving the homepage because the file was not in `PAGE_NAMES`.
 - `POST /api/place-order` re-prices every line from D1 `pack_price` and ignores client `unit_price_cents` / `total_cents`. Coaching helper text says we email them.
+
+### 2026-08-20 — Add-stack click was a silent no-op
+- Live smoke after f454bad: kit prices and Home→Stacks cart persist worked; **Add stack to cart** on enabled cards did nothing (no toast, `spbc_cart_draft` stayed the home-only TIRZ 10MG line).
+- Cause: `onAddStack` gated the merge behind `window.confirm`. Blocked or dismissed dialogs return `false` with no UI, so the handler exited before `mergeIntoCart` / toast / header update. Per-button listeners were also rebound by `innerHTML` replace.
+- Fix: one-click merge of kit/`pack` qty (accepts `kits` or legacy `vials`); delegated click on `#stacksGrid`; toast + `spbc-cart-changed` + header refresh; no confirm and no auto-redirect. Home re-applies the draft after price cards render so sticky cart picks up stack lines.
