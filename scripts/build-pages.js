@@ -24,7 +24,7 @@ const PAGES = path.join(SRC, 'pages');
 const STYLES = path.join(SRC, 'styles');
 const SCRIPTS = path.join(SRC, 'scripts');
 
-const PAGE_NAMES = ['index', 'calculator', 'stacks', 'coaching', 'contact'];
+const PAGE_NAMES = ['index', 'calculator', 'stacks', 'coaching', 'contact', 'titration'];
 
 function read(p) {
   return fs.readFileSync(p, 'utf8');
@@ -189,7 +189,7 @@ function buildPage(pageName) {
   const pageAppMap = {
     index: assets.store_js,
     calculator: assets.calculator_js,
-    titration: assets.titration_js,
+    titration: '', // retired notice only — do not load the old planner JS
     coaching: assets.coaching_js,
     stacks: '', // stacks uses stacks_script + stacks_page_js
   };

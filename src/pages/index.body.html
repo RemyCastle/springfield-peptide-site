@@ -7,7 +7,8 @@
                 <div class="depth-card px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5 reveal prices-rules-card">
                     <p class="text-[#EAB308] font-semibold">Ordering rules</p>
                     <p class="text-zinc-300"><strong class="text-white">Kits only</strong> — every listing is sold as a 10-pack / kit</p>
-                    <p class="text-zinc-300"><strong class="text-white">BAC water included</strong> — one 2.5&nbsp;mL kit is added automatically per peptide kit</p>
+                    <p class="text-zinc-300"><strong class="text-white">BAC water included</strong> — one BAC kit is added automatically per peptide kit (2.5&nbsp;mL when that listing is in the catalog)</p>
+                    <p id="bacIncludeStatus" class="text-amber-300 text-sm" hidden></p>
                 </div>
 
                 <!-- Search + filter -->
@@ -20,7 +21,7 @@
                     </div>
                     <div class="flex flex-wrap gap-2 justify-center" role="group" aria-label="Filter products">
                         <button type="button" class="filter-chip active" data-filter="all" aria-pressed="true">All</button>
-                        <button type="button" class="filter-chip" data-filter="kit-only" aria-pressed="false">Kit-only</button>
+                        <button type="button" class="filter-chip" data-filter="kit-only" aria-pressed="false" hidden>Kit-only</button>
                     </div>
                     <p id="filterResultCount" class="filter-result-count" hidden aria-live="polite"></p>
                     <p id="filterEmpty" class="hidden text-center text-zinc-500 text-sm py-2">
@@ -64,8 +65,8 @@
                         By placing an order you agree to all terms below. Please read carefully.<br><br>
                         <strong>All Sales Are Final.</strong> No refunds, returns, or exchanges after payment is confirmed.<br><br>
                         <strong>Payment.</strong> Payment instructions and accepted methods are provided at checkout after you place your order. Include your order number in the payment memo. We confirm payment manually before shipping.<br><br>
-                        <strong>Bulk Pricing.</strong> Every complete set of 10 units qualifies for the bulk (10-pack) rate.<br><br>
-                        <strong>Single Vial Minimum.</strong> Single-vial orders require a minimum of 3 single vials (can be mixed products).<br><br>
+                        <strong>Kits only.</strong> This storefront sells kits / 10-packs at the listed kit price. There is no single-vial checkout here.<br><br>
+                        <strong>BAC water.</strong> One BAC water kit is added per peptide kit on the order (the 2.5 mL listing when it is in the catalog).<br><br>
                         <strong>Shipping & Lost Packages.</strong> US addresses only. Carrier issues are the carrier's responsibility.<br><br>
                         <strong>Legal Disclaimer.</strong> ALL products are strictly for research and educational purposes only. NOT for human or animal consumption.<br><br>
                         <strong>Age Requirement.</strong> You must be 21+.<br><br>
@@ -171,22 +172,20 @@
         <!-- Sticky floating cart bar -->
         <div id="stickyOrderBar" class="sticky-order-bar" aria-hidden="true">
             <div class="sticky-order-inner">
-                <div class="flex items-center justify-between gap-3 mb-2">
-                    <div class="min-w-0">
+                <button type="button" id="stickyCountBtn" class="sticky-order-head sticky-count-btn" aria-expanded="false" aria-controls="stickyLines">
+                    <div class="min-w-0 text-left">
                         <p class="text-[10px] uppercase tracking-wider text-emerald-300/90 font-semibold">Your order</p>
-                        <button type="button" id="stickyCountBtn" class="sticky-count-btn" aria-expanded="false" aria-controls="stickyLines">
-                            <span class="text-sm text-white font-semibold truncate inline-flex items-center">
-                                <span id="stickyCount">0 items</span>
-                                <span id="cartBadge" class="cart-badge" aria-hidden="true">0</span>
-                            </span>
-                            <span class="text-[10px] text-emerald-200/80 font-medium block">Tap to expand · edit below</span>
-                        </button>
+                        <span class="text-sm text-white font-semibold truncate inline-flex items-center">
+                            <span id="stickyCount">0 items</span>
+                            <span id="cartBadge" class="cart-badge" aria-hidden="true">0</span>
+                        </span>
+                        <span class="sticky-expand-hint">Tap to expand · edit below</span>
                     </div>
                     <div class="text-right shrink-0">
                         <p class="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">Total</p>
                         <p id="stickyTotal" class="text-lg font-bold text-[#EAB308] tabular-nums" aria-live="polite">$0.00</p>
                     </div>
-                </div>
+                </button>
                 <div id="stickyLines" class="sticky-lines" role="region" aria-label="Cart items"></div>
                 <div class="mb-2.5">
                     <div class="progress-track" role="progressbar" id="discountProgress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Order minimum progress">

@@ -1,7 +1,6 @@
--- Seed mg-per-vial + lab compound mapping for the live catalog.
--- Safe for production: UPDATE-only, idempotent (re-runnable), matches by exact name.
--- Run AFTER deploy (columns auto-added by ensureCatalogSchema):
---   npx wrangler d1 execute springfieldpeps-db --remote --file=./seed-vial-mg.sql
+-- Seed mg-per-vial + lab compound mapping (UPDATE by exact name only).
+-- NOT a default migrate. Do not run against production D1 from this repo.
+-- Local/empty preview only if those columns already exist.
 UPDATE products SET vial_mg = 10,   lab_slug = 'semaglutide' WHERE name = 'SEMA 10MG';
 UPDATE products SET vial_mg = 5,    lab_slug = 'cagrilintide' WHERE name = 'CAGRI  5MG';
 UPDATE products SET vial_mg = 10,   lab_slug = 'retatrutide' WHERE name = 'RETA 10MG';

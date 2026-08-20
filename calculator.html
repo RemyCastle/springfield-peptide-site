@@ -20,8 +20,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared/tailwind.e9b10ad7.css">
-  <link rel="stylesheet" href="/shared/site-header.b830ed0e.css">
-  <link rel="stylesheet" href="/shared/site-atmosphere.d699cdc1.css">
+  <link rel="stylesheet" href="/shared/site-header.10212912.css">
+  <link rel="stylesheet" href="/shared/site-atmosphere.c3d428e3.css">
 
 </head>
 <body class="atmosphere text-white min-h-screen overflow-x-hidden" data-page="calculator">
@@ -31,12 +31,18 @@
   <div id="mainContent">
     <header class="site-header" data-site-header>
       <div class="site-header__inner">
-        <a href="/" class="site-header__brand" aria-label="Springfield Peptide Buyers Club - home">
-          <span class="ducks-font site-header__brand-text">
-            <span class="site-header__brand-gold">SPRINGFIELD</span>
-            <span class="site-header__brand-white">PEPTIDE BUYERS CLUB</span>
-          </span>
-        </a>
+        <div class="site-header__top">
+          <a href="/" class="site-header__brand" aria-label="Springfield Peptide Buyers Club - home">
+            <span class="ducks-font site-header__brand-text">
+              <span class="site-header__brand-gold">SPRINGFIELD</span>
+              <span class="site-header__brand-white">PEPTIDE BUYERS CLUB</span>
+            </span>
+          </a>
+          <a href="/#prices" class="site-header__cart" data-header-cart hidden>
+            <span class="site-header__cart-label">Cart</span>
+            <span class="site-header__cart-count" data-header-cart-count>0</span>
+          </a>
+        </div>
         <nav class="site-header__nav" aria-label="Main">
           <a href="/" class="nav-link" data-nav="index">Home</a>
           <a href="/calculator.html" class="nav-link" data-nav="calculator">Calculator</a>
@@ -285,7 +291,7 @@
   
   <script src="/shared/age-gate.693d4edd.js" defer></script>
   <script src="/shared/site-atmosphere.2d5cebee.js" defer></script>
-  <script src="/shared/site-header.e3bf9e6c.js" defer></script>
+  <script src="/shared/site-header.a672f46d.js" defer></script>
 
 </body>
 </html>

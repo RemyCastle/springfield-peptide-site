@@ -12,7 +12,11 @@ const CART_KEY = "spbc_cart_draft";
          */
         const PUBLIC_KITS_ONLY = true;
         /** Reconstitution water auto-added, one kit per peptide kit. Must match the product name exactly. */
-        const AUTO_BAC_NAME = 'BAC WATER 2.5ML';
+        const AUTO_BAC_PREFERRED = [
+            'BAC WATER 2.5ML',
+            'BAC WATER 3ML',
+            'BAC WATER 10 ML',
+        ];
 
         /**
          * Single edit point for storefront category grouping.
@@ -60,6 +64,7 @@ const CART_KEY = "spbc_cart_draft";
             'MT1': 'Other research',
             'MT2': 'Other research',
             'DSIP 10MG': 'Other research',
+            'BAC WATER 2.5ML': 'Supplies',
             'BAC WATER 3ML': 'Supplies',
             'BAC WATER 10 ML': 'Supplies',
         };
@@ -93,6 +98,35 @@ const CART_KEY = "spbc_cart_draft";
         let cartUndoTimer = null;
         let cartUndoSnapshot = null;
 
+        function snapQty(n, allowed) {
+            const opts = Array.isArray(allowed) && allowed.length ? allowed : PACK_OPTS;
+            const v = Math.round(Number(n) || 0);
+            let best = opts[0] || 0;
+            for (const a of opts) {
+                if (a <= v) best = a;
+            }
+            return best;
+        }
+
+        /**
+         * Public storefront is kits-only. Stacks used to write {vial:N, pack:0};
+         * those drafts must still land on the kit stepper or Home wipes them.
+         */
+        function storefrontKitQty(entry, allowed) {
+            const saved = entry || {};
+            const pack = Number(saved.pack) || 0;
+            if (pack > 0) return snapQty(pack, allowed);
+            if (PUBLIC_KITS_ONLY) {
+                const vial = Number(saved.vial) || 0;
+                if (vial > 0) return snapQty(vial, allowed);
+            }
+            return 0;
+        }
+
+        function notifyCartChanged() {
+            try { window.dispatchEvent(new CustomEvent('spbc-cart-changed')); } catch (e) { /* ignore */ }
+        }
+
         function applyCartMap(map) {
             document.querySelectorAll('#priceTable .price-card').forEach(card => {
                 const name = card.getAttribute('data-name') || '';
@@ -106,12 +140,12 @@ const CART_KEY = "spbc_cart_draft";
                     syncStepperFromSelect(vialSel);
                 }
                 if (packSel) {
-                    const val = entry.pack || 0;
                     const allowed = [...packSel.options].map(o => parseInt(o.value, 10));
+                    const val = storefrontKitQty(entry, allowed);
                     packSel.value = allowed.includes(val) ? String(val) : '0';
                     syncStepperFromSelect(packSel);
                 }
-                const has = (entry.vial || 0) > 0 || (entry.pack || 0) > 0;
+                const has = (entry.vial || 0) > 0 || (entry.pack || 0) > 0 || storefrontKitQty(entry) > 0;
                 card.classList.toggle('in-cart', has);
             });
         }
@@ -143,6 +177,7 @@ const CART_KEY = "spbc_cart_draft";
                     if (!cartUndoSnapshot) return;
                     applyCartMap(cartUndoSnapshot);
                     try { localStorage.setItem('spbc_cart_draft', JSON.stringify(cartUndoSnapshot)); } catch (e) {}
+                    notifyCartChanged();
                     cartUndoSnapshot = null;
                     if (cartUndoTimer) { clearTimeout(cartUndoTimer); cartUndoTimer = null; }
                     toast.classList.remove('is-visible');
@@ -296,26 +331,40 @@ const CART_KEY = "spbc_cart_draft";
         }
 
         function saveCartDraft() {
-            const draft = {};
-            document.querySelectorAll('#priceTable .price-card').forEach(card => {
+            const cards = document.querySelectorAll('#priceTable .price-card');
+            // Don't clobber a stack-written draft while the price table is still loading.
+            if (!cards.length) return;
+            const known = new Set();
+            const fromDom = {};
+            cards.forEach(card => {
                 const name = card.getAttribute('data-name');
                 if (!name) return;
+                known.add(name);
                 const vialSelect = card.querySelector('select[data-kind="vial"]');
                 const kitSelect = card.querySelector('select[data-kind="pack"]');
                 const vialQty = parseInt(vialSelect ? vialSelect.value : 0, 10) || 0;
                 const kitQty = parseInt(kitSelect ? kitSelect.value : 0, 10) || 0;
                 if (vialQty > 0 || kitQty > 0) {
-                    draft[name] = { vial: vialQty, pack: kitQty };
+                    fromDom[name] = { vial: vialQty, pack: kitQty };
                 }
             });
+            // Merge: keep draft lines for names the price table does not render.
+            const prev = loadCartDraft();
+            const draft = {};
+            Object.keys(prev).forEach((k) => {
+                if (!known.has(k)) draft[k] = prev[k];
+            });
+            Object.assign(draft, fromDom);
             try {
                 if (Object.keys(draft).length) localStorage.setItem(CART_KEY, JSON.stringify(draft));
                 else localStorage.removeItem(CART_KEY);
             } catch (_) { /* ignore quota */ }
+            notifyCartChanged();
         }
 
         function clearCartDraft() {
             try { localStorage.removeItem(CART_KEY); } catch (_) {}
+            notifyCartChanged();
         }
 
         function getShippingFromForm() {
@@ -385,6 +434,53 @@ const CART_KEY = "spbc_cart_draft";
             setTimeout(() => card.classList.remove('qty-flash'), 280);
         }
 
+        function isBacName(name) {
+            return /bac\s*water/i.test(String(name || ''));
+        }
+
+        function findBacCard() {
+            const cards = [...document.querySelectorAll('#priceTable .price-card')];
+            const bacCards = cards.filter((c) => isBacName(c.getAttribute('data-name')));
+            for (const name of AUTO_BAC_PREFERRED) {
+                const hit = bacCards.find((c) => c.getAttribute('data-name') === name);
+                if (hit) return hit;
+            }
+            return bacCards[0] || null;
+        }
+
+        function setBacIncludeWarning(msg) {
+            const el = document.getElementById('bacIncludeStatus');
+            if (!el) return;
+            if (!msg) {
+                el.hidden = true;
+                el.textContent = '';
+                return;
+            }
+            el.hidden = false;
+            el.textContent = msg;
+        }
+
+        function syncKitOnlyChip() {
+            const chip = document.querySelector('.filter-chip[data-filter="kit-only"]');
+            if (!chip) return;
+            const cards = document.querySelectorAll('#priceTable .price-card');
+            const kitOnlyCount = [...cards].filter((c) =>
+                c.hasAttribute('data-kit') && !c.hasAttribute('data-pack')
+            ).length;
+            // Public storefront is kits-only; this chip filters the admin kit_only
+            // flag. Hide it when it would show nothing, or when it is not useful.
+            const hide = PUBLIC_KITS_ONLY || kitOnlyCount === 0;
+            chip.hidden = hide;
+            if (hide && activeFilter === 'kit-only') {
+                activeFilter = 'all';
+                document.querySelectorAll('.filter-chip').forEach((c) => {
+                    const on = (c.getAttribute('data-filter') || '') === 'all';
+                    c.classList.toggle('active', on);
+                    c.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+            }
+        }
+
         function applyProductFilter() {
             const q = (document.getElementById('productSearch').value || '').trim().toLowerCase();
             const cards = document.querySelectorAll('#priceTable .price-card');
@@ -451,6 +547,7 @@ const CART_KEY = "spbc_cart_draft";
             const name = p.name;
             const kitOnly = !!p.kit_only;
             const saved = draft[name] || {};
+            const savedPack = storefrontKitQty(saved, kitOnly ? VIAL_OPTS : PACK_OPTS);
             const article = document.createElement('article');
             // No .reveal — design.md: never animate product card opacity (visibility must not depend on IO).
             article.className = 'price-card depth-card grid-item';
@@ -480,7 +577,7 @@ const CART_KEY = "spbc_cart_draft";
                     <span class="price-label">${kitOnly ? 'Kit' : '10-Pack / Kit'}</span>
                     <div class="price-controls">
                         <span class="price-amount tabular-nums">$${formatPrice(p.pack_price)}</span>
-                        ${buildStepper('pack', kitOnly ? VIAL_OPTS : PACK_OPTS, saved.pack, name + ' kit qty')}
+                        ${buildStepper('pack', kitOnly ? VIAL_OPTS : PACK_OPTS, savedPack, name + ' kit qty')}
                     </div>
                 </div>
             </div>`;
@@ -515,6 +612,7 @@ const CART_KEY = "spbc_cart_draft";
                 section.appendChild(grid);
                 root.appendChild(section);
             });
+            syncKitOnlyChip();
             applyProductFilter();
             updateOrder();
             if (typeof window.spbcAtmosphereRefresh === 'function') {
@@ -648,15 +746,14 @@ const CART_KEY = "spbc_cart_draft";
              * toward the requirement — we top up to the kit count, never double-charge.
              */
             if (kitCount > 0) {
-                const bacCard = document.querySelector(
-                    `#priceTable .price-card[data-name="${AUTO_BAC_NAME}"]`
-                );
+                const bacCard = findBacCard();
                 if (bacCard) {
+                    const bacName = bacCard.getAttribute('data-name') || '';
                     const bacPrice = parseFloat(
                         bacCard.getAttribute('data-pack') || bacCard.getAttribute('data-kit') || 0
                     );
                     const alreadyChosen = rawLines
-                        .filter((r) => r.isBac && r.kind === 'pack' && r.name.startsWith(AUTO_BAC_NAME))
+                        .filter((r) => r.isBac && r.kind === 'pack')
                         .reduce((n, r) => n + r.qty, 0);
                     const need = Math.max(0, kitCount - alreadyChosen);
                     if (need > 0 && bacPrice > 0) {
@@ -664,19 +761,24 @@ const CART_KEY = "spbc_cart_draft";
                         nonDiscountSubtotal += line;
                         lines.push({
                             kind: 'pack',
-                            text: `${need}x ${AUTO_BAC_NAME} (Kit) — $${money(line)} · included with every kit`,
+                            text: `${need}x ${bacName} (Kit) — $${money(line)} · included with every kit`,
                         });
                         rawLines.push({
                             kind: 'pack',
-                            name: `${AUTO_BAC_NAME} (Kit)`,
-                            sku: skuFrom(AUTO_BAC_NAME, 'kit'),
+                            name: `${bacName} (Kit)`,
+                            sku: skuFrom(bacName, 'kit'),
                             qty: need,
                             unit_price_dollars: bacPrice,
                             isBac: true,
                             autoAdded: true,
                         });
                     }
+                    setBacIncludeWarning('');
+                } else {
+                    setBacIncludeWarning('BAC water is listed as included, but no BAC WATER product is in the live catalog — it was not added to this order. Email the club if you need reconstitution water.');
                 }
+            } else {
+                setBacIncludeWarning('');
             }
 
             // No volume discounts on SPBC — every item bills at full price.
@@ -835,9 +937,11 @@ const CART_KEY = "spbc_cart_draft";
                 document.getElementById('message').value = "No items selected yet.";
             } else {
                 t.lines.forEach(l => { orderText += l.text + "\n"; });
-                orderText += `\nSingle vials: ${t.singleVials}`;
-                if (t.vialSubtotal > 0) {
-                    orderText += `\nSingle vial subtotal: $${money(t.vialSubtotal)}`;
+                if (!PUBLIC_KITS_ONLY) {
+                    orderText += `\nSingle vials: ${t.singleVials}`;
+                    if (t.vialSubtotal > 0) {
+                        orderText += `\nSingle vial subtotal: $${money(t.vialSubtotal)}`;
+                    }
                 }
                 orderText += `\nKits / 10-packs: ${t.kitCount}`;
                 if (t.packSubtotal > 0) {
@@ -852,7 +956,12 @@ const CART_KEY = "spbc_cart_draft";
             const hintEl = document.getElementById('orderRuleHint');
             let status = '';
             let tone = 'text-zinc-500';
-            if (t.singleVials === 0 && t.packSubtotal === 0) {
+            if (PUBLIC_KITS_ONLY) {
+                status = t.kitCount > 0
+                    ? 'Kits only · BAC water is added with each peptide kit'
+                    : 'Kits only — add a kit to start your order';
+                tone = t.kitCount > 0 ? 'text-zinc-400' : 'text-zinc-500';
+            } else if (t.singleVials === 0 && t.packSubtotal === 0) {
                 status = `Single-vial orders require a minimum of ${MIN_SINGLE_VIALS}`;
                 tone = 'text-zinc-500';
             } else if (t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
@@ -889,7 +998,7 @@ const CART_KEY = "spbc_cart_draft";
         function canSubmitOrder() {
             const t = tallyOrder();
             if (!t.lines.length) return { ok: false, reason: 'Select at least one item.' };
-            if (t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
+            if (!PUBLIC_KITS_ONLY && t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
                 return {
                     ok: false,
                     reason: `Single vial orders need at least ${MIN_SINGLE_VIALS} vials (you have ${t.singleVials}).`,
@@ -1213,13 +1322,32 @@ const CART_KEY = "spbc_cart_draft";
             });
         })();
 
-        document.getElementById('stickyCountBtn').addEventListener('click', () => {
+        function toggleStickyExpanded(force) {
             if (!tallyOrder().lines.length) return;
-            stickyExpanded = !stickyExpanded;
-            document.getElementById('stickyOrderBar').classList.toggle('expanded', stickyExpanded);
+            stickyExpanded = typeof force === 'boolean' ? force : !stickyExpanded;
+            const bar = document.getElementById('stickyOrderBar');
+            if (bar) bar.classList.toggle('expanded', stickyExpanded);
             document.body.classList.toggle('sticky-expanded', stickyExpanded);
-            document.getElementById('stickyCountBtn').setAttribute('aria-expanded', stickyExpanded ? 'true' : 'false');
-        });
+            const countBtn = document.getElementById('stickyCountBtn');
+            if (countBtn) countBtn.setAttribute('aria-expanded', stickyExpanded ? 'true' : 'false');
+        }
+
+        const stickyToggle = document.getElementById('stickyCountBtn');
+        if (stickyToggle) {
+            stickyToggle.addEventListener('click', () => {
+                toggleStickyExpanded();
+            });
+        }
+
+        const orderMessage = document.getElementById('message');
+        if (orderMessage && window.IntersectionObserver) {
+            const formDock = new IntersectionObserver((entries) => {
+                const hit = entries.some((en) => en.isIntersecting && en.intersectionRatio > 0.15);
+                document.body.classList.toggle('cart-over-form', hit);
+                if (hit && stickyExpanded) toggleStickyExpanded(false);
+            }, { threshold: [0, 0.15, 0.4], rootMargin: '0px 0px -25% 0px' });
+            formDock.observe(orderMessage);
+        }
 
         document.getElementById('productSearch').addEventListener('input', applyProductFilter);
         document.getElementById('clearSearchBtn').addEventListener('click', () => {

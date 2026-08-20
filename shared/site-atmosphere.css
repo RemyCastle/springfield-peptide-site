@@ -1360,6 +1360,9 @@ border-color: var(--accent-gold);
 border-color: rgba(234, 179, 8, 0.5);
 color: var(--text);
 }
+.filter-chip[hidden] {
+display: none !important;
+}
 .price-card {
 transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
 border-radius: var(--spbc-radius-lg);
@@ -1395,6 +1398,22 @@ border-radius: var(--spbc-radius-lg);
 box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.2);
 padding: 0.75rem 1rem;
 }
+.sticky-order-head {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+gap: 0.75rem;
+width: 100%;
+margin-bottom: 0.5rem;
+cursor: pointer;
+background: none;
+border: 0;
+padding: 0.15rem 0;
+color: inherit;
+font: inherit;
+text-align: left;
+min-height: 44px;
+}
 .sticky-lines {
 max-height: 0;
 overflow: hidden;
@@ -1427,8 +1446,17 @@ text-align: left;
 cursor: pointer;
 color: inherit;
 font: inherit;
+pointer-events: auto;
 }
 .sticky-count-btn:hover { color: var(--accent-gold); }
+.sticky-expand-hint {
+display: block;
+font-size: 0.625rem;
+font-weight: 600;
+color: rgba(167, 243, 208, 0.8);
+margin-top: 0.15rem;
+pointer-events: none;
+}
 .sticky-actions {
 display: grid;
 grid-template-columns: auto 1fr;
@@ -1664,8 +1692,23 @@ min-height: 44px;
 cursor: pointer;
 }
 .copy-btn:hover { background: rgba(234, 179, 8, 0.12); }
-body.has-cart-bar { padding-bottom: 9.5rem; }
-body.has-cart-bar.sticky-expanded { padding-bottom: 16rem; }
+html { scroll-padding-bottom: 11rem; }
+#orderForm,
+#message {
+  scroll-margin-bottom: 12.5rem;
+}
+body.has-cart-bar { padding-bottom: 12.5rem; }
+body.has-cart-bar.sticky-expanded { padding-bottom: 18rem; }
+body.has-cart-bar.cart-over-form { padding-bottom: 7.5rem; }
+body.has-cart-bar.cart-over-form .sticky-order-bar .progress-track,
+body.has-cart-bar.cart-over-form .sticky-order-bar .sticky-progress-hint,
+body.has-cart-bar.cart-over-form .sticky-order-bar .sticky-lines {
+  display: none;
+}
+body.has-cart-bar.cart-over-form .sticky-order-bar {
+  /* Keep the bar as a thin dock so the order-summary textarea stays readable */
+  padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
+}
 @media (prefers-reduced-motion: reduce) {
 .sticky-order-bar, .sticky-lines, .progress-fill, .price-card, .filter-chip, .skeleton-card::after, .qty-float {
 transition: none !important;
@@ -1739,6 +1782,44 @@ fill: rgba(255, 255, 255, 0.45);
 
 
 
+
+body.atmosphere p.stacks-cart-strip {
+font-size: 0.875rem;
+margin: 0 0 1rem;
+}
+.stacks-cart-strip__link {
+display: flex;
+flex-wrap: wrap;
+align-items: baseline;
+gap: 0.35rem 0.75rem;
+min-height: 44px;
+padding: 0.65rem 0.9rem;
+border-radius: var(--spbc-radius);
+border: 1px solid rgba(234, 179, 8, 0.4);
+background: rgba(234, 179, 8, 0.08);
+color: var(--text);
+text-decoration: none;
+font-weight: 700;
+}
+.stacks-cart-strip__hint {
+font-weight: 500;
+color: var(--text-muted);
+font-size: 0.75rem;
+}
+.spbc-undo-toast .spbc-toast-link,
+.spbc-undo-toast a.spbc-toast-link {
+min-height: 44px;
+min-width: 44px;
+padding: 0.4rem 0.85rem;
+border-radius: 0.6rem;
+font-weight: 800;
+color: #0B120E;
+background: linear-gradient(180deg, #f5d76e 0%, #EAB308 50%, #ca8a04 100%);
+border: 0;
+display: inline-flex;
+align-items: center;
+text-decoration: none;
+}
 
 .stack-card {
 border: 1px solid var(--spbc-glass-border);

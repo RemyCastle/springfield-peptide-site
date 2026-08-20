@@ -104,3 +104,19 @@ Append-only log. Newest at bottom.
 - Edge note: custom-domain once served HTML for a hashed CSS URL (immutable cache pollution); rehash + Content-Type pins on `/shared/*`
 - Order modal: works on real form submit path (lines+total); empty when opened without form context (pre-existing; not a redesign regression)
 - No secrets, prices, product names, or spbc-orders worker touched
+
+### 2026-08-20 — Stacks kit prices, shared cart, wrapping nav
+- Live `/api/products` (member): TIRZ 30MG / RETA 30MG have `vial_price` null and `pack_price` 415 / 515. CAGRI 10MG still has vial 41 / pack 545. BAC WATER 3ML vial is 5. That is why stacks showed "$0" on the main peptide, "$41" on CAGRI, and totals of $5 / $51 (BAC vial ± CAGRI vial only).
+- Public storefront is kits-only (`PUBLIC_KITS_ONLY`). Stacks now price and add **pack/kit** qty using `pack_price` (fall back to a positive vial price only if pack is missing). BAC line uses `BAC WATER 2.5ML` (same SKU Home auto-adds), falling back to 3ML if needed.
+- Add-stack wrote `{vial:N, pack:0}`. Home has no vial steppers, so `saveCartDraft()` rebuilt an empty draft and wiped `spbc_cart_draft`. Writers now merge kit qty; Home restores vial-only drafts onto the kit stepper; save is a merge and no-ops while `#priceTable` has no cards.
+- Header cart chip + stacks cart strip read the same `spbc_cart_draft` key (`spbc-cart-changed` + `storage`).
+- 375px nav: wrap the pill row (no hamburger overlay). Desktop ≥640px stays a single nowrap row.
+- Sticky cart: the whole head (including "Tap to expand") toggles lines. When the order-summary textarea is in view the bar docks compact so it does not cover `#message`.
+- No D1 / admin / secret / worker changes.
+
+### 2026-08-20 — Review follow-up (schema guard, BAC match, kits copy, titration, D1 reprice)
+- `schema.sql` is DDL only (CREATE IF NOT EXISTS). DELETE/reseed moved to `schema.local-seed.sql`, which RAISE(ABORT)s if `products` already has rows. Historical `reprice-2026-07-30.sql` now aborts on execute. No file was run against D1.
+- BAC auto-add matches live names in order: `BAC WATER 2.5ML`, then `3ML`, then `10 ML`, then any BAC WATER card. No product renames. If none exist, `#bacIncludeStatus` warns instead of a silent skip.
+- Terms + `#vialRuleStatus` match kits-only (no 3-vial minimum). Kit-only filter chip is hidden on the public kits-only storefront so it cannot empty the catalog.
+- `/titration.html` is a built retired-notice page (no planner JS). Live had been 200-serving the homepage because the file was not in `PAGE_NAMES`.
+- `POST /api/place-order` re-prices every line from D1 `pack_price` and ignores client `unit_price_cents` / `total_cents`. Coaching helper text says we email them.
