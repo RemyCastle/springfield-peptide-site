@@ -12,7 +12,11 @@ const CART_KEY = "spbc_cart_draft";
          */
         const PUBLIC_KITS_ONLY = true;
         /** Reconstitution water auto-added, one kit per peptide kit. Must match the product name exactly. */
-        const AUTO_BAC_NAME = 'BAC WATER 2.5ML';
+        const AUTO_BAC_PREFERRED = [
+            'BAC WATER 2.5ML',
+            'BAC WATER 3ML',
+            'BAC WATER 10 ML',
+        ];
 
         /**
          * Single edit point for storefront category grouping.
@@ -430,6 +434,53 @@ const CART_KEY = "spbc_cart_draft";
             setTimeout(() => card.classList.remove('qty-flash'), 280);
         }
 
+        function isBacName(name) {
+            return /bac\s*water/i.test(String(name || ''));
+        }
+
+        function findBacCard() {
+            const cards = [...document.querySelectorAll('#priceTable .price-card')];
+            const bacCards = cards.filter((c) => isBacName(c.getAttribute('data-name')));
+            for (const name of AUTO_BAC_PREFERRED) {
+                const hit = bacCards.find((c) => c.getAttribute('data-name') === name);
+                if (hit) return hit;
+            }
+            return bacCards[0] || null;
+        }
+
+        function setBacIncludeWarning(msg) {
+            const el = document.getElementById('bacIncludeStatus');
+            if (!el) return;
+            if (!msg) {
+                el.hidden = true;
+                el.textContent = '';
+                return;
+            }
+            el.hidden = false;
+            el.textContent = msg;
+        }
+
+        function syncKitOnlyChip() {
+            const chip = document.querySelector('.filter-chip[data-filter="kit-only"]');
+            if (!chip) return;
+            const cards = document.querySelectorAll('#priceTable .price-card');
+            const kitOnlyCount = [...cards].filter((c) =>
+                c.hasAttribute('data-kit') && !c.hasAttribute('data-pack')
+            ).length;
+            // Public storefront is kits-only; this chip filters the admin kit_only
+            // flag. Hide it when it would show nothing, or when it is not useful.
+            const hide = PUBLIC_KITS_ONLY || kitOnlyCount === 0;
+            chip.hidden = hide;
+            if (hide && activeFilter === 'kit-only') {
+                activeFilter = 'all';
+                document.querySelectorAll('.filter-chip').forEach((c) => {
+                    const on = (c.getAttribute('data-filter') || '') === 'all';
+                    c.classList.toggle('active', on);
+                    c.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+            }
+        }
+
         function applyProductFilter() {
             const q = (document.getElementById('productSearch').value || '').trim().toLowerCase();
             const cards = document.querySelectorAll('#priceTable .price-card');
@@ -561,6 +612,7 @@ const CART_KEY = "spbc_cart_draft";
                 section.appendChild(grid);
                 root.appendChild(section);
             });
+            syncKitOnlyChip();
             applyProductFilter();
             updateOrder();
             if (typeof window.spbcAtmosphereRefresh === 'function') {
@@ -694,15 +746,14 @@ const CART_KEY = "spbc_cart_draft";
              * toward the requirement — we top up to the kit count, never double-charge.
              */
             if (kitCount > 0) {
-                const bacCard = document.querySelector(
-                    `#priceTable .price-card[data-name="${AUTO_BAC_NAME}"]`
-                );
+                const bacCard = findBacCard();
                 if (bacCard) {
+                    const bacName = bacCard.getAttribute('data-name') || '';
                     const bacPrice = parseFloat(
                         bacCard.getAttribute('data-pack') || bacCard.getAttribute('data-kit') || 0
                     );
                     const alreadyChosen = rawLines
-                        .filter((r) => r.isBac && r.kind === 'pack' && r.name.startsWith(AUTO_BAC_NAME))
+                        .filter((r) => r.isBac && r.kind === 'pack')
                         .reduce((n, r) => n + r.qty, 0);
                     const need = Math.max(0, kitCount - alreadyChosen);
                     if (need > 0 && bacPrice > 0) {
@@ -710,19 +761,24 @@ const CART_KEY = "spbc_cart_draft";
                         nonDiscountSubtotal += line;
                         lines.push({
                             kind: 'pack',
-                            text: `${need}x ${AUTO_BAC_NAME} (Kit) — $${money(line)} · included with every kit`,
+                            text: `${need}x ${bacName} (Kit) — $${money(line)} · included with every kit`,
                         });
                         rawLines.push({
                             kind: 'pack',
-                            name: `${AUTO_BAC_NAME} (Kit)`,
-                            sku: skuFrom(AUTO_BAC_NAME, 'kit'),
+                            name: `${bacName} (Kit)`,
+                            sku: skuFrom(bacName, 'kit'),
                             qty: need,
                             unit_price_dollars: bacPrice,
                             isBac: true,
                             autoAdded: true,
                         });
                     }
+                    setBacIncludeWarning('');
+                } else {
+                    setBacIncludeWarning('BAC water is listed as included, but no BAC WATER product is in the live catalog — it was not added to this order. Email the club if you need reconstitution water.');
                 }
+            } else {
+                setBacIncludeWarning('');
             }
 
             // No volume discounts on SPBC — every item bills at full price.
@@ -881,9 +937,11 @@ const CART_KEY = "spbc_cart_draft";
                 document.getElementById('message').value = "No items selected yet.";
             } else {
                 t.lines.forEach(l => { orderText += l.text + "\n"; });
-                orderText += `\nSingle vials: ${t.singleVials}`;
-                if (t.vialSubtotal > 0) {
-                    orderText += `\nSingle vial subtotal: $${money(t.vialSubtotal)}`;
+                if (!PUBLIC_KITS_ONLY) {
+                    orderText += `\nSingle vials: ${t.singleVials}`;
+                    if (t.vialSubtotal > 0) {
+                        orderText += `\nSingle vial subtotal: $${money(t.vialSubtotal)}`;
+                    }
                 }
                 orderText += `\nKits / 10-packs: ${t.kitCount}`;
                 if (t.packSubtotal > 0) {
@@ -898,7 +956,12 @@ const CART_KEY = "spbc_cart_draft";
             const hintEl = document.getElementById('orderRuleHint');
             let status = '';
             let tone = 'text-zinc-500';
-            if (t.singleVials === 0 && t.packSubtotal === 0) {
+            if (PUBLIC_KITS_ONLY) {
+                status = t.kitCount > 0
+                    ? 'Kits only · BAC water is added with each peptide kit'
+                    : 'Kits only — add a kit to start your order';
+                tone = t.kitCount > 0 ? 'text-zinc-400' : 'text-zinc-500';
+            } else if (t.singleVials === 0 && t.packSubtotal === 0) {
                 status = `Single-vial orders require a minimum of ${MIN_SINGLE_VIALS}`;
                 tone = 'text-zinc-500';
             } else if (t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
@@ -935,7 +998,7 @@ const CART_KEY = "spbc_cart_draft";
         function canSubmitOrder() {
             const t = tallyOrder();
             if (!t.lines.length) return { ok: false, reason: 'Select at least one item.' };
-            if (t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
+            if (!PUBLIC_KITS_ONLY && t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
                 return {
                     ok: false,
                     reason: `Single vial orders need at least ${MIN_SINGLE_VIALS} vials (you have ${t.singleVials}).`,

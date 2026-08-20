@@ -113,3 +113,10 @@ Append-only log. Newest at bottom.
 - 375px nav: wrap the pill row (no hamburger overlay). Desktop ≥640px stays a single nowrap row.
 - Sticky cart: the whole head (including "Tap to expand") toggles lines. When the order-summary textarea is in view the bar docks compact so it does not cover `#message`.
 - No D1 / admin / secret / worker changes.
+
+### 2026-08-20 — Review follow-up (schema guard, BAC match, kits copy, titration, D1 reprice)
+- `schema.sql` is DDL only (CREATE IF NOT EXISTS). DELETE/reseed moved to `schema.local-seed.sql`, which RAISE(ABORT)s if `products` already has rows. Historical `reprice-2026-07-30.sql` now aborts on execute. No file was run against D1.
+- BAC auto-add matches live names in order: `BAC WATER 2.5ML`, then `3ML`, then `10 ML`, then any BAC WATER card. No product renames. If none exist, `#bacIncludeStatus` warns instead of a silent skip.
+- Terms + `#vialRuleStatus` match kits-only (no 3-vial minimum). Kit-only filter chip is hidden on the public kits-only storefront so it cannot empty the catalog.
+- `/titration.html` is a built retired-notice page (no planner JS). Live had been 200-serving the homepage because the file was not in `PAGE_NAMES`.
+- `POST /api/place-order` re-prices every line from D1 `pack_price` and ignores client `unit_price_cents` / `total_cents`. Coaching helper text says we email them.

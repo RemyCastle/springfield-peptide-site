@@ -1,3 +1,7 @@
+-- Historical 2026-07-30 reprice. NOT a migration.
+-- Live prices are maintained in admin. Do not run this file against D1.
+SELECT RAISE(ABORT, 'Historical 2026-07-30 reprice. Do not run against D1.');
+
 -- Reprice 23 public catalog items (2026-07-30).
 -- HELD: 5-AMINO-1MQ 50MG (46/342 franchisee guard), BAC WATER 3ML, BAC WATER 10 ML.
 -- Do NOT run schema.sql against production.

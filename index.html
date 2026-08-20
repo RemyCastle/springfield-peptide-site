@@ -49,7 +49,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared/tailwind.e9b10ad7.css">
   <link rel="stylesheet" href="/shared/site-header.10212912.css">
-  <link rel="stylesheet" href="/shared/site-atmosphere.e725c1c6.css">
+  <link rel="stylesheet" href="/shared/site-atmosphere.c3d428e3.css">
 
 </head>
 <body class="atmosphere text-white min-h-screen overflow-x-hidden" data-page="index">
@@ -146,7 +146,8 @@
                 <div class="depth-card px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5 reveal prices-rules-card">
                     <p class="text-[#EAB308] font-semibold">Ordering rules</p>
                     <p class="text-zinc-300"><strong class="text-white">Kits only</strong> — every listing is sold as a 10-pack / kit</p>
-                    <p class="text-zinc-300"><strong class="text-white">BAC water included</strong> — one 2.5&nbsp;mL kit is added automatically per peptide kit</p>
+                    <p class="text-zinc-300"><strong class="text-white">BAC water included</strong> — one BAC kit is added automatically per peptide kit (2.5&nbsp;mL when that listing is in the catalog)</p>
+                    <p id="bacIncludeStatus" class="text-amber-300 text-sm" hidden></p>
                 </div>
 
                 <!-- Search + filter -->
@@ -159,7 +160,7 @@
                     </div>
                     <div class="flex flex-wrap gap-2 justify-center" role="group" aria-label="Filter products">
                         <button type="button" class="filter-chip active" data-filter="all" aria-pressed="true">All</button>
-                        <button type="button" class="filter-chip" data-filter="kit-only" aria-pressed="false">Kit-only</button>
+                        <button type="button" class="filter-chip" data-filter="kit-only" aria-pressed="false" hidden>Kit-only</button>
                     </div>
                     <p id="filterResultCount" class="filter-result-count" hidden aria-live="polite"></p>
                     <p id="filterEmpty" class="hidden text-center text-zinc-500 text-sm py-2">
@@ -203,8 +204,8 @@
                         By placing an order you agree to all terms below. Please read carefully.<br><br>
                         <strong>All Sales Are Final.</strong> No refunds, returns, or exchanges after payment is confirmed.<br><br>
                         <strong>Payment.</strong> Payment instructions and accepted methods are provided at checkout after you place your order. Include your order number in the payment memo. We confirm payment manually before shipping.<br><br>
-                        <strong>Bulk Pricing.</strong> Every complete set of 10 units qualifies for the bulk (10-pack) rate.<br><br>
-                        <strong>Single Vial Minimum.</strong> Single-vial orders require a minimum of 3 single vials (can be mixed products).<br><br>
+                        <strong>Kits only.</strong> This storefront sells kits / 10-packs at the listed kit price. There is no single-vial checkout here.<br><br>
+                        <strong>BAC water.</strong> One BAC water kit is added per peptide kit on the order (the 2.5 mL listing when it is in the catalog).<br><br>
                         <strong>Shipping & Lost Packages.</strong> US addresses only. Carrier issues are the carrier's responsibility.<br><br>
                         <strong>Legal Disclaimer.</strong> ALL products are strictly for research and educational purposes only. NOT for human or animal consumption.<br><br>
                         <strong>Age Requirement.</strong> You must be 21+.<br><br>
@@ -383,7 +384,7 @@
 
   
   
-  <script src="/shared/store.b0c0b8ca.js"></script>
+  <script src="/shared/store.61cb8119.js"></script>
   
   <script src="/shared/age-gate.693d4edd.js" defer></script>
   <script src="/shared/site-atmosphere.2d5cebee.js" defer></script>
