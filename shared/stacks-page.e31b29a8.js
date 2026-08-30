@@ -169,7 +169,7 @@
         grid.innerHTML = stacks.map((stack) => {
           const available = catalogLoaded ? stackAvailable(stack) : true;
           const missing = catalogLoaded ? stackMissing(stack) : [];
-          const bacDefault = true;
+          const bacDefault = false;
           const { total, known } = computeTotal(stack, bacDefault);
           const vialCount = stackVialCount(stack);
           const bacName = resolveBacName();
@@ -197,7 +197,7 @@
               <p class="text-sm font-semibold text-white">${escapeHtml(bacName)} <span class="text-zinc-400 font-normal bac-qty">×${clampKit(vialCount)} kit${clampKit(vialCount) === 1 ? '' : 's'}</span>
                 ${catalogLoaded && !bacP ? '<span class="ml-1 text-amber-400 text-xs font-bold">currently unavailable</span>' : ''}
               </p>
-              <p class="text-[11px] text-zinc-500 mt-0.5">One kit per peptide kit (same BAC the price list adds at checkout)</p>
+              <p class="text-[11px] text-zinc-500 mt-0.5">Optional catalog item — add it if you want reconstitution water</p>
             </div>
             <div class="text-right text-sm text-zinc-300 whitespace-nowrap bac-line-price">${bacLinePrice == null ? '—' : money(bacLinePrice)}</div>
           </div>`;

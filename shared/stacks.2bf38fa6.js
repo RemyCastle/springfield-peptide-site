@@ -152,6 +152,5 @@ window.SPBC_STACKS = [
   },
 ];
 
-/** Catalog product name for optional bacteriostatic water line.
- *  Must match the storefront auto-add SKU (kits-only checkout). */
+/** Catalog product name for optional bacteriostatic water line. */
 window.SPBC_STACKS_BAC_PRODUCT = 'BAC WATER 2.5ML';

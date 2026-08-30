@@ -60,16 +60,6 @@ export function packCents(row) {
   return dollarsToCents(n);
 }
 
-export function resolveBacRow(rows) {
-  const bac = (rows || []).filter((r) => isBacName(r.name) && r.active !== 0);
-  const prefer = ['BAC WATER 2.5ML', 'BAC WATER 3ML', 'BAC WATER 10 ML'];
-  for (const name of prefer) {
-    const hit = bac.find((r) => r.name === name);
-    if (hit) return hit;
-  }
-  return bac[0] || null;
-}
-
 /**
  * @param {object[]} items
  * @param {object[]} catalog
@@ -149,21 +139,4 @@ export function normalizeOrderItems(items, catalog) {
   }
 
   return { ok: true, items: normalizedItems, peptideKits, bacKits };
-}
-
-export function applyAutoBac(normalizedItems, catalog, peptideKits, bacKits) {
-  const bacRow = resolveBacRow(catalog);
-  const bacNeed = Math.max(0, peptideKits - bacKits);
-  if (bacNeed > 0 && bacRow) {
-    const unit = packCents(bacRow);
-    if (unit != null) {
-      normalizedItems.push({
-        sku: skuFrom(bacRow.name, 'kit'),
-        name: `${bacRow.name} (Kit)`,
-        qty: bacNeed,
-        unit_price_cents: unit,
-      });
-    }
-  }
-  return normalizedItems;
 }
