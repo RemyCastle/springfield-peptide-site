@@ -234,7 +234,6 @@
     const notes = [];
     if (overCapacity) notes.push('One step needs more than 100 units — a single U-100 syringe will not hold it. More BAC water or a stronger vial would change that.');
     if (bac > 0 && bac > BAC_MAX) notes.push(`BAC capped at ${BAC_MAX} mL.`);
-    if (vialsNeeded > 0 && vialsNeeded < 3) notes.push('Single vials have a 3-vial minimum on the price list.');
     if (vialsNeeded >= 6) notes.push('At this quantity a 10-pack kit is usually the cheaper route.');
     el.buyNote.textContent = notes.join(' ');
 

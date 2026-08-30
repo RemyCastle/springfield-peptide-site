@@ -6,44 +6,13 @@
  *   ORDER_WEBHOOK_SECRET  — same HMAC secret as spbc-orders
  *   ORDERS_WEBHOOK_URL    — optional, default https://spbc-orders.spbc.workers.dev/webhooks/order
  *   ORDERS_PUBLIC_URL     — optional, default https://spbc-orders.spbc.workers.dev
+ *
+ * No vial minimum. kit_only products cannot be ordered as vials.
  */
-function dollarsToCents(d) {
-  return Math.round(Number(d) * 100);
-}
-
-function isBacName(name) {
-  return /bac\s*water/i.test(String(name || ''));
-}
-
-function skuFrom(name, kind) {
-  const base = String(name)
-    .replace(/[^A-Za-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .toUpperCase();
-  return `${base}-${kind === 'vial' ? 'VIAL' : 'KIT'}`.slice(0, 64);
-}
-
-function stripLineSuffix(itemName) {
-  return String(itemName || '')
-    .replace(/\s+\((?:10-Pack \/ Kit|Kit|Vial)\)\s*$/i, '')
-    .trim();
-}
-
-function resolveBacRow(rows) {
-  const bac = (rows || []).filter((r) => isBacName(r.name) && r.active !== 0);
-  const prefer = ['BAC WATER 2.5ML', 'BAC WATER 3ML', 'BAC WATER 10 ML'];
-  for (const name of prefer) {
-    const hit = bac.find((r) => r.name === name);
-    if (hit) return hit;
-  }
-  return bac[0] || null;
-}
-
-function packCents(row) {
-  const n = Number(row && row.pack_price);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return dollarsToCents(n);
-}
+import {
+  applyAutoBac,
+  normalizeOrderItems,
+} from '../lib/orderItems.js';
 
 async function loadActiveProducts(env) {
   if (!env.DB) return null;
@@ -144,70 +113,25 @@ export async function onRequestPost({ request, env }) {
       500
     );
   }
-  const byName = new Map(catalog.map((r) => [r.name, r]));
-
-  // Re-price from D1. Client qty/name are the order; client unit_price_cents is ignored.
-  const normalizedItems = [];
-  let peptideKits = 0;
-  let bacKits = 0;
-  for (const it of items) {
-    const itemName = String(it.name || '').trim().slice(0, 200);
-    const qty = parseInt(it.qty, 10);
-    const productName = stripLineSuffix(itemName);
-    if (!productName || !Number.isFinite(qty) || qty < 1) {
-      return json(
-        {
-          error: 'validation_failed',
-          message: 'invalid item line',
-          item: it,
-        },
-        400
-      );
-    }
-    const row = byName.get(productName);
-    if (!row) {
-      return json(
-        {
-          error: 'validation_failed',
-          message: `Unknown product: ${productName}`,
-        },
-        400
-      );
-    }
-    const unit = packCents(row);
-    if (unit == null) {
-      return json(
-        {
-          error: 'validation_failed',
-          message: `No catalog kit price for ${productName}`,
-        },
-        400
-      );
-    }
-    const kitLabel = row.kit_only ? 'Kit' : '10-Pack / Kit';
-    normalizedItems.push({
-      sku: skuFrom(row.name, 'kit'),
-      name: `${row.name} (${kitLabel})`,
-      qty,
-      unit_price_cents: unit,
-    });
-    if (isBacName(row.name)) bacKits += qty;
-    else peptideKits += qty;
+  // Re-price from D1. Client qty/name/sku choose the line; client unit_price_cents is ignored.
+  // One vial is legal. kit_only products cannot be ordered as vials.
+  const priced = normalizeOrderItems(items, catalog);
+  if (!priced.ok) {
+    return json(
+      {
+        error: priced.error,
+        message: priced.message,
+        item: priced.item,
+      },
+      priced.status
+    );
   }
-
-  const bacRow = resolveBacRow(catalog);
-  const bacNeed = Math.max(0, peptideKits - bacKits);
-  if (bacNeed > 0 && bacRow) {
-    const unit = packCents(bacRow);
-    if (unit != null) {
-      normalizedItems.push({
-        sku: skuFrom(bacRow.name, 'kit'),
-        name: `${bacRow.name} (Kit)`,
-        qty: bacNeed,
-        unit_price_cents: unit,
-      });
-    }
-  }
+  const normalizedItems = applyAutoBac(
+    priced.items,
+    catalog,
+    priced.peptideKits,
+    priced.bacKits
+  );
 
   const subtotal = normalizedItems.reduce(
     (s, it) => s + it.qty * it.unit_price_cents,

@@ -125,3 +125,11 @@ Append-only log. Newest at bottom.
 - Live smoke after f454bad: kit prices and Home→Stacks cart persist worked; **Add stack to cart** on enabled cards did nothing (no toast, `spbc_cart_draft` stayed the home-only TIRZ 10MG line).
 - Cause: `onAddStack` gated the merge behind `window.confirm`. Blocked or dismissed dialogs return `false` with no UI, so the handler exited before `mergeIntoCart` / toast / header update. Per-button listeners were also rebound by `innerHTML` replace.
 - Fix: one-click merge of kit/`pack` qty (accepts `kits` or legacy `vials`); delegated click on `#stacksGrid`; toast + `spbc-cart-changed` + header refresh; no confirm and no auto-redirect. Home re-applies the draft after price cards render so sticky cart picks up stack lines.
+
+### 2026-08-30 — No single-vial minimum on the public storefront
+- Remy: "No vials minimums on spbc." Customers may buy 1 vial. 10-packs stay available. kit_only products (e.g. HGH) stay kit-only.
+- `PUBLIC_KITS_ONLY = false` so vial_price products show a vial stepper. `MIN_SINGLE_VIALS` and the checkout gate (`singleVials > 0 && singleVials < N`) are gone. One vial is checkout-legal.
+- No volume discounts (unchanged). No new prices.
+- `POST /api/place-order` prices vial lines from D1 `vial_price` (was kit-only reprice). Rejects kit_only as vials. No server vial-count minimum. BAC auto-add still applies per peptide kit, not per single vial.
+- Terms + ordering-rules + flyer point no longer say kits-only or a 3-vial minimum.
+- Patriotic Peptides, live D1, and `schema.sql` were not touched.

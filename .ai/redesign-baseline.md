@@ -4,17 +4,18 @@ Captured from LIVE production (deploy `8cafce85`, 32 active products) by driving
 
 ## Cart / pricing (sticky bar, real UI)
 
-**Volume discounts do not exist on SPBC.** `tallyOrder()` states it outright: *"No volume discounts on SPBC — every item bills at full price."* `vialDiscountEligible = false`, `kitRate = 0`. The only gate is a 3-single-vial minimum. No discount copy appears anywhere on the live page, so advertised and actual behaviour agree. **Do not "restore" discounts** — full price is correct.
+**Volume discounts do not exist on SPBC.** `tallyOrder()` states it outright: *"No volume discounts on SPBC — every item bills at full price."* `vialDiscountEligible = false`, `kitRate = 0`. There is **no vial minimum** — one single vial is checkout-legal. **Do not "restore" discounts or a 3-vial minimum** — full price, any qty ≥ 1, is correct.
 
 | Scenario | Expected total | Notes |
 |---|---|---|
-| 2 × RETA 30MG vial | **$105.00** | 2 × 52.50 · shows "Add 1 more single vial to meet the 3-vial minimum" |
-| 5 × TIRZ 30MG vial | **$217.50** | 5 × 43.50 · "✓ 3-vial minimum met" · NO discount |
+| 1 × RETA 30MG vial | **$52.50** | 1 × 52.50 · "Ready to order" |
+| 2 × RETA 30MG vial | **$105.00** | 2 × 52.50 · NO discount · still checkout-legal |
+| 5 × TIRZ 30MG vial | **$217.50** | 5 × 43.50 · NO discount |
 | 1 × TIRZ 30MG kit | **$335.00** | "Ready to order" |
 | 2 × TIRZ 30MG kit | **$670.00** | 2 × 335 · NO kit discount |
-| 3 × RETA 30MG vial + 1 × KLOW 80MG kit | **$562.50** | lines $157.50 + $405.00 · minimum met |
+| 3 × RETA 30MG vial + 1 × KLOW 80MG kit | **$562.50** | lines $157.50 + $405.00 |
 
-BAC water is a consumable: never counts toward the vial minimum and is never discounted.
+BAC water is a consumable: never discounted. Kit-only listings cannot be ordered as singles.
 
 ## Calculator (real UI, U-100 syringe)
 

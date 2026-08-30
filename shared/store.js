@@ -2,15 +2,14 @@ const CART_KEY = "spbc_cart_draft";
         const CONTACT_KEY = "spbc_contact_draft";
         const VIAL_OPTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // single vials: any qty 1–10
         const PACK_OPTS = [0, 1, 2, 3, 5];
-        const MIN_SINGLE_VIALS = 3;
-        // No volume discounts on SPBC — the single-vial minimum is the only order rule.
+        // No volume discounts on SPBC — no vial minimum.
 
         /**
-         * Public storefront is KITS ONLY. Single vials remain available to franchisees,
-         * who order through the spbc-orders worker, not this page — do not "restore"
-         * vial steppers here without checking that decision.
+         * Public storefront sells single vials (when vial_price is set) and 10-packs / kits.
+         * kit_only products (e.g. HGH) stay kit-only — no vial stepper.
+         * One vial is a legal checkout. Franchisees still order through the worker.
          */
-        const PUBLIC_KITS_ONLY = true;
+        const PUBLIC_KITS_ONLY = false;
         /** Reconstitution water auto-added, one kit per peptide kit. Must match the product name exactly. */
         const AUTO_BAC_PREFERRED = [
             'BAC WATER 2.5ML',
@@ -109,8 +108,9 @@ const CART_KEY = "spbc_cart_draft";
         }
 
         /**
-         * Public storefront is kits-only. Stacks used to write {vial:N, pack:0};
-         * those drafts must still land on the kit stepper or Home wipes them.
+         * When the storefront is kits-only, leftover {vial:N, pack:0} drafts
+         * (older stacks writes) must land on the kit stepper or Home wipes them.
+         * With vials enabled, vial qty stays on the vial stepper.
          */
         function storefrontKitQty(entry, allowed) {
             const saved = entry || {};
@@ -467,8 +467,8 @@ const CART_KEY = "spbc_cart_draft";
             const kitOnlyCount = [...cards].filter((c) =>
                 c.hasAttribute('data-kit') && !c.hasAttribute('data-pack')
             ).length;
-            // Public storefront is kits-only; this chip filters the admin kit_only
-            // flag. Hide it when it would show nothing, or when it is not useful.
+            // This chip filters the admin kit_only flag. Hide it when the
+            // storefront is kits-only (every card would match) or none exist.
             const hide = PUBLIC_KITS_ONLY || kitOnlyCount === 0;
             chip.hidden = hide;
             if (hide && activeFilter === 'kit-only') {
@@ -560,8 +560,7 @@ const CART_KEY = "spbc_cart_draft";
             }
 
             let body = `<h3 class="price-card-title break-word">${escapeHtml(name)}</h3><div class="price-card-body">`;
-            // Kits only on the public storefront — franchisees still buy single vials
-            // through the orders worker, which this page does not serve.
+            // Vial stepper for priced singles. kit_only (e.g. HGH) stays kit-only.
             if (!PUBLIC_KITS_ONLY && !kitOnly && p.vial_price != null) {
                 body += `
                     <div class="price-row">
@@ -737,12 +736,12 @@ const CART_KEY = "spbc_cart_draft";
             /**
              * Automatic BAC water on every kit purchase (direct SPBC customers only).
              *
-             * Public storefront is kits-only, and each peptide kit needs reconstitution
-             * water, so one BAC kit is added per peptide kit rather than leaving the
-             * customer to remember it. It is added as a VISIBLE line so the total the
-             * customer approves is the total they pay — never a silent server-side
-             * addition. Franchisee ordering runs through the spbc-orders worker and is
-             * untouched by this.
+             * Each peptide kit needs reconstitution water, so one BAC kit is added per
+             * peptide kit rather than leaving the customer to remember it. It is added
+             * as a VISIBLE line so the total the customer approves is the total they
+             * pay — never a silent server-side addition. Single-vial lines do not
+             * trigger this. Franchisee ordering runs through the spbc-orders worker
+             * and is untouched by this.
              *
              * If the customer already put BAC in the cart themselves, that counts
              * toward the requirement — we top up to the kit count, never double-charge.
@@ -817,8 +816,7 @@ const CART_KEY = "spbc_cart_draft";
         }
 
         function discountProgressMeta(t) {
-            // Kits-only storefront: single vials can never appear, so the old 3-vial
-            // minimum copy would just confuse. Track "has a kit yet" instead.
+            // No volume discounts and no vial minimum. Progress is just "has items".
             if (PUBLIC_KITS_ONLY) {
                 if (t.kitCount > 0) {
                     return {
@@ -828,21 +826,16 @@ const CART_KEY = "spbc_cart_draft";
                 }
                 return { pct: 0, hint: 'Add a kit to start your order' };
             }
-            // No discounts — the only gate is the single-vial minimum. Track it.
-            if (t.singleVials === 0) {
-                if (t.kitCount > 0) {
-                    return { pct: 100, hint: 'Ready to order' };
-                }
-                return { pct: 0, hint: `Single-vial orders need ${MIN_SINGLE_VIALS} minimum` };
+            if (t.singleVials === 0 && t.kitCount === 0) {
+                return { pct: 0, hint: 'Add a vial or kit to start your order' };
             }
-            if (t.singleVials < MIN_SINGLE_VIALS) {
-                const need = MIN_SINGLE_VIALS - t.singleVials;
+            if (t.kitCount > 0) {
                 return {
-                    pct: Math.round((t.singleVials / MIN_SINGLE_VIALS) * 100),
-                    hint: `Add ${need} more single vial${need === 1 ? '' : 's'} to meet the ${MIN_SINGLE_VIALS}-vial minimum`,
+                    pct: 100,
+                    hint: `Ready to order · BAC water included with ${t.kitCount === 1 ? 'your kit' : 'each kit'}`,
                 };
             }
-            return { pct: 100, hint: `✓ ${MIN_SINGLE_VIALS}-vial minimum met` };
+            return { pct: 100, hint: 'Ready to order' };
         }
 
         function updateStickyBar(t) {
@@ -923,7 +916,6 @@ const CART_KEY = "spbc_cart_draft";
             prog.setAttribute('aria-valuenow', String(meta.pct));
             hint.textContent = meta.hint;
 
-            // Mark the minimum-met state (no discounts to celebrate)
             hint.classList.toggle('unlocked', meta.pct >= 100);
 
             const countBtn = document.getElementById('stickyCountBtn');
@@ -964,15 +956,11 @@ const CART_KEY = "spbc_cart_draft";
                     : 'Kits only — add a kit to start your order';
                 tone = t.kitCount > 0 ? 'text-zinc-400' : 'text-zinc-500';
             } else if (t.singleVials === 0 && t.packSubtotal === 0) {
-                status = `Single-vial orders require a minimum of ${MIN_SINGLE_VIALS}`;
+                status = 'Add a vial or kit to start your order';
                 tone = 'text-zinc-500';
-            } else if (t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
-                const need = MIN_SINGLE_VIALS - t.singleVials;
-                status = `Need ${need} more single vial${need === 1 ? '' : 's'} to meet the ${MIN_SINGLE_VIALS}-vial minimum`;
-                tone = 'text-amber-400';
-            } else if (t.singleVials >= MIN_SINGLE_VIALS) {
-                status = `✓ ${t.singleVials} single vials · minimum met`;
-                tone = 'text-emerald-400';
+            } else if (t.singleVials > 0) {
+                status = `${t.singleVials} single vial${t.singleVials === 1 ? '' : 's'}`;
+                tone = 'text-zinc-400';
             } else if (t.singleVials === 0) {
                 status = 'No single vials selected';
                 tone = 'text-zinc-500';
@@ -1000,12 +988,6 @@ const CART_KEY = "spbc_cart_draft";
         function canSubmitOrder() {
             const t = tallyOrder();
             if (!t.lines.length) return { ok: false, reason: 'Select at least one item.' };
-            if (!PUBLIC_KITS_ONLY && t.singleVials > 0 && t.singleVials < MIN_SINGLE_VIALS) {
-                return {
-                    ok: false,
-                    reason: `Single vial orders need at least ${MIN_SINGLE_VIALS} vials (you have ${t.singleVials}).`,
-                };
-            }
             const ship = validateShippingFields();
             if (!ship.ok) return { ok: false, reason: ship.reason, focus: ship.focus };
             return { ok: true, reason: '', shipping: ship.shipping };
