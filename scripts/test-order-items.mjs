@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   applyAutoBac,
+  isVialOnlyListing,
   lineKind,
   normalizeOrderItems,
 } from '../functions/lib/orderItems.js';
@@ -15,12 +16,26 @@ assert.doesNotMatch(storeSrc, /MIN_SINGLE_VIALS/);
 assert.doesNotMatch(storeSrc, /singleVials < MIN_SINGLE/);
 assert.doesNotMatch(storeSrc, /Single-vial orders need/);
 assert.doesNotMatch(storeSrc, /vial minimum met/);
+assert.match(storeSrc, /'RETA 66MG': 'GLP-1 \/ metabolic'/);
+assert.match(storeSrc, /'SEMAX 10MG': 'Other research'/);
+assert.match(storeSrc, /'SS-31 50MG': 'Longevity & mitochondrial'/);
+assert.match(storeSrc, /'PE-22-28 10MG': 'Other research'/);
+assert.match(storeSrc, /'Tesamorelin 10MG': 'GH secretagogues'/);
+assert.match(storeSrc, /'Tesamorelin 20MG': 'GH secretagogues'/);
+assert.match(storeSrc, /'RETA 60 MG': 'GLP-1 \/ metabolic'/);
+assert.match(storeSrc, /'Tesamorelin': 'GH secretagogues'/);
 
 const catalog = [
   { name: 'TIRZ 10MG', vial_price: 41, pack_price: 345, kit_only: 0, active: 1 },
   { name: 'HGH 10IU', vial_price: null, pack_price: 220, kit_only: 1, active: 1 },
+  { name: 'RETA 66MG', vial_price: 70, pack_price: 70, kit_only: 1, active: 1 },
+  { name: 'SEMAX 10MG', vial_price: 35, pack_price: 0, kit_only: 0, active: 1 },
   { name: 'BAC WATER 2.5ML', vial_price: 5, pack_price: 12, kit_only: 0, active: 1 },
 ];
+
+assert.equal(isVialOnlyListing(catalog[2]), true);
+assert.equal(isVialOnlyListing(catalog[3]), true);
+assert.equal(isVialOnlyListing(catalog[1]), false);
 
 assert.equal(lineKind({ name: 'TIRZ 10MG (Vial)', sku: 'TIRZ-10MG-VIAL' }), 'vial');
 assert.equal(lineKind({ name: 'TIRZ 10MG (10-Pack / Kit)', sku: 'TIRZ-10MG-KIT' }), 'kit');
@@ -62,4 +77,25 @@ const kitWithBac = applyAutoBac([...kitOk.items], catalog, kitOk.peptideKits, ki
 assert.equal(kitWithBac.length, 2);
 assert.equal(kitWithBac[1].name, 'BAC WATER 2.5ML (Kit)');
 
-console.log('ok: 1 vial checks out at vial_price; kit_only stays kit-only; BAC still per kit');
+const reta66 = normalizeOrderItems(
+  [{ name: 'RETA 66MG (Vial)', sku: 'RETA-66MG-VIAL', qty: 1 }],
+  catalog
+);
+assert.equal(reta66.ok, true, 'RETA 66MG 1 vial must be legal');
+assert.equal(reta66.items[0].unit_price_cents, 7000);
+assert.equal(reta66.items[0].name, 'RETA 66MG (Vial)');
+
+const reta66AsKit = normalizeOrderItems(
+  [{ name: 'RETA 66MG (10-Pack / Kit)', sku: 'RETA-66MG-KIT', qty: 1 }],
+  catalog
+);
+assert.equal(reta66AsKit.ok, false);
+assert.match(reta66AsKit.message, /single vial/i);
+
+const packZeroAsKit = normalizeOrderItems(
+  [{ name: 'SEMAX 10MG (10-Pack / Kit)', qty: 1 }],
+  catalog
+);
+assert.equal(packZeroAsKit.ok, false);
+
+console.log('ok: 1 vial checks out; RETA 66 is vial-only; HGH stays kit-only; BAC still per kit');

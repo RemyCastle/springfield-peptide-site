@@ -6,8 +6,9 @@ const CART_KEY = "spbc_cart_draft";
 
         /**
          * Public storefront sells single vials (when vial_price is set) and 10-packs / kits.
-         * kit_only products (e.g. HGH) stay kit-only — no vial stepper.
-         * One vial is a legal checkout. Franchisees still order through the worker.
+         * True kit_only products (e.g. HGH, no vial_price) stay kit-only — no vial stepper.
+         * Vial-only rows (RETA 66MG: kit_only + vial_price === pack_price, or pack_price 0)
+         * show a Vial stepper, not a 10-pack. One vial is a legal checkout.
          */
         const PUBLIC_KITS_ONLY = false;
         /** Reconstitution water auto-added, one kit per peptide kit. Must match the product name exactly. */
@@ -43,6 +44,7 @@ const CART_KEY = "spbc_cart_draft";
             'RETA 10MG': 'GLP-1 / metabolic',
             'RETA 30MG': 'GLP-1 / metabolic',
             'RETA 60 MG': 'GLP-1 / metabolic',
+            'RETA 66MG': 'GLP-1 / metabolic',
             'BPC-157 10MG': 'Repair & recovery',
             'TB-500 10MG': 'Repair & recovery',
             'KPV 10 MG': 'Repair & recovery',
@@ -52,6 +54,7 @@ const CART_KEY = "spbc_cart_draft";
             'MOTS-C 10MG': 'Longevity & mitochondrial',
             'MOTS-C 40MG': 'Longevity & mitochondrial',
             'SS-31 10MG': 'Longevity & mitochondrial',
+            'SS-31 50MG': 'Longevity & mitochondrial',
             'NAD+ 500MG': 'Longevity & mitochondrial',
             'NAD+ 1000MG': 'Longevity & mitochondrial',
             '5-AMINO-1MQ 50MG': 'Longevity & mitochondrial',
@@ -59,6 +62,10 @@ const CART_KEY = "spbc_cart_draft";
             'IPA 10MG': 'GH secretagogues',
             'CJC/IPA NO DAC 10MG': 'GH secretagogues',
             'Tesamorelin': 'GH secretagogues',
+            'Tesamorelin 10MG': 'GH secretagogues',
+            'Tesamorelin 20MG': 'GH secretagogues',
+            'SEMAX 10MG': 'Other research',
+            'PE-22-28 10MG': 'Other research',
             'PT-141 10 MG': 'Other research',
             'MT1': 'Other research',
             'MT2': 'Other research',
@@ -96,6 +103,26 @@ const CART_KEY = "spbc_cart_draft";
 
         let cartUndoTimer = null;
         let cartUndoSnapshot = null;
+
+        function hasPositivePrice(n) {
+            const v = Number(n);
+            return Number.isFinite(v) && v > 0;
+        }
+
+        /**
+         * Sold as singles, not a 10-pack: pack_price is 0/missing, or kit_only with
+         * vial_price === pack_price (RETA 66MG in D1: 70 / 70). HGH stays kit-only
+         * because those rows have no vial_price.
+         */
+        function isVialOnlyListing(p) {
+            if (!hasPositivePrice(p && p.vial_price)) return false;
+            if (!hasPositivePrice(p.pack_price)) return true;
+            return !!p.kit_only && Number(p.vial_price) === Number(p.pack_price);
+        }
+
+        function isTrueKitOnly(p) {
+            return !!(p && p.kit_only) && !hasPositivePrice(p.vial_price);
+        }
 
         function snapQty(n, allowed) {
             const opts = Array.isArray(allowed) && allowed.length ? allowed : PACK_OPTS;
@@ -545,41 +572,51 @@ const CART_KEY = "spbc_cart_draft";
 
         function buildPriceCard(p, draft) {
             const name = p.name;
-            const kitOnly = !!p.kit_only;
+            const trueKitOnly = isTrueKitOnly(p);
+            const vialOnly = isVialOnlyListing(p);
+            const showVial = !PUBLIC_KITS_ONLY && hasPositivePrice(p.vial_price);
+            const showPack = hasPositivePrice(p.pack_price) && !vialOnly;
             const saved = draft[name] || {};
-            const savedPack = storefrontKitQty(saved, kitOnly ? VIAL_OPTS : PACK_OPTS);
+            const savedPack = showPack ? storefrontKitQty(saved, trueKitOnly ? VIAL_OPTS : PACK_OPTS) : 0;
+            let savedVial = saved.vial || 0;
+            if (showVial && !(Number(saved.vial) > 0) && vialOnly && (Number(saved.pack) > 0)) {
+                savedVial = snapQty(saved.pack, VIAL_OPTS);
+            }
             const article = document.createElement('article');
             // No .reveal — design.md: never animate product card opacity (visibility must not depend on IO).
             article.className = 'price-card depth-card grid-item';
             article.setAttribute('data-name', name);
-            if (kitOnly) {
+            if (showVial) article.setAttribute('data-vial', String(p.vial_price));
+            if (showPack && trueKitOnly) {
                 article.setAttribute('data-kit', String(p.pack_price));
-            } else {
-                if (p.vial_price != null) article.setAttribute('data-vial', String(p.vial_price));
+            } else if (showPack) {
                 article.setAttribute('data-pack', String(p.pack_price));
             }
 
             let body = `<h3 class="price-card-title break-word">${escapeHtml(name)}</h3><div class="price-card-body">`;
-            // Vial stepper for priced singles. kit_only (e.g. HGH) stays kit-only.
-            if (!PUBLIC_KITS_ONLY && !kitOnly && p.vial_price != null) {
+            // Vial stepper when D1 has a vial price. True kit_only (HGH) has no vial_price.
+            // RETA 66MG is vial-only (same 70/70 dummy pack) — Vial, not 10-pack.
+            if (showVial) {
                 body += `
                     <div class="price-row">
                         <span class="price-label">Vial</span>
                         <div class="price-controls">
                             <span class="price-amount tabular-nums">$${formatPrice(p.vial_price)}</span>
-                            ${buildStepper('vial', VIAL_OPTS, saved.vial, name + ' vial qty')}
+                            ${buildStepper('vial', VIAL_OPTS, savedVial, name + ' vial qty')}
                         </div>
                     </div>`;
             }
-            body += `
-                <div class="price-row">
-                    <span class="price-label">${kitOnly ? 'Kit' : '10-Pack / Kit'}</span>
-                    <div class="price-controls">
-                        <span class="price-amount tabular-nums">$${formatPrice(p.pack_price)}</span>
-                        ${buildStepper('pack', kitOnly ? VIAL_OPTS : PACK_OPTS, savedPack, name + ' kit qty')}
-                    </div>
-                </div>
-            </div>`;
+            if (showPack) {
+                body += `
+                    <div class="price-row">
+                        <span class="price-label">${trueKitOnly ? 'Kit' : '10-Pack / Kit'}</span>
+                        <div class="price-controls">
+                            <span class="price-amount tabular-nums">$${formatPrice(p.pack_price)}</span>
+                            ${buildStepper('pack', trueKitOnly ? VIAL_OPTS : PACK_OPTS, savedPack, name + ' kit qty')}
+                        </div>
+                    </div>`;
+            }
+            body += `</div>`;
             article.innerHTML = body;
             wireStepper(article);
             return article;

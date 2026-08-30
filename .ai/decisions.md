@@ -133,3 +133,10 @@ Append-only log. Newest at bottom.
 - `POST /api/place-order` prices vial lines from D1 `vial_price` (was kit-only reprice). Rejects kit_only as vials. No server vial-count minimum. BAC auto-add still applies per peptide kit, not per single vial.
 - Terms + ordering-rules + flyer point no longer say kits-only or a 3-vial minimum.
 - Patriotic Peptides, live D1, and `schema.sql` were not touched.
+
+### 2026-08-30 — Catalog display: singles, vial-only RETA 66, new category keys
+- CoS writes live prices to production D1. Storefront only maps names and steppers. No schema.sql, no DELETE, no franchisee/Patriotic edits.
+- `PUBLIC_KITS_ONLY = false` and no `MIN_SINGLE_VIALS` (same as the no-minimum pass).
+- Hide the 10-pack stepper when `pack_price` is 0. RETA 66MG (`kit_only=1`, vial=pack=70) is labeled **Vial**, not 10-pack. HGH kit_only rows (no vial_price) stay **Kit**.
+- Category keys added (exact names): RETA 66MG, SEMAX 10MG, SS-31 50MG, PE-22-28 10MG, Tesamorelin 10MG, Tesamorelin 20MG. Left `RETA 60 MG` and unlabeled `Tesamorelin`.
+- Did not add sterile spike or 10ml vial products. BAC rows unchanged.

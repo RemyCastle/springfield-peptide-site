@@ -7,7 +7,8 @@
  *   ORDERS_WEBHOOK_URL    — optional, default https://spbc-orders.spbc.workers.dev/webhooks/order
  *   ORDERS_PUBLIC_URL     — optional, default https://spbc-orders.spbc.workers.dev
  *
- * No vial minimum. kit_only products cannot be ordered as vials.
+ * No vial minimum. True kit_only products (HGH) cannot be ordered as vials.
+ * Vial-only rows (RETA 66MG) are priced from vial_price.
  */
 import {
   applyAutoBac,

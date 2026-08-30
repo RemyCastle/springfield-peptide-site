@@ -1,7 +1,9 @@
 /**
  * Re-price storefront order lines from the D1 catalog.
  * Client qty/name/sku choose the line; client unit_price_cents is ignored.
- * No vial minimum. kit_only products cannot be ordered as vials.
+ * No vial minimum. True kit_only products (HGH, no vial_price) cannot be
+ * ordered as vials. Vial-only rows (RETA 66MG: kit_only + vial===pack, or
+ * pack_price 0) are sold as singles and priced from vial_price.
  */
 
 export function dollarsToCents(d) {
@@ -35,6 +37,15 @@ export function lineKind(item) {
 
 export function isKitOnly(row) {
   return !!(row && (row.kit_only === true || row.kit_only === 1 || row.kit_only === '1'));
+}
+
+/** Sold as singles: no pack, or kit_only dummy pack equal to vial (RETA 66MG). */
+export function isVialOnlyListing(row) {
+  const vial = Number(row && row.vial_price);
+  const pack = Number(row && row.pack_price);
+  if (!Number.isFinite(vial) || vial <= 0) return false;
+  if (!Number.isFinite(pack) || pack <= 0) return true;
+  return isKitOnly(row) && vial === pack;
 }
 
 export function vialCents(row) {
@@ -95,21 +106,15 @@ export function normalizeOrderItems(items, catalog) {
 
     const kind = lineKind(it);
     if (kind === 'vial') {
-      if (isKitOnly(row)) {
-        return {
-          ok: false,
-          status: 400,
-          error: 'validation_failed',
-          message: `${productName} is kit-only and cannot be ordered as a vial`,
-        };
-      }
       const unit = vialCents(row);
       if (unit == null) {
         return {
           ok: false,
           status: 400,
           error: 'validation_failed',
-          message: `No catalog vial price for ${productName}`,
+          message: isKitOnly(row)
+            ? `${productName} is kit-only and cannot be ordered as a vial`
+            : `No catalog vial price for ${productName}`,
         };
       }
       normalizedItems.push({
@@ -121,16 +126,18 @@ export function normalizeOrderItems(items, catalog) {
       continue;
     }
 
-    const unit = packCents(row);
-    if (unit == null) {
+    if (isVialOnlyListing(row) || packCents(row) == null) {
       return {
         ok: false,
         status: 400,
         error: 'validation_failed',
-        message: `No catalog kit price for ${productName}`,
+        message: isVialOnlyListing(row)
+          ? `${productName} is sold as a single vial, not a 10-pack`
+          : `No catalog kit price for ${productName}`,
       };
     }
-    const kitLabel = isKitOnly(row) ? 'Kit' : '10-Pack / Kit';
+    const unit = packCents(row);
+    const kitLabel = isKitOnly(row) && !isVialOnlyListing(row) ? 'Kit' : '10-Pack / Kit';
     normalizedItems.push({
       sku: skuFrom(row.name, 'kit'),
       name: `${row.name} (${kitLabel})`,
