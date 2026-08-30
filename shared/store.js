@@ -11,12 +11,6 @@ const CART_KEY = "spbc_cart_draft";
          * show a Vial stepper, not a 10-pack. One vial is a legal checkout.
          */
         const PUBLIC_KITS_ONLY = false;
-        /** Reconstitution water auto-added, one kit per peptide kit. Must match the product name exactly. */
-        const AUTO_BAC_PREFERRED = [
-            'BAC WATER 2.5ML',
-            'BAC WATER 3ML',
-            'BAC WATER 10 ML',
-        ];
 
         /**
          * Single edit point for storefront category grouping.
@@ -465,28 +459,6 @@ const CART_KEY = "spbc_cart_draft";
             return /bac\s*water/i.test(String(name || ''));
         }
 
-        function findBacCard() {
-            const cards = [...document.querySelectorAll('#priceTable .price-card')];
-            const bacCards = cards.filter((c) => isBacName(c.getAttribute('data-name')));
-            for (const name of AUTO_BAC_PREFERRED) {
-                const hit = bacCards.find((c) => c.getAttribute('data-name') === name);
-                if (hit) return hit;
-            }
-            return bacCards[0] || null;
-        }
-
-        function setBacIncludeWarning(msg) {
-            const el = document.getElementById('bacIncludeStatus');
-            if (!el) return;
-            if (!msg) {
-                el.hidden = true;
-                el.textContent = '';
-                return;
-            }
-            el.hidden = false;
-            el.textContent = msg;
-        }
-
         function syncKitOnlyChip() {
             const chip = document.querySelector('.filter-chip[data-filter="kit-only"]');
             if (!chip) return;
@@ -770,55 +742,6 @@ const CART_KEY = "spbc_cart_draft";
                 }
             });
 
-            /**
-             * Automatic BAC water on every kit purchase (direct SPBC customers only).
-             *
-             * Each peptide kit needs reconstitution water, so one BAC kit is added per
-             * peptide kit rather than leaving the customer to remember it. It is added
-             * as a VISIBLE line so the total the customer approves is the total they
-             * pay — never a silent server-side addition. Single-vial lines do not
-             * trigger this. Franchisee ordering runs through the spbc-orders worker
-             * and is untouched by this.
-             *
-             * If the customer already put BAC in the cart themselves, that counts
-             * toward the requirement — we top up to the kit count, never double-charge.
-             */
-            if (kitCount > 0) {
-                const bacCard = findBacCard();
-                if (bacCard) {
-                    const bacName = bacCard.getAttribute('data-name') || '';
-                    const bacPrice = parseFloat(
-                        bacCard.getAttribute('data-pack') || bacCard.getAttribute('data-kit') || 0
-                    );
-                    const alreadyChosen = rawLines
-                        .filter((r) => r.isBac && r.kind === 'pack')
-                        .reduce((n, r) => n + r.qty, 0);
-                    const need = Math.max(0, kitCount - alreadyChosen);
-                    if (need > 0 && bacPrice > 0) {
-                        const line = need * bacPrice;
-                        nonDiscountSubtotal += line;
-                        lines.push({
-                            kind: 'pack',
-                            text: `${need}x ${bacName} (Kit) — $${money(line)} · included with every kit`,
-                        });
-                        rawLines.push({
-                            kind: 'pack',
-                            name: `${bacName} (Kit)`,
-                            sku: skuFrom(bacName, 'kit'),
-                            qty: need,
-                            unit_price_dollars: bacPrice,
-                            isBac: true,
-                            autoAdded: true,
-                        });
-                    }
-                    setBacIncludeWarning('');
-                } else {
-                    setBacIncludeWarning('BAC water is listed as included, but no BAC WATER product is in the live catalog — it was not added to this order. Email the club if you need reconstitution water.');
-                }
-            } else {
-                setBacIncludeWarning('');
-            }
-
             // No volume discounts on SPBC — every item bills at full price.
             const vialDiscountEligible = false;
             const vialDiscount = 0;
@@ -856,21 +779,12 @@ const CART_KEY = "spbc_cart_draft";
             // No volume discounts and no vial minimum. Progress is just "has items".
             if (PUBLIC_KITS_ONLY) {
                 if (t.kitCount > 0) {
-                    return {
-                        pct: 100,
-                        hint: `Ready to order · BAC water included with ${t.kitCount === 1 ? 'your kit' : 'each kit'}`,
-                    };
+                    return { pct: 100, hint: 'Ready to order' };
                 }
                 return { pct: 0, hint: 'Add a kit to start your order' };
             }
             if (t.singleVials === 0 && t.kitCount === 0) {
                 return { pct: 0, hint: 'Add a vial or kit to start your order' };
-            }
-            if (t.kitCount > 0) {
-                return {
-                    pct: 100,
-                    hint: `Ready to order · BAC water included with ${t.kitCount === 1 ? 'your kit' : 'each kit'}`,
-                };
             }
             return { pct: 100, hint: 'Ready to order' };
         }
@@ -989,7 +903,7 @@ const CART_KEY = "spbc_cart_draft";
             let tone = 'text-zinc-500';
             if (PUBLIC_KITS_ONLY) {
                 status = t.kitCount > 0
-                    ? 'Kits only · BAC water is added with each peptide kit'
+                    ? 'Kits only · ready to order'
                     : 'Kits only — add a kit to start your order';
                 tone = t.kitCount > 0 ? 'text-zinc-400' : 'text-zinc-500';
             } else if (t.singleVials === 0 && t.packSubtotal === 0) {

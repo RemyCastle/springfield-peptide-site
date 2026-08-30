@@ -140,3 +140,17 @@ Append-only log. Newest at bottom.
 - Hide the 10-pack stepper when `pack_price` is 0. RETA 66MG (`kit_only=1`, vial=pack=70) is labeled **Vial**, not 10-pack. HGH kit_only rows (no vial_price) stay **Kit**.
 - Category keys added (exact names): RETA 66MG, SEMAX 10MG, SS-31 50MG, PE-22-28 10MG, Tesamorelin 10MG, Tesamorelin 20MG. Left `RETA 60 MG` and unlabeled `Tesamorelin`.
 - Did not add sterile spike or 10ml vial products. BAC rows unchanged.
+
+### 2026-08-30 — Stop auto-including BAC water on the public storefront
+- Remy: take off "BAC water included". Customers must not get a BAC kit auto-added per peptide kit. BAC can stay as a normal optional catalog product.
+- Removed client auto-add (`AUTO_BAC_PREFERRED`, `findBacCard`, `setBacIncludeWarning`, tally top-up) and server `applyAutoBac` / `resolveBacRow`. `POST /api/place-order` now uses only the lines the customer submitted.
+- Left BAC names in `PRODUCT_CATEGORY_BY_NAME` and did not touch D1 / `schema.sql`.
+- Stacks BAC checkbox defaults off (was checked). Copy no longer says the price list adds BAC at checkout.
+- `PUBLIC_KITS_ONLY` stays false; single vials, RETA 66 vial-only, and no 3-vial minimum unchanged.
+
+### 2026-08-30 — Remove public Stacks and Coaching
+- Remy: kill Common Stacks and Research Coaching ($100/hr). Keep calculator, contact, titration, shop. BAC stays optional, not auto-included.
+- Deleted `stacks.html` / `coaching.html` sources, hashed page JS, and `POST /api/coaching-request`. Nav is Home / Calculator / Contact.
+- Homepage secondary CTA is the dosage calculator. Contact no longer points at coaching.
+- `_redirects` + local `server.js` send `/stacks`, `/stacks.html`, `/coaching`, `/coaching.html` (and trailing-slash variants) to `/`.
+- Did not delete BAC SKUs, run `schema.sql`, or deploy master. Video files for old heroes left on disk (not linked from nav).

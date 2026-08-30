@@ -10,10 +10,7 @@
  * No vial minimum. True kit_only products (HGH) cannot be ordered as vials.
  * Vial-only rows (RETA 66MG) are priced from vial_price.
  */
-import {
-  applyAutoBac,
-  normalizeOrderItems,
-} from '../lib/orderItems.js';
+import { normalizeOrderItems } from '../lib/orderItems.js';
 
 async function loadActiveProducts(env) {
   if (!env.DB) return null;
@@ -127,12 +124,7 @@ export async function onRequestPost({ request, env }) {
       priced.status
     );
   }
-  const normalizedItems = applyAutoBac(
-    priced.items,
-    catalog,
-    priced.peptideKits,
-    priced.bacKits
-  );
+  const normalizedItems = priced.items;
 
   const subtotal = normalizedItems.reduce(
     (s, it) => s + it.qty * it.unit_price_cents,

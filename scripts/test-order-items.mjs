@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  applyAutoBac,
   isVialOnlyListing,
   lineKind,
   normalizeOrderItems,
@@ -24,6 +23,57 @@ assert.match(storeSrc, /'Tesamorelin 10MG': 'GH secretagogues'/);
 assert.match(storeSrc, /'Tesamorelin 20MG': 'GH secretagogues'/);
 assert.match(storeSrc, /'RETA 60 MG': 'GLP-1 \/ metabolic'/);
 assert.match(storeSrc, /'Tesamorelin': 'GH secretagogues'/);
+assert.match(storeSrc, /'BAC WATER 2.5ML': 'Supplies'/);
+assert.match(storeSrc, /'BAC WATER 3ML': 'Supplies'/);
+assert.match(storeSrc, /'BAC WATER 10 ML': 'Supplies'/);
+assert.doesNotMatch(storeSrc, /AUTO_BAC_PREFERRED/);
+assert.doesNotMatch(storeSrc, /applyAutoBac/);
+assert.doesNotMatch(storeSrc, /findBacCard/);
+assert.doesNotMatch(storeSrc, /BAC water included/);
+assert.doesNotMatch(storeSrc, /included with every kit/);
+
+const orderItemsSrc = fs.readFileSync(path.join(root, 'functions/lib/orderItems.js'), 'utf8');
+assert.doesNotMatch(orderItemsSrc, /applyAutoBac/);
+assert.doesNotMatch(orderItemsSrc, /resolveBacRow/);
+
+const headerSrc = fs.readFileSync(path.join(root, 'src/partials/header.html'), 'utf8');
+assert.doesNotMatch(headerSrc, /stacks\.html/);
+assert.doesNotMatch(headerSrc, /coaching\.html/);
+assert.match(headerSrc, /calculator\.html/);
+assert.match(headerSrc, /contact\.html/);
+
+const indexPageSrc = fs.readFileSync(path.join(root, 'src/pages/index.html'), 'utf8');
+assert.doesNotMatch(indexPageSrc, /Coaching · \$100\/hr/);
+assert.doesNotMatch(indexPageSrc, /protocol coaching/);
+assert.doesNotMatch(indexPageSrc, /coaching\.html/);
+assert.match(indexPageSrc, /cta_secondary_href: \/calculator\.html/);
+
+const contactBody = fs.readFileSync(path.join(root, 'src/pages/contact.body.html'), 'utf8');
+assert.doesNotMatch(contactBody, /coaching\.html/);
+assert.doesNotMatch(contactBody, /Coaching/);
+
+const redirects = fs.readFileSync(path.join(root, '_redirects'), 'utf8');
+assert.match(redirects, /\/stacks\s+\/\s+301/);
+assert.match(redirects, /\/stacks\.html\s+\/\s+301/);
+assert.match(redirects, /\/coaching\s+\/\s+301/);
+assert.match(redirects, /\/coaching\.html\s+\/\s+301/);
+
+assert.equal(fs.existsSync(path.join(root, 'stacks.html')), false);
+assert.equal(fs.existsSync(path.join(root, 'coaching.html')), false);
+assert.equal(fs.existsSync(path.join(root, 'src/pages/stacks.html')), false);
+assert.equal(fs.existsSync(path.join(root, 'src/pages/coaching.html')), false);
+assert.equal(fs.existsSync(path.join(root, 'functions/api/coaching-request.js')), false);
+assert.equal(fs.existsSync(path.join(root, 'shared/stacks.js')), false);
+assert.equal(fs.existsSync(path.join(root, 'shared/stacks-page.js')), false);
+assert.equal(fs.existsSync(path.join(root, 'shared/coaching.js')), false);
+
+for (const page of ['index.html', 'calculator.html', 'contact.html', 'titration.html']) {
+  const html = fs.readFileSync(path.join(root, page), 'utf8');
+  assert.doesNotMatch(html, /href="\/stacks\.html"/, `${page} must not link to stacks`);
+  assert.doesNotMatch(html, /href="\/coaching\.html"/, `${page} must not link to coaching`);
+  assert.doesNotMatch(html, /Coaching · \$100\/hr/, `${page} must not advertise coaching`);
+  assert.doesNotMatch(html, /Common Stacks/, `${page} must not advertise stacks`);
+}
 
 const catalog = [
   { name: 'TIRZ 10MG', vial_price: 41, pack_price: 345, kit_only: 0, active: 1 },
@@ -49,14 +99,7 @@ assert.equal(oneVial.items.length, 1);
 assert.equal(oneVial.items[0].unit_price_cents, 4100);
 assert.equal(oneVial.items[0].sku, 'TIRZ-10MG-VIAL');
 assert.equal(oneVial.peptideKits, 0);
-
-const afterBac = applyAutoBac(
-  [...oneVial.items],
-  catalog,
-  oneVial.peptideKits,
-  oneVial.bacKits
-);
-assert.equal(afterBac.length, 1, 'vial-only orders do not auto-add BAC');
+assert.equal(oneVial.bacKits, 0);
 
 const kitOnlyAsVial = normalizeOrderItems(
   [{ name: 'HGH 10IU (Vial)', sku: 'HGH-10IU-VIAL', qty: 1 }],
@@ -72,10 +115,27 @@ const kitOk = normalizeOrderItems(
 assert.equal(kitOk.ok, true);
 assert.equal(kitOk.items[0].unit_price_cents, 22000);
 assert.equal(kitOk.peptideKits, 1);
+assert.equal(kitOk.bacKits, 0);
+assert.equal(kitOk.items.length, 1, 'kits do not auto-add BAC');
+assert.equal(
+  kitOk.items.some((it) => /bac\s*water/i.test(it.name)),
+  false,
+  'kit-only order must not inject a BAC line'
+);
 
-const kitWithBac = applyAutoBac([...kitOk.items], catalog, kitOk.peptideKits, kitOk.bacKits);
-assert.equal(kitWithBac.length, 2);
-assert.equal(kitWithBac[1].name, 'BAC WATER 2.5ML (Kit)');
+const kitPlusBac = normalizeOrderItems(
+  [
+    { name: 'HGH 10IU (Kit)', sku: 'HGH-10IU-KIT', qty: 1 },
+    { name: 'BAC WATER 2.5ML (Kit)', sku: 'BAC-WATER-2-5ML-KIT', qty: 1 },
+  ],
+  catalog
+);
+assert.equal(kitPlusBac.ok, true, 'customer-added BAC stays on the order');
+assert.equal(kitPlusBac.items.length, 2);
+assert.equal(kitPlusBac.peptideKits, 1);
+assert.equal(kitPlusBac.bacKits, 1);
+assert.equal(kitPlusBac.items[1].name, 'BAC WATER 2.5ML (10-Pack / Kit)');
+assert.equal(kitPlusBac.items[1].unit_price_cents, 1200);
 
 const reta66 = normalizeOrderItems(
   [{ name: 'RETA 66MG (Vial)', sku: 'RETA-66MG-VIAL', qty: 1 }],
@@ -98,4 +158,4 @@ const packZeroAsKit = normalizeOrderItems(
 );
 assert.equal(packZeroAsKit.ok, false);
 
-console.log('ok: 1 vial checks out; RETA 66 is vial-only; HGH stays kit-only; BAC still per kit');
+console.log('ok: 1 vial checks out; RETA 66 is vial-only; HGH stays kit-only; BAC is optional, not auto-added; stacks and coaching are gone');
