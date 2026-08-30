@@ -1,5 +1,5 @@
 /**
- * Content-hash shared site-header/atmosphere/age-gate/stacks and rewrite HTML refs.
+ * Content-hash shared site-header/atmosphere/age-gate and rewrite HTML refs.
  * Source of truth: unhashed files (site-header.css, site-header.js, …).
  */
 const fs = require('fs');
@@ -15,11 +15,8 @@ const pairs = [
   ['site-atmosphere.css', 'site-atmosphere'],
   ['site-atmosphere.js', 'site-atmosphere'],
   ['age-gate.js', 'age-gate'],
-  ['stacks.js', 'stacks'],
-  ['stacks-page.js', 'stacks-page'],
   ['store.js', 'store'],
   ['calculator.js', 'calculator'],
-  ['coaching.js', 'coaching'],
 ];
 
 const mapping = {};
@@ -50,8 +47,6 @@ for (const [srcName, base] of pairs) {
 const htmlFiles = [
   'index.html',
   'calculator.html',
-  'stacks.html',
-  'coaching.html',
   'contact.html',
   'admin.html',
   'qr.html',
@@ -63,11 +58,8 @@ const rewrites = [
   [/\/shared\/site-atmosphere\.[a-f0-9]{8}\.css/g, `/shared/${mapping['site-atmosphere.css']}`],
   [/\/shared\/site-atmosphere\.[a-f0-9]{8}\.js/g, `/shared/${mapping['site-atmosphere.js']}`],
   [/\/shared\/age-gate\.[a-f0-9]{8}\.js/g, `/shared/${mapping['age-gate.js']}`],
-  [/\/shared\/stacks\.[a-f0-9]{8}\.js/g, `/shared/${mapping['stacks.js']}`],
-  [/\/shared\/stacks-page\.[a-f0-9]{8}\.js/g, `/shared/${mapping['stacks-page.js']}`],
   [/\/shared\/store\.[a-f0-9]{8}\.js/g, `/shared/${mapping['store.js']}`],
   [/\/shared\/calculator\.[a-f0-9]{8}\.js/g, `/shared/${mapping['calculator.js']}`],
-  [/\/shared\/coaching\.[a-f0-9]{8}\.js/g, `/shared/${mapping['coaching.js']}`],
   [/\/shared\/titration\.[a-f0-9]{8}\.js/g, `/shared/${mapping['titration.js']}`],
 ];
 

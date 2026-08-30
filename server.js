@@ -5,6 +5,18 @@ const QRCode = require('qrcode');
 const PORT = process.env.PORT || 8080;
 const app = express();
 
+const retiredToHome = [
+  '/stacks',
+  '/stacks.html',
+  '/stacks/',
+  '/coaching',
+  '/coaching.html',
+  '/coaching/',
+];
+retiredToHome.forEach((p) => {
+  app.get(p, (_req, res) => res.redirect(301, '/'));
+});
+
 app.use(express.static(__dirname));
 
 app.get('/api/qr', async (_req, res) => {

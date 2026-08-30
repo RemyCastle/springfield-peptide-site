@@ -147,3 +147,10 @@ Append-only log. Newest at bottom.
 - Left BAC names in `PRODUCT_CATEGORY_BY_NAME` and did not touch D1 / `schema.sql`.
 - Stacks BAC checkbox defaults off (was checked). Copy no longer says the price list adds BAC at checkout.
 - `PUBLIC_KITS_ONLY` stays false; single vials, RETA 66 vial-only, and no 3-vial minimum unchanged.
+
+### 2026-08-30 — Remove public Stacks and Coaching
+- Remy: kill Common Stacks and Research Coaching ($100/hr). Keep calculator, contact, titration, shop. BAC stays optional, not auto-included.
+- Deleted `stacks.html` / `coaching.html` sources, hashed page JS, and `POST /api/coaching-request`. Nav is Home / Calculator / Contact.
+- Homepage secondary CTA is the dosage calculator. Contact no longer points at coaching.
+- `_redirects` + local `server.js` send `/stacks`, `/stacks.html`, `/coaching`, `/coaching.html` (and trailing-slash variants) to `/`.
+- Did not delete BAC SKUs, run `schema.sql`, or deploy master. Video files for old heroes left on disk (not linked from nav).

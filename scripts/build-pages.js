@@ -24,7 +24,7 @@ const PAGES = path.join(SRC, 'pages');
 const STYLES = path.join(SRC, 'styles');
 const SCRIPTS = path.join(SRC, 'scripts');
 
-const PAGE_NAMES = ['index', 'calculator', 'stacks', 'coaching', 'contact', 'titration'];
+const PAGE_NAMES = ['index', 'calculator', 'contact', 'titration'];
 
 function read(p) {
   return fs.readFileSync(p, 'utf8');
@@ -60,12 +60,9 @@ function assetTokens() {
     site_header_js: resolveHashed('site-header', 'js'),
     site_atmosphere_js: resolveHashed('site-atmosphere', 'js'),
     age_gate_js: resolveHashed('age-gate', 'js'),
-    stacks_js: resolveHashed('stacks', 'js'),
-    stacks_page_js: tryHashed('stacks-page', 'js'),
     // Page scripts (Unit C) — hashed when present
     store_js: tryHashed('store', 'js'),
     calculator_js: tryHashed('calculator', 'js'),
-    coaching_js: tryHashed('coaching', 'js'),
     titration_js: tryHashed('titration', 'js'),
   };
 }
@@ -190,8 +187,6 @@ function buildPage(pageName) {
     index: assets.store_js,
     calculator: assets.calculator_js,
     titration: '', // retired notice only — do not load the old planner JS
-    coaching: assets.coaching_js,
-    stacks: '', // stacks uses stacks_script + stacks_page_js
   };
   const tokens = {
     ...assets,

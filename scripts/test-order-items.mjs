@@ -36,6 +36,45 @@ const orderItemsSrc = fs.readFileSync(path.join(root, 'functions/lib/orderItems.
 assert.doesNotMatch(orderItemsSrc, /applyAutoBac/);
 assert.doesNotMatch(orderItemsSrc, /resolveBacRow/);
 
+const headerSrc = fs.readFileSync(path.join(root, 'src/partials/header.html'), 'utf8');
+assert.doesNotMatch(headerSrc, /stacks\.html/);
+assert.doesNotMatch(headerSrc, /coaching\.html/);
+assert.match(headerSrc, /calculator\.html/);
+assert.match(headerSrc, /contact\.html/);
+
+const indexPageSrc = fs.readFileSync(path.join(root, 'src/pages/index.html'), 'utf8');
+assert.doesNotMatch(indexPageSrc, /Coaching · \$100\/hr/);
+assert.doesNotMatch(indexPageSrc, /protocol coaching/);
+assert.doesNotMatch(indexPageSrc, /coaching\.html/);
+assert.match(indexPageSrc, /cta_secondary_href: \/calculator\.html/);
+
+const contactBody = fs.readFileSync(path.join(root, 'src/pages/contact.body.html'), 'utf8');
+assert.doesNotMatch(contactBody, /coaching\.html/);
+assert.doesNotMatch(contactBody, /Coaching/);
+
+const redirects = fs.readFileSync(path.join(root, '_redirects'), 'utf8');
+assert.match(redirects, /\/stacks\s+\/\s+301/);
+assert.match(redirects, /\/stacks\.html\s+\/\s+301/);
+assert.match(redirects, /\/coaching\s+\/\s+301/);
+assert.match(redirects, /\/coaching\.html\s+\/\s+301/);
+
+assert.equal(fs.existsSync(path.join(root, 'stacks.html')), false);
+assert.equal(fs.existsSync(path.join(root, 'coaching.html')), false);
+assert.equal(fs.existsSync(path.join(root, 'src/pages/stacks.html')), false);
+assert.equal(fs.existsSync(path.join(root, 'src/pages/coaching.html')), false);
+assert.equal(fs.existsSync(path.join(root, 'functions/api/coaching-request.js')), false);
+assert.equal(fs.existsSync(path.join(root, 'shared/stacks.js')), false);
+assert.equal(fs.existsSync(path.join(root, 'shared/stacks-page.js')), false);
+assert.equal(fs.existsSync(path.join(root, 'shared/coaching.js')), false);
+
+for (const page of ['index.html', 'calculator.html', 'contact.html', 'titration.html']) {
+  const html = fs.readFileSync(path.join(root, page), 'utf8');
+  assert.doesNotMatch(html, /href="\/stacks\.html"/, `${page} must not link to stacks`);
+  assert.doesNotMatch(html, /href="\/coaching\.html"/, `${page} must not link to coaching`);
+  assert.doesNotMatch(html, /Coaching · \$100\/hr/, `${page} must not advertise coaching`);
+  assert.doesNotMatch(html, /Common Stacks/, `${page} must not advertise stacks`);
+}
+
 const catalog = [
   { name: 'TIRZ 10MG', vial_price: 41, pack_price: 345, kit_only: 0, active: 1 },
   { name: 'HGH 10IU', vial_price: null, pack_price: 220, kit_only: 1, active: 1 },
@@ -119,4 +158,4 @@ const packZeroAsKit = normalizeOrderItems(
 );
 assert.equal(packZeroAsKit.ok, false);
 
-console.log('ok: 1 vial checks out; RETA 66 is vial-only; HGH stays kit-only; BAC is optional, not auto-added');
+console.log('ok: 1 vial checks out; RETA 66 is vial-only; HGH stays kit-only; BAC is optional, not auto-added; stacks and coaching are gone');
