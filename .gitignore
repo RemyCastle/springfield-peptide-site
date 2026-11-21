@@ -19,3 +19,6 @@ node_modules/
 # Scraped page dumps kept for redesign reference — ~12 MB, regenerable
 .ai/extract/
 .ai/pre-redesign-html/
+
+# Editor/tool backups (never commit)
+*.bak
