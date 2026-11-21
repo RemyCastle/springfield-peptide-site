@@ -10,9 +10,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.e9b10ad7.css">
-  <link rel="stylesheet" href="/shared/site-header.10212912.css">
-  <link rel="stylesheet" href="/shared/site-atmosphere.6fe74614.css">
+    <link rel="stylesheet" href="/shared/tailwind.2a285c57.css">
+  <link rel="stylesheet" href="/shared/site-header.f464e980.css">
+  <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
@@ -364,7 +364,7 @@
           </div>
         </div>
         <p class="text-xs text-zinc-500 mb-3">
-          Assign a <strong class="text-amber-400">Supplier</strong> per product (admin only). That name is sent to Telegram when an order is paid — never shown to customers.
+          Assign a <strong class="text-amber-400">Supplier</strong> per product (admin only). Used for cost and margin reporting — never shown to customers.
         </p>
         <div class="flex flex-wrap gap-3 items-end mb-4 p-3 sm:p-4 rounded-2xl border border-violet-500/30 bg-violet-950/20">
           <div class="min-w-[200px] flex-1">
@@ -417,7 +417,7 @@
           </button>
         </div>
         <p class="text-xs text-zinc-500 mb-3">
-          Create suppliers, set each <strong class="text-emerald-400">Telegram chat ID</strong>, then assign products on Price list.
+          Create suppliers, then assign products on Price list.
           When an order is paid, <strong class="text-white">each supplier is texted separately</strong> with only their items (no prices).
         </p>
         <p id="supplierMsg" class="text-sm mb-4 hidden"></p>
@@ -1739,7 +1739,7 @@
       }
       showSupplierMsg(
         body.telegram_chat_id
-          ? 'Supplier saved — will receive Telegram orders'
+          ? 'Supplier saved'
           : 'Supplier saved (no chat ID yet — Lookup after they Start the bot)'
       );
       await loadSuppliers();
@@ -2181,20 +2181,11 @@
         actions.appendChild(tb);
       }
       // Only after payment — hide until paid / shipped / complete
-      const canTelegram = ['paid', 'shipped', 'complete'].includes(o.status);
-      if (canTelegram) {
-        const tg = document.createElement('button');
-        tg.type = 'button';
-        tg.textContent = 'Telegram supplier';
-        tg.className =
-          'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-950 border border-emerald-700 text-emerald-200 hover:bg-emerald-900';
-        tg.addEventListener('click', () => notifySupplierTelegram(orderNumber));
-        actions.appendChild(tg);
-      } else if (o.status === 'pending_payment') {
+      if (o.status === 'pending_payment') {
         const hint = document.createElement('p');
         hint.className = 'w-full text-xs text-zinc-500 pt-1';
         hint.textContent =
-          'Telegram supplier unlocks after you mark this order paid.';
+          'Marking this order paid emails the customer a payment confirmation.';
         actions.appendChild(hint);
       }
       if (!o.archived_at) {
@@ -2344,46 +2335,6 @@
       await showOrderDetail(orderNumber);
     }
 
-    async function notifySupplierTelegram(orderNumber) {
-      const note = prompt(
-        'Optional note to include for the supplier (Cancel = abort):',
-        ''
-      );
-      if (note === null) return;
-      const res = await fetch(
-        '/api/admin/orders/' +
-          encodeURIComponent(orderNumber) +
-          '/notify-supplier',
-        {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ note: note.trim() || undefined }),
-        }
-      );
-      if (res.status === 401) {
-        showLogin();
-        return;
-      }
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        if (data.error === 'payment_required') {
-          alert(
-            data.message ||
-              'Mark the order paid first, then you can Telegram the supplier.'
-          );
-          return;
-        }
-        alert(
-          data.message ||
-            data.error ||
-            'Telegram send failed. Set TELEGRAM_BOT_TOKEN + SUPPLIER_TELEGRAM_CHAT_ID on Cloudflare Pages.'
-        );
-        return;
-      }
-      alert('Supplier notified on Telegram for ' + (data.order_number || orderNumber));
-    }
-
     const TRACKING_CARRIERS = [
       { name: 'USPS', url: 'https://tools.usps.com/go/TrackConfirmAction?tLabels={N}' },
       { name: 'UPS', url: 'https://www.ups.com/track?tracknum={N}' },
@@ -2518,51 +2469,6 @@
         );
       } else if (data.email && data.email.sent) {
         console.info('Customer email sent:', data.email.template);
-      }
-
-      // If marked paid: ensure Telegram (worker result and/or site fallback)
-      const becamePaid =
-        status === 'paid' &&
-        data.order &&
-        data.order.status === 'paid';
-      if (becamePaid) {
-        const sn = data.supplier_notify;
-        if (sn && sn.ok) {
-          console.info('Supplier Telegram OK via worker');
-        } else {
-          // Fallback: site → Render bot (same secret as bot)
-          try {
-            const tgRes = await fetch(
-              '/api/admin/orders/' +
-                encodeURIComponent(orderNumber) +
-                '/notify-supplier',
-              {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ note: 'Auto after mark paid' }),
-              }
-            );
-            const tgData = await tgRes.json().catch(() => ({}));
-            if (!tgRes.ok || !tgData.ok) {
-              alert(
-                'Order marked paid, but Telegram to supplier failed: ' +
-                  (tgData.message ||
-                    tgData.error ||
-                    sn?.error ||
-                    tgRes.status) +
-                  '\n\nCheck SUPPLIER_NOTIFY_SECRET on Pages matches Render NOTIFY_SECRET, and bot health.'
-              );
-            } else {
-              console.info('Supplier Telegram OK via site fallback');
-            }
-          } catch (e) {
-            alert(
-              'Order marked paid, but Telegram failed: ' +
-                (e && e.message ? e.message : String(e))
-            );
-          }
-        }
       }
 
       await loadOrders();
@@ -2939,7 +2845,7 @@
         ${vendorCostHtml(p)}
         <div>
           <label class="block text-xs text-zinc-500 mb-1">
-            Supplier <span class="text-amber-500/90">(admin only → Telegram)</span>
+            Supplier <span class="text-amber-500/90">(admin only)</span>
           </label>
           <select data-field="supplier_id"
                   class="w-full bg-black border border-amber-700/50 rounded-xl px-3 py-2 text-sm text-amber-100">
@@ -3256,7 +3162,7 @@
       const name = prompt('Supplier display name (e.g. Unicorn or @unicornfartzz):');
       if (!name || !name.trim()) return;
       let username = prompt(
-        'Telegram @username (for auto chat ID lookup).\nLeave blank to skip.\nThey must Start your bot first.',
+        'Supplier name (admin only).\nUsed for cost and margin reporting.',
         name.trim().startsWith('@') ? name.trim() : ''
       );
       if (username === null) return;
@@ -3300,7 +3206,7 @@
       }
       showSupplierMsg(
         telegram_chat_id
-          ? `Supplier added with chat ID ${telegram_chat_id}`
+          ? `Supplier added`
           : 'Supplier added — use Lookup ID after they Start the bot'
       );
       await loadSuppliers();
