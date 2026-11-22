@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.2a285c57.css">
+    <link rel="stylesheet" href="/shared/tailwind.deca9e93.css">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -116,6 +116,7 @@
       </a>
       <div id="headerActions" class="hidden flex items-center gap-2">
         <span id="adminWho" class="text-xs text-emerald-200/90 hidden sm:inline"></span>
+        <button id="changePwBtn" type="button" class="btn-ghost-admin">Change password</button>
         <button id="logoutBtn" type="button" class="btn-ghost-admin">Log out</button>
       </div>
     </div>
@@ -572,6 +573,41 @@
       </div>
     </section>
   </main>
+
+  <!-- CHANGE PASSWORD (modal, opened from the header) -->
+  <div id="pwModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4"
+       style="background:rgba(0,0,0,.75);">
+    <div class="admin-card w-full max-w-sm p-5 sm:p-6">
+      <h2 class="ducks-font text-2xl text-[#FDD700] mb-1">Change password</h2>
+      <p class="text-zinc-500 text-xs mb-5">
+        Stored hashed in the database. You stay signed in after changing it.
+      </p>
+      <form id="pwForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1" for="pwCurrent">Current password</label>
+          <input id="pwCurrent" name="pwCurrent" type="password" autocomplete="current-password"
+                 required class="admin-input">
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1" for="pwNew">New password</label>
+          <input id="pwNew" name="pwNew" type="password" autocomplete="new-password"
+                 required minlength="12" class="admin-input">
+          <p class="text-[11px] text-zinc-600 mt-1">At least 12 characters. No leading or trailing space.</p>
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1" for="pwNew2">Confirm new password</label>
+          <input id="pwNew2" name="pwNew2" type="password" autocomplete="new-password"
+                 required minlength="12" class="admin-input">
+        </div>
+        <p id="pwError" class="text-red-500 text-sm hidden break-word"></p>
+        <p id="pwOk" class="text-emerald-400 text-sm hidden break-word"></p>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="btn-primary-admin flex-1">Save password</button>
+          <button type="button" id="pwCancel" class="btn-ghost-admin">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script>
     const loginSection = document.getElementById('loginSection');
@@ -3280,6 +3316,84 @@
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' });
       showLogin();
+    });
+
+    // ---- Change password (modal) -------------------------------------------
+    const pwModal = document.getElementById('pwModal');
+    const pwForm = document.getElementById('pwForm');
+    const pwError = document.getElementById('pwError');
+    const pwOk = document.getElementById('pwOk');
+
+    function openPwModal() {
+      pwForm.reset();
+      pwError.classList.add('hidden');
+      pwOk.classList.add('hidden');
+      pwModal.classList.remove('hidden');
+      pwModal.classList.add('flex');
+      document.getElementById('pwCurrent').focus();
+    }
+
+    function closePwModal() {
+      pwModal.classList.add('hidden');
+      pwModal.classList.remove('flex');
+      pwForm.reset();
+    }
+
+    document.getElementById('changePwBtn').addEventListener('click', openPwModal);
+    document.getElementById('pwCancel').addEventListener('click', closePwModal);
+    pwModal.addEventListener('click', (e) => {
+      if (e.target === pwModal) closePwModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !pwModal.classList.contains('hidden')) closePwModal();
+    });
+
+    pwForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      pwError.classList.add('hidden');
+      pwOk.classList.add('hidden');
+
+      const current = document.getElementById('pwCurrent').value;
+      const next = document.getElementById('pwNew').value;
+      const confirm = document.getElementById('pwNew2').value;
+
+      const fail = (msg) => {
+        pwError.textContent = msg;
+        pwError.classList.remove('hidden');
+      };
+
+      if (next !== confirm) return fail('The two new passwords do not match.');
+      if (next.length < 12) return fail('New password must be at least 12 characters.');
+      if (next !== next.trim()) return fail('Password cannot start or end with a space.');
+
+      const res = await fetch('/api/admin/password', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_password: current,
+          new_password: next,
+        }),
+      });
+      if (res.status === 401) {
+        const data = await res.json().catch(() => ({}));
+        // A 401 here is either a bad current password or an expired session.
+        if (data.error === 'bad_current_password') {
+          return fail(data.message || 'Current password is not correct.');
+        }
+        showLogin();
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return fail(data.message || data.error || 'Could not change the password.');
+      }
+      pwOk.textContent = data.message || 'Password updated.';
+      pwOk.classList.remove('hidden');
+      document.getElementById('pwCurrent').value = '';
+      document.getElementById('pwNew').value = '';
+      document.getElementById('pwNew2').value = '';
+      setTimeout(closePwModal, 1600);
     });
 
     /** Worker fallback cost when no franchisee override is set: floor(cents/1.2/50)*50. */
