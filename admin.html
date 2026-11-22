@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,11 +6,11 @@
   <meta name="theme-color" content="#006600">
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <title>Admin — Springfield Peptide Buyers Club</title>
+  <title>Admin â€” Springfield Peptide Buyers Club</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.deca9e93.css">
+    <link rel="stylesheet" href="/shared/tailwind.86cd387f.css">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -103,6 +103,66 @@
     }
     .table-scroll table { min-width: 720px; }
     .break-word { overflow-wrap: anywhere; word-break: break-word; }
+
+    /* ---- Layout / mobile -------------------------------------------------- */
+    /* Tabs: one scrollable row on phones instead of wrapping into a ragged
+       block that pushes the panel down. */
+    .admin-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #27272a;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .admin-tabs::-webkit-scrollbar { display: none; }
+    .admin-tabs .tab-btn { flex: 0 0 auto; white-space: nowrap; }
+
+    /* Panel header: title + actions stack on phones, sit inline from 640px. */
+    .panel-head {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .panel-head h1 { margin: 0; }
+    .panel-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .panel-actions > * { flex: 1 1 auto; }
+    @media (min-width: 640px) {
+      .panel-head { flex-direction: row; align-items: center; justify-content: space-between; }
+      .panel-actions > * { flex: 0 0 auto; }
+    }
+
+    /* Filter row: full-width controls on phones so nothing is a 90px stub. */
+    .filter-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    .filter-row > select,
+    .filter-row > input { flex: 1 1 100%; min-width: 0; }
+    @media (min-width: 640px) {
+      .filter-row > select { flex: 0 0 auto; }
+      .filter-row > input[type="search"] { flex: 1 1 180px; }
+      .filter-row > input[type="date"] { flex: 0 0 auto; }
+    }
+
+    /* Header: keep the brand and the two buttons on one line, buttons compact. */
+    .site-header__inner { gap: 0.5rem; }
+    #headerActions { flex-wrap: nowrap; }
+    @media (max-width: 400px) {
+      .btn-ghost-admin { padding: 0.45rem 0.6rem; font-size: 0.8rem; }
+    }
+
+    /* Modals: never taller than the viewport; scroll inside instead. */
+    .modal-panel {
+      max-height: calc(100vh - 2rem);
+      overflow-y: auto;
+    }
+
+    /* Tap targets: 44px minimum on touch devices. */
+    @media (pointer: coarse) {
+      .tab-btn, .btn-ghost-admin, .panel-actions button { min-height: 44px; }
+    }
   </style>
 </head>
 <body class="admin-shell text-white overflow-x-hidden atmosphere">
@@ -114,7 +174,7 @@
           <span class="site-header__brand-white">Admin</span>
         </span>
       </a>
-      <div id="headerActions" class="hidden flex items-center gap-2">
+      <div id="headerActions" class="hidden items-center gap-2">
         <span id="adminWho" class="text-xs text-emerald-200/90 hidden sm:inline"></span>
         <button id="changePwBtn" type="button" class="btn-ghost-admin">Change password</button>
         <button id="logoutBtn" type="button" class="btn-ghost-admin">Log out</button>
@@ -128,7 +188,7 @@
     <section id="loginSection" class="max-w-sm mx-auto">
       <p class="text-center text-[10px] uppercase tracking-[0.22em] text-emerald-300/80 mb-2">Members ops</p>
       <h1 class="ducks-font text-3xl sm:text-4xl text-[#FDD700] text-center mb-2">Admin login</h1>
-      <p class="text-center text-zinc-500 text-xs mb-6">Remy master · same password as Patriotic</p>
+      <p class="text-center text-zinc-500 text-xs mb-6">Remy master - password stored hashed in the database</p>
       <form id="loginForm" class="admin-card space-y-4 p-5 sm:p-6">
         <div>
           <label class="block text-xs text-zinc-400 mb-1" for="username">Username</label>
@@ -142,7 +202,7 @@
         <button type="submit" class="btn-primary-admin">Sign in</button>
       </form>
       <p class="text-center text-zinc-600 text-xs mt-6">
-        <a href="/" class="hover:text-[#FDD700]">← Back to store</a>
+        <a href="/" class="hover:text-[#FDD700]">â† Back to store</a>
       </p>
     </section>
 
@@ -177,7 +237,7 @@
         <button type="submit" class="btn-primary-admin">Set password &amp; sign in</button>
       </form>
       <p class="text-center text-zinc-600 text-xs mt-6">
-        Stored hashed in the database — not as a plaintext secret. Delete
+        Stored hashed in the database â€” not as a plaintext secret. Delete
         <code>ADMIN_SETUP_TOKEN</code> afterwards.
       </p>
     </section>
@@ -185,7 +245,7 @@
     <!-- APP (after login) -->
     <section id="appSection" class="hidden">
       <!-- Tabs -->
-      <nav class="flex flex-wrap gap-2 mb-6 border-b border-zinc-800 pb-3">
+      <nav class="admin-tabs">
         <button type="button" data-tab="orders" id="tabOrders"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Orders
@@ -196,7 +256,7 @@
         </button>
 <!-- Suppliers tab retired: vendor shops (Vendor match) replaced it. The
      suppliers API and the Supplier dropdown on Price list still work, so
-     existing product→supplier assignments and Telegram routing are intact. -->
+     existing productâ†’supplier assignments and Telegram routing are intact. -->
         <button type="button" data-tab="vendors" id="tabVendors"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Vendor match
@@ -213,11 +273,11 @@
 
       <!-- SALES & PROFIT -->
       <div id="reportPanel" class="hidden">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div class="panel-head">
           <h1 class="ducks-font text-3xl text-[#FDD700]">Sales &amp; Profit</h1>
-          <div class="flex flex-wrap gap-2">
+          <div class="panel-actions">
             <select id="reportScope" class="admin-input text-sm">
-              <option value="">SPBC — my books</option>
+              <option value="">SPBC â€” my books</option>
             </select>
             <select id="reportRange" class="admin-input text-sm">
               <option value="30">Last 30 days</option>
@@ -233,7 +293,7 @@
           </div>
         </div>
         <p class="text-xs text-zinc-500 mb-4">
-          Counts orders that are paid, shipped or complete — cancelled orders never count.
+          Counts orders that are paid, shipped or complete â€” cancelled orders never count.
           Pick a franchisee above to see <strong class="text-white">their</strong> full profit picture.
         </p>
 
@@ -241,21 +301,23 @@
         <div id="reportChannels" class="mb-5"></div>
         <div id="reportNotes" class="mb-5"></div>
         <div id="reportProducts" class="admin-card overflow-x-auto">
-          <p class="text-zinc-500 text-sm p-4">Loading…</p>
+          <p class="text-zinc-500 text-sm p-4">Loadingâ€¦</p>
         </div>
       </div>
 
       <!-- ORDERS -->
       <div id="ordersPanel" class="hidden">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div class="panel-head">
           <h1 class="ducks-font text-3xl text-[#FDD700]">Orders</h1>
-          <button id="ordersRefreshBtn" type="button"
-                  class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
-            Refresh
-          </button>
+          <div class="panel-actions">
+            <button id="ordersRefreshBtn" type="button"
+                    class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
+              Refresh
+            </button>
+          </div>
         </div>
 
-        <div class="flex flex-wrap gap-2 mb-4 items-center">
+        <div class="filter-row">
           <select id="orderStatus"
                   class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
             <option value="">All statuses</option>
@@ -266,10 +328,10 @@
             <option value="cancelled">cancelled</option>
           </select>
           <input id="orderQ" type="search" placeholder="Search #, email, name"
-                 class="min-w-[180px] flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
-          <input id="orderFrom" type="date"
                  class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
-          <input id="orderTo" type="date"
+          <input id="orderFrom" type="date" aria-label="From date"
+                 class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
+          <input id="orderTo" type="date" aria-label="To date"
                  class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
           <label class="inline-flex items-center gap-2 text-sm text-zinc-400 cursor-pointer select-none px-1">
             <input id="orderShowCleared" type="checkbox" class="rounded border-zinc-600 bg-zinc-900 text-violet-500 focus:ring-violet-500">
@@ -314,17 +376,19 @@
 
       <!-- PRODUCTS -->
       <div id="productsPanel" class="hidden">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div class="panel-head">
           <h1 class="ducks-font text-3xl text-[#FDD700]">Price list</h1>
-          <button id="addBtn" type="button"
-                  class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
-            + Add product
-          </button>
+          <div class="panel-actions">
+            <button id="addBtn" type="button"
+                    class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
+              + Add product
+            </button>
+          </div>
         </div>
 
         <!-- Add product: lands at position 1, franchisee cost always settable (creates the link) -->
         <div id="addProductModal" class="hidden fixed inset-0 z-[120] bg-black/80 flex items-start sm:items-center justify-center p-4 overflow-auto">
-          <div class="w-full max-w-md bg-zinc-900 border border-[#FDD700]/30 rounded-2xl p-5 space-y-4">
+          <div class="modal-panel w-full max-w-md bg-zinc-900 border border-[#FDD700]/30 rounded-2xl p-5 space-y-4">
             <h2 class="ducks-font text-2xl text-[#FDD700]">Add product</h2>
             <p class="text-xs text-zinc-500">Added at <strong class="text-zinc-300">position 1</strong> (top of the list).</p>
 
@@ -348,7 +412,7 @@
 
             <div class="pt-3 border-t border-zinc-700 space-y-2">
               <p class="text-xs text-zinc-400">
-                <strong class="text-amber-400">Franchisee cost</strong> — what the franchisee pays you.
+                <strong class="text-amber-400">Franchisee cost</strong> â€” what the franchisee pays you.
                 Prefilled with the automatic fallback; saving creates the product link so their
                 cost never silently follows a public price change.
               </p>
@@ -365,7 +429,7 @@
           </div>
         </div>
         <p class="text-xs text-zinc-500 mb-3">
-          Assign a <strong class="text-amber-400">Supplier</strong> per product (admin only). Used for cost and margin reporting — never shown to customers.
+          Assign a <strong class="text-amber-400">Supplier</strong> per product (admin only). Used for cost and margin reporting â€” never shown to customers.
         </p>
         <div class="flex flex-wrap gap-3 items-end mb-4 p-3 sm:p-4 rounded-2xl border border-violet-500/30 bg-violet-950/20">
           <div class="min-w-[200px] flex-1">
@@ -385,58 +449,43 @@
 
       <!-- VENDOR MATCH -->
       <div id="vendorsPanel" class="hidden">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div class="panel-head">
           <h1 class="ducks-font text-3xl text-[#FDD700]">Vendor match</h1>
-          <div class="flex gap-2">
+          <div class="panel-actions">
             <button id="addVendorBtn" type="button"
                     class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
               + Add vendor
             </button>
             <button id="reloadVendorsBtn" type="button"
                     class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm">
-              ↻ Reload
+              â†» Reload
             </button>
           </div>
         </div>
         <p class="text-xs text-zinc-500 mb-4">
           Tell the bot which of a vendor's products is <em>our</em> product.
-          Routing matches by name on its own — set a match here when a vendor
+          Routing matches by name on its own â€” set a match here when a vendor
           names things differently (our <strong class="text-emerald-400">HGH 360IU</strong>
           is her <strong class="text-emerald-400">H36</strong>), otherwise she
           can fill the order but never gets quoted.
         </p>
-        <div id="vendorsBody" class="text-sm text-zinc-400">Loading…</div>
-      </div>
-
-      <!-- SUPPLIERS -->
-      <div id="suppliersPanel" class="hidden">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-          <h1 class="ducks-font text-3xl text-[#FDD700]">Suppliers</h1>
-          <button id="addSupplierBtn" type="button"
-                  class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
-            + Add supplier
-          </button>
-        </div>
-        <p class="text-xs text-zinc-500 mb-3">
-          Create suppliers, then assign products on Price list.
-          When an order is paid, <strong class="text-white">each supplier is texted separately</strong> with only their items (no prices).
-        </p>
-        <p id="supplierMsg" class="text-sm mb-4 hidden"></p>
-        <div id="supplierList" class="flex flex-col gap-3"></div>
+        <div id="vendorsBody" class="text-sm text-zinc-400">Loadingâ€¦</div>
       </div>
 
       <!-- FRANCHISEES (master: per-item franchisee price + create/clone) -->
       <div id="franchiseesPanel" class="hidden">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div class="panel-head">
           <h1 class="ducks-font text-3xl text-[#FDD700]">Franchisees</h1>
-          <button id="franchiseesRefreshBtn" type="button"
-                  class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
-            Refresh
-          </button>
+          <div class="panel-actions">
+            <button id="franchiseesRefreshBtn" type="button"
+                    class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
+              Refresh
+            </button>
+          </div>
         </div>
         <p class="text-xs text-zinc-500 mb-4">
           <strong class="text-white">SPBC customer price</strong> is the live catalog (reference).
-          <strong class="text-violet-300">Franchisee price</strong> is what they pay you on dropship/emergency — independent override (blank = use SPBC price).
+          <strong class="text-violet-300">Franchisee price</strong> is what they pay you on dropship/emergency â€” independent override (blank = use SPBC price).
         </p>
         <p id="franchiseeMsg" class="text-sm mb-4 hidden"></p>
 
@@ -454,7 +503,7 @@
             <div>
               <label class="block text-[11px] text-zinc-400 mb-1" for="newFranClone">Clone products + prices from</label>
               <select id="newFranClone" class="admin-input">
-                <option value="">— none —</option>
+                <option value="">â€” none â€”</option>
               </select>
             </div>
           </div>
@@ -463,7 +512,7 @@
             Create + setup link
           </button>
           <div id="newFranSetupBox" class="hidden mt-2 p-3 rounded-xl bg-zinc-950 border border-violet-500/40">
-            <p class="text-[11px] text-zinc-400 mb-1">Setup link (copy once — send to franchisee):</p>
+            <p class="text-[11px] text-zinc-400 mb-1">Setup link (copy once â€” send to franchisee):</p>
             <p id="newFranSetupUrl" class="text-sm text-violet-200 break-word font-mono"></p>
           </div>
         </div>
@@ -519,15 +568,15 @@
           </p>
         </div>
 
-        <!-- Sync all products: explicit click only — never auto-run on load -->
+        <!-- Sync all products: explicit click only â€” never auto-run on load -->
         <div id="franSyncPanel" class="border border-emerald-500/30 rounded-2xl p-4 mb-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="text-sm font-bold text-emerald-300 uppercase tracking-wide">Sync all products</h2>
-            <p id="franCoverage" class="text-sm font-semibold text-white">— of — products linked</p>
+            <p id="franCoverage" class="text-sm font-semibold text-white">â€” of â€” products linked</p>
           </div>
           <p class="text-[11px] text-zinc-500 leading-relaxed">
             Links every live catalog product to this franchisee and sets an <strong class="text-zinc-300">explicit</strong>
-            franchisee cost (fallback formula — never NULL). Stale links (catalog name gone) break order mapping — remove them.
+            franchisee cost (fallback formula â€” never NULL). Stale links (catalog name gone) break order mapping â€” remove them.
             Nothing runs until you click.
           </p>
           <div class="grid sm:grid-cols-2 gap-3">
@@ -577,7 +626,7 @@
   <!-- CHANGE PASSWORD (modal, opened from the header) -->
   <div id="pwModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4"
        style="background:rgba(0,0,0,.75);">
-    <div class="admin-card w-full max-w-sm p-5 sm:p-6">
+    <div class="modal-panel admin-card w-full max-w-sm p-5 sm:p-6">
       <h2 class="ducks-font text-2xl text-[#FDD700] mb-1">Change password</h2>
       <p class="text-zinc-500 text-xs mb-5">
         Stored hashed in the database. You stay signed in after changing it.
@@ -618,11 +667,8 @@
     const loginError = document.getElementById('loginError');
     const ordersPanel = document.getElementById('ordersPanel');
     const productsPanel = document.getElementById('productsPanel');
-    const suppliersPanel = document.getElementById('suppliersPanel');
     const franchiseesPanel = document.getElementById('franchiseesPanel');
     const reportPanel = document.getElementById('reportPanel');
-    const supplierList = document.getElementById('supplierList');
-    const supplierMsg = document.getElementById('supplierMsg');
     const franchiseeMsg = document.getElementById('franchiseeMsg');
     /** @type {{id:number,name:string,notes?:string,active:boolean}[]} */
     let suppliersCache = [];
@@ -696,7 +742,6 @@
       });
       ordersPanel.classList.toggle('hidden', activeTab !== 'orders');
       productsPanel.classList.toggle('hidden', activeTab !== 'products');
-      suppliersPanel.classList.toggle('hidden', activeTab !== 'suppliers');
       const vp = document.getElementById('vendorsPanel');
       if (vp) vp.classList.toggle('hidden', activeTab !== 'vendors');
       franchiseesPanel.classList.toggle('hidden', activeTab !== 'franchisees');
@@ -713,18 +758,17 @@
         await loadVendorCostIndex();
         await loadProducts();
       }
-      if (tab === 'suppliers') await loadSuppliers();
       if (tab === 'vendors') await loadVendorMatch();
       if (tab === 'franchisees') await loadFranchisees();
       if (tab === 'report') await loadReport();
     }
 
-    /* ---------- Vendor match (SPBC product → vendor's product) ---------- */
+    /* ---------- Vendor match (SPBC product â†’ vendor's product) ---------- */
 
     async function loadVendorMatch() {
       const body = document.getElementById('vendorsBody');
       if (!body) return;
-      body.textContent = 'Loading vendor catalogs…';
+      body.textContent = 'Loading vendor catalogsâ€¦';
       let data;
       try {
         const res = await fetch('/api/admin/vendor-links', {
@@ -748,7 +792,7 @@
       }
 
       // Must match the bot's key exactly: collapse whitespace, lower-case.
-      // Our catalog has names like "CAGRI  5MG" (double space) — comparing raw
+      // Our catalog has names like "CAGRI  5MG" (double space) â€” comparing raw
       // meant a saved match never showed up and looked like it hadn't saved.
       const normKey = (s) => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
 
@@ -778,7 +822,7 @@
         .sort();
       if (!ours.length) {
         body.innerHTML =
-          '<div class="text-amber-400">Could not load the SPBC catalog — ' +
+          '<div class="text-amber-400">Could not load the SPBC catalog â€” ' +
           'open the Price list tab once, then come back.</div>';
         return;
       }
@@ -792,7 +836,7 @@
               .map(
                 (p) =>
                   `<option value="${p.id}"${Number(p.id) === Number(selectedId) ? ' selected' : ''}>` +
-                  `${escapeHtml(p.name)} · $${p.price} · ${p.stock} in stock</option>`
+                  `${escapeHtml(p.name)} Â· $${p.price} Â· ${p.stock} in stock</option>`
               )
               .join('');
           const rows = ours
@@ -802,7 +846,7 @@
                 (p) => normKey(p.name) === normKey(name)
               );
               const status = cur
-                ? `<span class="text-emerald-400">matched → ${escapeHtml(cur.vendor_product_name || '?')}</span>`
+                ? `<span class="text-emerald-400">matched â†’ ${escapeHtml(cur.vendor_product_name || '?')}</span>`
                 : auto
                   ? '<span class="text-zinc-500">auto (same name)</span>'
                   : '<span class="text-zinc-600">not carried</span>';
@@ -812,7 +856,7 @@
                 <td class="py-2">
                   <select data-shop="${v.shop_chat_id}" data-name="${escapeHtml(name)}"
                           class="vmatch bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs">
-                    <option value=""${cur ? '' : ' selected'}>— none —</option>${optsFor(cur ? cur.vendor_product_id : 0)}
+                    <option value=""${cur ? '' : ' selected'}>â€” none â€”</option>${optsFor(cur ? cur.vendor_product_id : 0)}
                   </select>
                 </td>
               </tr>`;
@@ -852,7 +896,7 @@
               alert(d.message || d.error || 'Could not save that match');
             }
           } catch (e) {
-            alert('Bot unreachable — match not saved.');
+            alert('Bot unreachable â€” match not saved.');
           } finally {
             sel.disabled = false;
             vendorCostIndex = null; // price list must reflect the new match
@@ -869,7 +913,7 @@
       if (!name || !name.trim()) return;
       const btn = document.getElementById('addVendorBtn');
       btn.disabled = true;
-      btn.textContent = 'Creating…';
+      btn.textContent = 'Creatingâ€¦';
       try {
         const res = await fetch('/api/admin/vendor-create', {
           method: 'POST',
@@ -902,7 +946,7 @@
         vendorCostIndex = null;
         await loadVendorMatch();
       } catch (e) {
-        alert('Bot unreachable — vendor not created.');
+        alert('Bot unreachable â€” vendor not created.');
       } finally {
         btn.disabled = false;
         btn.textContent = '+ Add vendor';
@@ -934,7 +978,7 @@
         for (const p of data.partners || []) {
           const o = document.createElement('option');
           o.value = p.slug;
-          o.textContent = `${p.name} — their books`;
+          o.textContent = `${p.name} â€” their books`;
           sel.appendChild(o);
         }
         reportScopeLoaded = true;
@@ -961,7 +1005,7 @@
       const totals = document.getElementById('reportTotals');
       const channels = document.getElementById('reportChannels');
       const notesEl = document.getElementById('reportNotes');
-      if (wrap) wrap.innerHTML = '<p class="text-zinc-500 text-sm p-4">Loading…</p>';
+      if (wrap) wrap.innerHTML = '<p class="text-zinc-500 text-sm p-4">Loadingâ€¦</p>';
       for (const el of [totals, channels, notesEl]) if (el) el.innerHTML = '';
 
       const res = await fetch('/api/admin/reports/sales' + reportRangeQuery(), {
@@ -973,20 +1017,20 @@
         return;
       }
       const d = await res.json();
-      const usd = (c) => (c == null ? '—' : '$' + (Number(c) / 100).toFixed(2));
+      const usd = (c) => (c == null ? 'â€”' : '$' + (Number(c) / 100).toFixed(2));
       const isPartner = d.scope === 'partner';
 
       if (totals) {
         const tone = d.profit_cents == null ? '' : d.profit_cents > 0 ? 'good' : 'bad';
         totals.innerHTML = isPartner
-          ? reportStatCard('Their revenue', usd(d.revenue_cents), d.orders + ' orders · ' + d.units + ' units') +
+          ? reportStatCard('Their revenue', usd(d.revenue_cents), d.orders + ' orders Â· ' + d.units + ' units') +
             reportStatCard('They paid SPBC', usd(d.cost_cents), 'cost of these goods') +
             reportStatCard('Their profit', usd(d.profit_cents), 'revenue minus cost', tone) +
-            reportStatCard('Their margin', d.margin_pct == null ? '—' : d.margin_pct + '%', '', tone)
-          : reportStatCard('Revenue', usd(d.revenue_cents), d.orders + ' orders · ' + d.units + ' units') +
+            reportStatCard('Their margin', d.margin_pct == null ? 'â€”' : d.margin_pct + '%', '', tone)
+          : reportStatCard('Revenue', usd(d.revenue_cents), d.orders + ' orders Â· ' + d.units + ' units') +
             reportStatCard('Units sold', String(d.units), 'vials + packs') +
             reportStatCard('Orders', String(d.orders), 'paid, shipped or complete') +
-            reportStatCard('Net profit', '—', 'needs a supplier cost per product');
+            reportStatCard('Net profit', 'â€”', 'needs a supplier cost per product');
       }
 
       if (channels && d.channels && d.channels.length) {
@@ -999,9 +1043,9 @@
               '<td class="px-3 py-2 text-center text-zinc-300">' + c.units + '</td>' +
               '<td class="px-3 py-2 text-right text-zinc-100">' + usd(c.revenue_cents) + '</td>' +
               '<td class="px-3 py-2 text-right text-zinc-500">' +
-              (c.list_value_cents == null ? '—' : usd(c.list_value_cents)) + '</td>' +
+              (c.list_value_cents == null ? 'â€”' : usd(c.list_value_cents)) + '</td>' +
               '<td class="px-3 py-2 text-right text-amber-400">' +
-              (c.discount_cents == null ? '—' : usd(c.discount_cents)) + '</td>' +
+              (c.discount_cents == null ? 'â€”' : usd(c.discount_cents)) + '</td>' +
               '</tr>'
           )
           .join('');
@@ -1046,7 +1090,7 @@
               ? '<td class="px-3 py-2 text-right text-zinc-400">' + usd(p.cost_cents) + '</td>' +
                 '<td class="px-3 py-2 text-right font-semibold ' + tone + '">' + usd(p.profit_cents) + '</td>' +
                 '<td class="px-3 py-2 text-right ' + tone + '">' +
-                (p.margin_pct == null ? '—' : p.margin_pct + '%') + '</td>'
+                (p.margin_pct == null ? 'â€”' : p.margin_pct + '%') + '</td>'
               : '') +
             '</tr>'
           );
@@ -1091,12 +1135,12 @@
       const prev = keepSlug || sel.value;
       sel.innerHTML = franchiseesCache
         .map((p) => {
-          const label = `${p.name} (${p.slug})${p.active ? '' : ' · inactive'}`;
+          const label = `${p.name} (${p.slug})${p.active ? '' : ' Â· inactive'}`;
           return `<option value="${escapeAttr(p.slug)}">${escapeHtml(label)}</option>`;
         })
         .join('');
       cloneSel.innerHTML =
-        '<option value="">— none —</option>' +
+        '<option value="">â€” none â€”</option>' +
         franchiseesCache
           .filter((p) => p.active)
           .map(
@@ -1126,9 +1170,9 @@
       const day = partner.batch_weekday ?? 4;
       const schedBit =
         mode === 'batch'
-          ? ` · batches ${DAY_NAMES[day]}`
-          : ' · dropships immediately';
-      meta.textContent = `${partner.name} · ${links.length} mapped product(s)${schedBit}${partner.active ? '' : ' · INACTIVE'}`;
+          ? ` Â· batches ${DAY_NAMES[day]}`
+          : ' Â· dropships immediately';
+      meta.textContent = `${partner.name} Â· ${links.length} mapped product(s)${schedBit}${partner.active ? '' : ' Â· INACTIVE'}`;
       const modeEl = document.getElementById('franMode');
       const dayEl = document.getElementById('franDay');
       if (modeEl) modeEl.value = mode;
@@ -1143,9 +1187,9 @@
         tbody.innerHTML = links
           .map((l) => {
             const key = escapeAttr(l.partner_name);
-            const title = `${escapeHtml(l.partner_name)} <span class="text-zinc-500">→ ${escapeHtml(l.spbc_name)}</span>`;
-            const spbcV = l.spbc_vial_cents != null ? formatCents(l.spbc_vial_cents) : (l.spbc_vial_price != null ? '$' + moneyVal(l.spbc_vial_price) : '—');
-            const spbcP = l.spbc_pack_cents != null ? formatCents(l.spbc_pack_cents) : (l.spbc_pack_price != null ? '$' + moneyVal(l.spbc_pack_price) : '—');
+            const title = `${escapeHtml(l.partner_name)} <span class="text-zinc-500">â†’ ${escapeHtml(l.spbc_name)}</span>`;
+            const spbcV = l.spbc_vial_cents != null ? formatCents(l.spbc_vial_cents) : (l.spbc_vial_price != null ? '$' + moneyVal(l.spbc_vial_price) : 'â€”');
+            const spbcP = l.spbc_pack_cents != null ? formatCents(l.spbc_pack_cents) : (l.spbc_pack_price != null ? '$' + moneyVal(l.spbc_pack_price) : 'â€”');
             return `<tr class="border-b border-zinc-900" data-partner-name="${key}">
             <td class="px-3 py-2.5 align-top">${title}</td>
             <td class="px-3 py-2.5 text-zinc-400 whitespace-nowrap">${spbcV}</td>
@@ -1190,7 +1234,7 @@
       if (!cov || !unEl || !stEl) return;
       const state = franSyncState();
       if (!state.partner) {
-        cov.textContent = '— of — products linked';
+        cov.textContent = 'â€” of â€” products linked';
         unEl.innerHTML = '<li class="text-zinc-600">Select a franchisee.</li>';
         stEl.innerHTML = '';
         if (linkBtn) linkBtn.disabled = true;
@@ -1209,7 +1253,7 @@
       }
       unEl.innerHTML = state.unlinked.length
         ? state.unlinked.map((p) => `<li class="text-amber-200/90">${escapeHtml(p.name)}</li>`).join('')
-        : '<li class="text-emerald-500/80">None — full coverage</li>';
+        : '<li class="text-emerald-500/80">None â€” full coverage</li>';
       stEl.innerHTML = state.stale.length
         ? state.stale
             .map(
@@ -1221,7 +1265,7 @@
                 </li>`
             )
             .join('')
-        : '<li class="text-emerald-500/80">None — no stale links</li>';
+        : '<li class="text-emerald-500/80">None â€” no stale links</li>';
       if (linkBtn) linkBtn.disabled = !state.unlinked.length;
       if (staleBtn) staleBtn.disabled = !state.stale.length;
       stEl.querySelectorAll('[data-remove-stale]').forEach((btn) => {
@@ -1239,7 +1283,7 @@
 
     /**
      * Fallback franchisee cost in cents: floor(customer_cents / 1.2 / 50) * 50.
-     * Always write an explicit value — never leave NULL overrides.
+     * Always write an explicit value â€” never leave NULL overrides.
      */
     function fallbackFranchiseeCents(customerDollars) {
       const cents = Math.round((Number(customerDollars) || 0) * 100);
@@ -1273,7 +1317,7 @@
       }
       let ok = 0;
       let fail = 0;
-      showFranSyncMsg(`Linking 0 / ${state.unlinked.length}…`);
+      showFranSyncMsg(`Linking 0 / ${state.unlinked.length}â€¦`);
       for (const p of state.unlinked) {
         try {
           const vialCents = fallbackFranchiseeCents(p.vial_price);
@@ -1310,7 +1354,7 @@
         } catch (_) {
           fail += 1;
         }
-        showFranSyncMsg(`Linking ${ok + fail} / ${state.unlinked.length}…`);
+        showFranSyncMsg(`Linking ${ok + fail} / ${state.unlinked.length}â€¦`);
       }
       showFranSyncMsg(
         fail ? `Linked ${ok}, failed ${fail}` : `Linked ${ok} product(s) with explicit costs`,
@@ -1474,8 +1518,8 @@
       const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       showFranMsg(
         mode === 'batch'
-          ? `Saved — orders stack into one master order every ${DAY_NAMES[day]}`
-          : 'Saved — each paid order dropships immediately'
+          ? `Saved â€” orders stack into one master order every ${DAY_NAMES[day]}`
+          : 'Saved â€” each paid order dropships immediately'
       );
       await loadFranchisees();
       document.getElementById('franSelect').value = slug;
@@ -1518,7 +1562,7 @@
       }
       showFranMsg(
         `Created ${data.partner?.slug || slug}` +
-          (data.links_cloned != null ? ` · cloned ${data.links_cloned} products` : '')
+          (data.links_cloned != null ? ` Â· cloned ${data.links_cloned} products` : '')
       );
       await loadFranchisees();
       if (data.partner?.slug) {
@@ -1550,13 +1594,6 @@
       showFranMsg('New setup link generated');
     }
 
-    function showSupplierMsg(text, ok = true) {
-      supplierMsg.textContent = text;
-      supplierMsg.className = `text-sm mb-4 ${ok ? 'text-emerald-400' : 'text-red-400'}`;
-      supplierMsg.classList.remove('hidden');
-      if (ok) setTimeout(() => supplierMsg.classList.add('hidden'), 2500);
-    }
-
     async function loadSuppliersCache() {
       try {
         const res = await fetch('/api/admin/suppliers', { credentials: 'same-origin' });
@@ -1570,105 +1607,6 @@
       } catch {
         /* ignore */
       }
-    }
-
-    async function loadSuppliers() {
-      supplierList.innerHTML = '<p class="text-zinc-500 text-sm">Loading…</p>';
-      const res = await fetch('/api/admin/suppliers', { credentials: 'same-origin' });
-      if (res.status === 401) {
-        showLogin();
-        return;
-      }
-      if (!res.ok) {
-        supplierList.innerHTML = '<p class="text-red-400 text-sm">Failed to load suppliers</p>';
-        return;
-      }
-      const data = await res.json();
-      suppliersCache = data.suppliers || [];
-      renderSuppliers(suppliersCache);
-    }
-
-    function renderSuppliers(suppliers) {
-      if (!suppliers.length) {
-        supplierList.innerHTML =
-          '<p class="text-zinc-500 text-sm">No suppliers yet. Add one, then assign on Price list products.</p>';
-        return;
-      }
-      supplierList.innerHTML = '';
-      suppliers.forEach((s) => supplierList.appendChild(supplierCard(s)));
-    }
-
-    function supplierCard(s) {
-      const card = document.createElement('article');
-      card.className = 'bg-zinc-900 border border-amber-700/30 rounded-2xl p-4 space-y-3';
-      card.dataset.id = s.id;
-      const hasChat = !!(s.telegram_chat_id && String(s.telegram_chat_id).trim());
-      // Prefer stored username in notes prefix? Use separate field via data-username if we store in notes - use empty for now
-      const guessedUser =
-        (s.telegram_username || '').replace(/^@/, '') ||
-        (String(s.name || '').startsWith('@') ? String(s.name).replace(/^@/, '') : '');
-      card.innerHTML = `
-        <div class="grid sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-zinc-500 mb-1">Supplier name</label>
-            <input data-field="name" value="${escapeAttr(s.name)}"
-                   class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">
-          </div>
-          <div class="flex items-end">
-            <label class="flex items-center gap-2 cursor-pointer pb-2">
-              <input data-field="active" type="checkbox" ${s.active ? 'checked' : ''} class="accent-[#FDD700]">
-              <span class="text-zinc-300 text-sm">Active</span>
-            </label>
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs text-zinc-500 mb-1">
-            Telegram @username
-            <span class="text-emerald-400/90">(auto-lookup chat ID)</span>
-          </label>
-          <div class="flex gap-2">
-            <input data-field="telegram_username" value="${escapeAttr(guessedUser)}"
-                   placeholder="@unicornfartzz"
-                   class="flex-1 bg-black border border-emerald-800/50 rounded-xl px-3 py-2 text-sm text-emerald-100 placeholder:text-zinc-600">
-            <button type="button" data-action="lookup"
-                    class="px-3 bg-emerald-950 border border-emerald-700 text-emerald-200 font-semibold rounded-xl text-sm hover:bg-emerald-900 whitespace-nowrap">
-              Lookup ID
-            </button>
-          </div>
-          <p class="text-[11px] text-zinc-600 mt-1">
-            Supplier must open your bot and press <strong>Start</strong> once, then Lookup fills chat ID automatically.
-          </p>
-        </div>
-        <div>
-          <label class="block text-xs text-zinc-500 mb-1">
-            Telegram chat ID
-            <span class="${hasChat ? 'text-emerald-400' : 'text-amber-400'}">
-              (${hasChat ? 'will receive their orders' : 'auto-filled by Lookup'})
-            </span>
-          </label>
-          <input data-field="telegram_chat_id" value="${escapeAttr(s.telegram_chat_id || '')}"
-                 placeholder="filled automatically after Lookup"
-                 class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm font-mono text-zinc-200 placeholder:text-zinc-600">
-        </div>
-        <div>
-          <label class="block text-xs text-zinc-500 mb-1">Notes (optional, admin only)</label>
-          <input data-field="notes" value="${escapeAttr(s.notes || '')}"
-                 placeholder="Contact, lead time, etc."
-                 class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">
-        </div>
-        <div class="flex gap-2">
-          <button type="button" data-action="save"
-                  class="flex-1 bg-[#FDD700] hover:bg-white text-black font-bold py-2 rounded-xl text-sm">Save</button>
-          <button type="button" data-action="delete"
-                  class="px-4 bg-red-950 hover:bg-red-900 border border-red-700 text-red-300 font-semibold py-2 rounded-xl text-sm">Delete</button>
-        </div>
-      `;
-      card.querySelector('[data-action="save"]').addEventListener('click', () => saveSupplier(card));
-      card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteSupplier(card));
-      card.querySelector('[data-action="lookup"]').addEventListener('click', () =>
-        lookupTelegramForCard(card)
-      );
-      return card;
     }
 
     async function resolveTelegramUsername(username) {
@@ -1691,118 +1629,8 @@
       return data;
     }
 
-    async function lookupTelegramForCard(card) {
-      let user = card.querySelector('[data-field="telegram_username"]').value.trim();
-      if (!user) {
-        const name = card.querySelector('[data-field="name"]').value.trim();
-        if (name.startsWith('@')) user = name;
-      }
-      if (!user) {
-        showSupplierMsg('Enter a Telegram @username first', false);
-        return;
-      }
-      try {
-        showSupplierMsg('Looking up Telegram…');
-        const data = await resolveTelegramUsername(user);
-        if (!data) return;
-        card.querySelector('[data-field="telegram_chat_id"]').value =
-          data.telegram_chat_id || '';
-        if (data.username) {
-          card.querySelector('[data-field="telegram_username"]').value =
-            data.username;
-        }
-        showSupplierMsg(
-          `Found chat ID ${data.telegram_chat_id}` +
-            (data.username ? ` (@${data.username})` : '') +
-            ' — click Save'
-        );
-      } catch (e) {
-        showSupplierMsg(e.message || String(e), false);
-      }
-    }
-
-    async function saveSupplier(card, { autoLookup = true } = {}) {
-      const id = card.dataset.id;
-      let chatId =
-        card.querySelector('[data-field="telegram_chat_id"]').value.trim() ||
-        null;
-      const username = (
-        card.querySelector('[data-field="telegram_username"]')?.value || ''
-      ).trim();
-
-      // Auto-lookup when username set but chat id empty
-      if (autoLookup && username && !chatId) {
-        try {
-          showSupplierMsg('Looking up Telegram chat ID…');
-          const data = await resolveTelegramUsername(username);
-          if (data?.telegram_chat_id) {
-            chatId = String(data.telegram_chat_id);
-            card.querySelector('[data-field="telegram_chat_id"]').value = chatId;
-          }
-        } catch (e) {
-          showSupplierMsg(
-            'Saved name, but Telegram lookup failed: ' + (e.message || e) +
-              ' — have them Start the bot, then Lookup again',
-            false
-          );
-        }
-      }
-
-      const body = {
-        name: card.querySelector('[data-field="name"]').value.trim(),
-        notes: card.querySelector('[data-field="notes"]').value.trim() || null,
-        telegram_chat_id: chatId,
-        active: card.querySelector('[data-field="active"]').checked,
-      };
-      if (!body.name) {
-        showSupplierMsg('Name is required', false);
-        return;
-      }
-      const res = await fetch('/api/admin/suppliers/' + id, {
-        method: 'PUT',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (res.status === 401) {
-        showLogin();
-        return;
-      }
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        showSupplierMsg(err.error || 'Save failed', false);
-        return;
-      }
-      showSupplierMsg(
-        body.telegram_chat_id
-          ? 'Supplier saved'
-          : 'Supplier saved (no chat ID yet — Lookup after they Start the bot)'
-      );
-      await loadSuppliers();
-    }
-
-    async function deleteSupplier(card) {
-      const name = card.querySelector('[data-field="name"]').value;
-      if (!confirm(`Delete supplier “${name}”? Products using it will be unassigned.`)) return;
-      const id = card.dataset.id;
-      const res = await fetch('/api/admin/suppliers/' + id, {
-        method: 'DELETE',
-        credentials: 'same-origin',
-      });
-      if (res.status === 401) {
-        showLogin();
-        return;
-      }
-      if (!res.ok) {
-        showSupplierMsg('Delete failed', false);
-        return;
-      }
-      showSupplierMsg('Deleted');
-      await loadSuppliers();
-    }
-
     function supplierOptionsHtml(selectedId) {
-      const opts = ['<option value="">— Unassigned —</option>'];
+      const opts = ['<option value="">â€” Unassigned â€”</option>'];
       const list = suppliersCache.filter((s) => s.active || String(s.id) === String(selectedId));
       for (const s of list) {
         const sel = String(s.id) === String(selectedId || '') ? ' selected' : '';
@@ -1841,7 +1669,7 @@
       setTabStyles();
     }
 
-    /** No credential configured anywhere → offer first-run setup instead of a dead login. */
+    /** No credential configured anywhere â†’ offer first-run setup instead of a dead login. */
     async function checkSetupState() {
       try {
         const res = await fetch('/api/admin/setup', { credentials: 'same-origin' });
@@ -1867,7 +1695,7 @@
           const who = document.getElementById('adminWho');
           if (who && data.user) {
             who.textContent =
-              (data.user.display_name || data.user.username || 'Remy') + ' · master';
+              (data.user.display_name || data.user.username || 'Remy') + ' Â· master';
           }
           showApp();
           await switchTab(activeTab);
@@ -1907,7 +1735,7 @@
       document.getElementById('setupPass2').value = '';
       if (data.signed_in) {
         const who = document.getElementById('adminWho');
-        if (who) who.textContent = (data.user?.username || 'Remy') + ' · master';
+        if (who) who.textContent = (data.user?.username || 'Remy') + ' Â· master';
         showApp();
         await switchTab('orders');
       } else {
@@ -1946,7 +1774,7 @@
 
     async function loadOrders() {
       showOrdersError(null);
-      ordersTbody.innerHTML = '<tr><td colspan="7" class="px-3 py-6 text-zinc-500 text-center">Loading…</td></tr>';
+      ordersTbody.innerHTML = '<tr><td colspan="7" class="px-3 py-6 text-zinc-500 text-center">Loadingâ€¦</td></tr>';
       const params = new URLSearchParams({
         page: String(ordersPage),
         limit: String(ordersLimit),
@@ -1981,8 +1809,8 @@
 
       const data = await res.json();
       const orders = data.orders || [];
-      const clearedNote = showCleared ? ' · cleared only' : '';
-      ordersMeta.textContent = `${data.total ?? orders.length} orders · page ${data.page ?? ordersPage} / ${data.total_pages ?? 1}${clearedNote}`;
+      const clearedNote = showCleared ? ' Â· cleared only' : '';
+      ordersMeta.textContent = `${data.total ?? orders.length} orders Â· page ${data.page ?? ordersPage} / ${data.total_pages ?? 1}${clearedNote}`;
       ordersTbody.innerHTML = '';
 
       if (!orders.length) {
@@ -2008,11 +1836,11 @@
         const voidCls = `${btnBase} bg-red-950 border-red-700 text-red-300 hover:bg-red-900`;
         const voidBtn =
           o.status === 'complete'
-            ? ` <button type="button" class="row-void-btn ${voidCls}" title="Undo this sale — it stops counting as revenue">Void</button>`
+            ? ` <button type="button" class="row-void-btn ${voidCls}" title="Undo this sale â€” it stops counting as revenue">Void</button>`
             : '';
         const actionsHtml = isArchived
           ? `<button type="button" class="row-restore-btn ${restoreCls}">Restore</button>` + voidBtn
-          : `<button type="button" class="row-archive-btn ${archiveCls}" title="File away — keeps status">Archive</button>` +
+          : `<button type="button" class="row-archive-btn ${archiveCls}" title="File away â€” keeps status">Archive</button>` +
             ` <button type="button" class="row-action-btn ${clearCls}" title="Cancel, then file away">Clear</button>` +
             voidBtn;
         tr.innerHTML =
@@ -2020,7 +1848,7 @@
           `<td class="px-3 py-2.5">${statusBadge(o.status)}</td>` +
           `<td class="px-3 py-2.5">${escapeHtml(o.customer_name)}<br><span class="text-xs text-zinc-500">${escapeHtml(o.customer_email)}</span></td>` +
           `<td class="px-3 py-2.5">${formatCents(o.total_cents)}</td>` +
-          `<td class="px-3 py-2.5">${o.shipping_complete ? '✓' : '—'}</td>` +
+          `<td class="px-3 py-2.5">${o.shipping_complete ? 'âœ“' : 'â€”'}</td>` +
           `<td class="px-3 py-2.5 text-xs text-zinc-500">${escapeHtml((o.created_at || '').slice(0, 19).replace('T', ' '))}</td>` +
           `<td class="px-3 py-2.5 whitespace-nowrap">${actionsHtml}</td>`;
         tr.querySelector('.row-restore-btn')?.addEventListener('click', (e) => {
@@ -2057,7 +1885,7 @@
     async function showOrderDetail(orderNumber) {
       selectedOrder = orderNumber;
       orderDetail.classList.remove('hidden');
-      orderDetail.innerHTML = '<p class="text-zinc-500 text-sm">Loading detail…</p>';
+      orderDetail.innerHTML = '<p class="text-zinc-500 text-sm">Loading detailâ€¦</p>';
 
       const res = await fetch(
         '/api/admin/orders/' + encodeURIComponent(orderNumber),
@@ -2117,9 +1945,9 @@
         ? `<ul class="text-xs text-zinc-400 space-y-1">${history
             .map(
               (h) =>
-                `<li><span class="text-zinc-300">${escapeHtml(h.from_status || '—')}</span> → <span class="text-[#FDD700]">${escapeHtml(h.to_status)}</span>` +
-                ` <span class="text-zinc-600">· ${escapeHtml(h.actor || '')} · ${escapeHtml((h.created_at || '').slice(0, 19))}</span>` +
-                (h.note ? ` <span class="text-zinc-500">— ${escapeHtml(h.note)}</span>` : '') +
+                `<li><span class="text-zinc-300">${escapeHtml(h.from_status || 'â€”')}</span> â†’ <span class="text-[#FDD700]">${escapeHtml(h.to_status)}</span>` +
+                ` <span class="text-zinc-600">Â· ${escapeHtml(h.actor || '')} Â· ${escapeHtml((h.created_at || '').slice(0, 19))}</span>` +
+                (h.note ? ` <span class="text-zinc-500">â€” ${escapeHtml(h.note)}</span>` : '') +
                 `</li>`
             )
             .join('')}</ul>`
@@ -2130,7 +1958,7 @@
       const wholesaleBanner = wholesale
         ? `<div class="rounded-xl border border-violet-500 bg-violet-950/50 px-3 py-2.5 text-sm text-[#e9d5ff]">
             <strong class="text-[#a855f7]">Franchisee pays SPBC</strong>
-            · wholesale / pay-SPBC ticket (partner dropship or batch)
+            Â· wholesale / pay-SPBC ticket (partner dropship or batch)
           </div>`
         : '';
 
@@ -2146,13 +1974,13 @@
           </button>
         </div>
         ${wholesaleBanner}
-        <p class="text-sm">${escapeHtml(o.customer_name)} · <a class="text-[#FDD700] hover:underline" href="mailto:${escapeAttr(o.customer_email)}">${escapeHtml(o.customer_email)}</a></p>
+        <p class="text-sm">${escapeHtml(o.customer_name)} Â· <a class="text-[#FDD700] hover:underline" href="mailto:${escapeAttr(o.customer_email)}">${escapeHtml(o.customer_email)}</a></p>
         <p class="text-xs text-zinc-500">
           Total ${formatCents(o.total_cents)}
-          · Subtotal ${formatCents(o.subtotal_cents)}
-          · Shipping ${formatCents(o.shipping_cents)}
-          · Email: ${escapeHtml(o.email_status || '—')}
-          ${o.paid_at ? ` · Paid ${escapeHtml(o.paid_at.slice(0, 19))}` : ''}
+          Â· Subtotal ${formatCents(o.subtotal_cents)}
+          Â· Shipping ${formatCents(o.shipping_cents)}
+          Â· Email: ${escapeHtml(o.email_status || 'â€”')}
+          ${o.paid_at ? ` Â· Paid ${escapeHtml(o.paid_at.slice(0, 19))}` : ''}
         </p>
         ${o.notes ? `<p class="text-sm text-zinc-400"><span class="text-zinc-500">Notes:</span> ${escapeHtml(o.notes)}</p>` : ''}
         <div>
@@ -2197,7 +2025,7 @@
       for (const s of next) {
         const b = document.createElement('button');
         b.type = 'button';
-        b.textContent = '→ ' + s;
+        b.textContent = 'â†’ ' + s;
         b.className =
           s === 'cancelled'
             ? 'px-4 py-2 rounded-xl text-sm font-bold bg-red-950 border border-red-700 text-red-300 hover:bg-red-900'
@@ -2216,7 +2044,7 @@
         );
         actions.appendChild(tb);
       }
-      // Only after payment — hide until paid / shipped / complete
+      // Only after payment â€” hide until paid / shipped / complete
       if (o.status === 'pending_payment') {
         const hint = document.createElement('p');
         hint.className = 'w-full text-xs text-zinc-500 pt-1';
@@ -2228,7 +2056,7 @@
         const archiveBtn = document.createElement('button');
         archiveBtn.type = 'button';
         archiveBtn.textContent = 'Archive';
-        archiveBtn.title = 'File away — keeps its status, not deleted';
+        archiveBtn.title = 'File away â€” keeps its status, not deleted';
         archiveBtn.className =
           'px-4 py-2 rounded-xl text-sm font-bold bg-zinc-900 border border-emerald-700/70 text-emerald-200 hover:bg-zinc-800';
         archiveBtn.addEventListener('click', () => archiveOrderKeepStatus(orderNumber));
@@ -2253,7 +2081,7 @@
       }
     }
 
-    /** Archive: file away WITHOUT cancelling — status is preserved. */
+    /** Archive: file away WITHOUT cancelling â€” status is preserved. */
     /**
      * Void: the only way back out of a 'complete' order. Reverses the sale so it
      * stops counting as revenue in Sales & Profit. No customer email.
@@ -2284,7 +2112,7 @@
         !confirm(
           'Archive ' +
             orderNumber +
-            '?\nIt keeps its current status and is not deleted — just hidden from the active list. Restore any time via Show cleared.'
+            '?\nIt keeps its current status and is not deleted â€” just hidden from the active list. Restore any time via Show cleared.'
         )
       ) {
         return;
@@ -2391,7 +2219,7 @@
           'fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-4';
         overlay.innerHTML =
           '<div class="w-full max-w-md bg-zinc-900 border border-[#FDD700]/40 rounded-2xl p-5 space-y-4">' +
-          '<h3 class="text-lg font-bold text-[#FDD700]">Mark shipped — add tracking</h3>' +
+          '<h3 class="text-lg font-bold text-[#FDD700]">Mark shipped â€” add tracking</h3>' +
           '<div><label class="block text-xs text-zinc-400 mb-1">Carrier</label>' +
           '<select id="tkCarrier" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">' +
           TRACKING_CARRIERS.map(
@@ -2409,10 +2237,10 @@
           '<input id="tkNumber" value="' +
           escapeAttr(ex.tracking_number || '') +
           '" placeholder="e.g. 9400 1000 0000 0000 0000 00" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm"></div>' +
-          '<div><label class="block text-xs text-zinc-400 mb-1">Tracking link <span class="text-zinc-600">(auto-filled — editable)</span></label>' +
+          '<div><label class="block text-xs text-zinc-400 mb-1">Tracking link <span class="text-zinc-600">(auto-filled â€” editable)</span></label>' +
           '<input id="tkUrl" value="' +
           escapeAttr(ex.tracking_url || '') +
-          '" placeholder="https://…" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-xs"></div>' +
+          '" placeholder="https://â€¦" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-xs"></div>' +
           '<p class="text-[11px] text-zinc-500">Customer gets a shipped email with this tracking. Leave the number blank to ship without tracking.</p>' +
           '<div class="flex gap-2 pt-1">' +
           '<button id="tkSave" type="button" class="flex-1 bg-[#FDD700] hover:bg-white text-black font-bold py-2.5 rounded-xl text-sm">Ship &amp; email customer</button>' +
@@ -2473,7 +2301,7 @@
       } else {
         if (
           !confirm(
-            `Set ${orderNumber} → ${status}?\nCustomer will receive an email for this step.`
+            `Set ${orderNumber} â†’ ${status}?\nCustomer will receive an email for this step.`
           )
         ) {
           return;
@@ -2547,7 +2375,7 @@
       }
       sel.innerHTML = franchiseesCache
         .map((p) => {
-          const label = `${p.name} (${p.slug})${p.active ? '' : ' · inactive'}`;
+          const label = `${p.name} (${p.slug})${p.active ? '' : ' Â· inactive'}`;
           return `<option value="${escapeAttr(p.slug)}">${escapeHtml(label)}</option>`;
         })
         .join('');
@@ -2565,7 +2393,7 @@
 
     /**
      * THEIR product names, lower-cased. Empty until the catalog loads, and every check
-     * below treats empty as "unknown" rather than "orphan" — mislabelling every link as
+     * below treats empty as "unknown" rather than "orphan" â€” mislabelling every link as
      * dead would be worse than not labelling at all.
      */
     let franCatalogNames = new Set();
@@ -2603,7 +2431,7 @@
     /**
      * ALL of the franchisee's links that point at this SPBC product.
      *
-     * Their product name is often NOT ours ("RETATRUTIDE 30MG" → "RETA 30MG"), and
+     * Their product name is often NOT ours ("RETATRUTIDE 30MG" â†’ "RETA 30MG"), and
      * franchisee prices are keyed on THEIR name. Matching only by name is what created
      * duplicate links: saving from here minted a second link named after the SPBC
      * product while their real link stayed unpriced. Match on product id first (survives
@@ -2625,7 +2453,7 @@
     }
 
     async function loadProducts() {
-      productList.innerHTML = '<p class="text-zinc-500 text-sm">Loading…</p>';
+      productList.innerHTML = '<p class="text-zinc-500 text-sm">Loadingâ€¦</p>';
       if (!suppliersCache.length) await loadSuppliersCache();
       const res = await fetch('/api/admin/products', { credentials: 'same-origin' });
       if (res.status === 401) {
@@ -2667,7 +2495,7 @@
           const data = await res.json();
           (data.vendors || []).forEach((v) => {
             const byId = new Map(v.products.map((p) => [Number(p.id), p]));
-            // explicit matches first — they win over a same-name guess
+            // explicit matches first â€” they win over a same-name guess
             (v.links || []).forEach((l) => {
               const vp = byId.get(Number(l.vendor_product_id));
               if (!vp) return;
@@ -2687,7 +2515,7 @@
           });
         }
       } catch (e) {
-        /* vendor costs are advisory — never block the price list */
+        /* vendor costs are advisory â€” never block the price list */
       }
       vendorCostIndex = idx;
       return idx;
@@ -2709,8 +2537,8 @@
           const isLow = e === cheapest && entries.length > 1;
           return `<div class="flex justify-between text-xs ${isLow ? 'text-emerald-200' : 'text-zinc-400'}">
             <span>${escapeHtml(e.vendor)}${e.matched ? '' : ' <span class="text-zinc-600">(same name)</span>'}</span>
-            <span>$${Number(e.price).toFixed(2)}${e.kit_price ? ` · kit $${Number(e.kit_price).toFixed(2)}` : ''}
-              <span class="text-zinc-600">· ${e.stock}</span></span>
+            <span>$${Number(e.price).toFixed(2)}${e.kit_price ? ` Â· kit $${Number(e.kit_price).toFixed(2)}` : ''}
+              <span class="text-zinc-600">Â· ${e.stock}</span></span>
           </div>`;
         })
         .join('');
@@ -2748,7 +2576,7 @@
        *
        * Their server maps partner_name -> link and looks it up by THEIR product name, so
        * a link named after OUR product is invisible to them even when it holds the price.
-       * Rank by whether partner_name is in THEIR catalog — 22 of 43 links were not, and
+       * Rank by whether partner_name is in THEIR catalog â€” 22 of 43 links were not, and
        * every franchisee price set from here had been landing on one of those.
        */
       const candidates = candidatesRaw.slice().sort((a, b) => {
@@ -2760,17 +2588,17 @@
 
       /**
        * Route the price to one of THEIR products. Their name for this product is often
-       * different from ours, and franchisee prices are keyed on their name — so the
+       * different from ours, and franchisee prices are keyed on their name â€” so the
        * operator picks the target instead of the UI assuming the names match.
        */
       const routeOptions = candidates
         .map((l) => {
           const noPrice =
             l.franchisee_vial_cents == null && l.franchisee_pack_cents == null
-              ? ' · no price set'
+              ? ' Â· no price set'
               : '';
           // Naming an orphan outright: a price saved here changes nothing on their site.
-          const dead = franCatalogNames.size && !franLinkIsLive(l) ? ' · NOT IN THEIR CATALOG' : '';
+          const dead = franCatalogNames.size && !franLinkIsLive(l) ? ' Â· NOT IN THEIR CATALOG' : '';
           return `<option value="${escapeAttr(l.partner_name)}">${escapeHtml(
             l.partner_name
           )}${noPrice}${dead}</option>`;
@@ -2819,7 +2647,7 @@
           </p>
           ${
             candidates.length > 1
-              ? `<p class="text-[11px] text-amber-300">${candidates.length} of their products point at this item — price the right one.</p>`
+              ? `<p class="text-[11px] text-amber-300">${candidates.length} of their products point at this item â€” price the right one.</p>`
               : ''
           }
           <label class="block text-xs text-violet-200/80">Route price to their product
@@ -2940,7 +2768,7 @@
       /**
        * Re-read the routed link's own prices. Without this the inputs keep showing the
        * previously selected link's values, and saving would copy those onto a different
-       * product — silently changing a price the operator never typed.
+       * product â€” silently changing a price the operator never typed.
        */
       const franRoute = card.querySelector('[data-fran-route]');
       if (franRoute) {
@@ -2987,7 +2815,7 @@
         return;
       }
       // Creating a parallel link when they already have one for this product is the bug,
-      // not a feature — make the operator confirm it.
+      // not a feature â€” make the operator confirm it.
       if (isNew) {
         const existingNames = franLinksForProduct({
           id: Number(card.dataset.id),
@@ -2998,7 +2826,7 @@
           !confirm(
             `They already sell this as: ${existingNames.join(', ')}.\n\n` +
               `Create an ADDITIONAL link named "${partner_name}"? ` +
-              `Their storefront reads the existing one — a duplicate will not show up there.`
+              `Their storefront reads the existing one â€” a duplicate will not show up there.`
           )
         ) {
           return;
@@ -3037,7 +2865,7 @@
         showMsg(e.message || 'Franchisee price save failed', false);
         return;
       }
-      // Save in place — no reload, no re-render. Update the local link cache so the
+      // Save in place â€” no reload, no re-render. Update the local link cache so the
       // shown value and the "no override" badge stay accurate until the next load.
       const existing = productsFranLinks.find((l) => l.partner_name === partner_name);
       if (existing) {
@@ -3110,7 +2938,7 @@
         showMsg(err.error || 'Save failed', false);
         return;
       }
-      // Save in place — no list reload. Reloading re-rendered every card, which threw
+      // Save in place â€” no list reload. Reloading re-rendered every card, which threw
       // away scroll position and any other card mid-edit. Keep the cache in sync so
       // later renders (tab switch, franchisee selector) show the saved values.
       const saved = await res.json().catch(() => ({}));
@@ -3124,7 +2952,7 @@
 
     /** Inline "Saved" confirmation on a card, so no re-render is needed. */
     function flashSaved(card, label) {
-      // Prefer explicit action. Default to "save" — do NOT use a combined selector:
+      // Prefer explicit action. Default to "save" â€” do NOT use a combined selector:
       // when a franchisee is selected, [data-action="save-fran-price"] appears first
       // in the card DOM and would steal the flash from the main Save button.
       const action = label || 'save';
@@ -3136,7 +2964,7 @@
       if (target.dataset.flashing === '1') return;
       const original = target.textContent;
       target.dataset.flashing = '1';
-      target.textContent = 'Saved ✓';
+      target.textContent = 'Saved âœ“';
       target.classList.add('ring-2', 'ring-emerald-400');
       setTimeout(() => {
         target.textContent = original;
@@ -3147,7 +2975,7 @@
 
     async function deleteProduct(card) {
       const name = card.querySelector('[data-field="name"]').value;
-      if (!confirm(`Delete “${name}”?`)) return;
+      if (!confirm(`Delete â€œ${name}â€?`)) return;
       const id = card.dataset.id;
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'DELETE',
@@ -3194,59 +3022,10 @@
     document.getElementById('newFranCreateBtn').addEventListener('click', () => createFranchisee());
     document.getElementById('productsFranSelect').addEventListener('change', () => onProductsFranSelectChange());
 
-    document.getElementById('addSupplierBtn').addEventListener('click', async () => {
-      const name = prompt('Supplier display name (e.g. Unicorn or @unicornfartzz):');
-      if (!name || !name.trim()) return;
-      let username = prompt(
-        'Supplier name (admin only).\nUsed for cost and margin reporting.',
-        name.trim().startsWith('@') ? name.trim() : ''
-      );
-      if (username === null) return;
-      username = username.trim();
-
-      let telegram_chat_id = null;
-      if (username) {
-        try {
-          showSupplierMsg('Looking up Telegram…');
-          const data = await resolveTelegramUsername(username);
-          if (data?.telegram_chat_id) {
-            telegram_chat_id = String(data.telegram_chat_id);
-          }
-        } catch (e) {
-          // still create supplier; user can Lookup later
-          showSupplierMsg(
-            'Creating supplier; lookup failed: ' + (e.message || e),
-            false
-          );
-        }
-      }
-
-      const res = await fetch('/api/admin/suppliers', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim().replace(/^@/, '') || name.trim(),
-          telegram_chat_id,
-          active: true,
-        }),
-      });
-      if (res.status === 401) {
-        showLogin();
-        return;
-      }
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        showSupplierMsg(err.error || 'Could not add supplier', false);
-        return;
-      }
-      showSupplierMsg(
-        telegram_chat_id
-          ? `Supplier added`
-          : 'Supplier added — use Lookup ID after they Start the bot'
-      );
-      await loadSuppliers();
-    });
+    // Suppliers tab was retired (vendor shops replaced it). The suppliers API and
+    // the Supplier dropdown on Price list still work, so existing productâ†’supplier
+    // assignments and cost/margin reporting are unaffected. The panel and its
+    // handlers were removed; suppliersCache is still loaded for the Price list.
 
     document.getElementById('ordersRefreshBtn').addEventListener('click', () => {
       ordersPage = 1;
@@ -3307,7 +3086,7 @@
       document.getElementById('password').value = '';
       const who = document.getElementById('adminWho');
       if (who && data.user) {
-        who.textContent = (data.user.display_name || data.user.username) + ' · master';
+        who.textContent = (data.user.display_name || data.user.username) + ' Â· master';
       }
       showApp();
       await switchTab('orders');
@@ -3419,7 +3198,7 @@
     }
 
     /**
-     * Set a franchisee's cost for a product. Creates the product_link first — the
+     * Set a franchisee's cost for a product. Creates the product_link first â€” the
      * worker's franchisee PATCH fails with link_not_found when no link exists, which
      * is how a product ends up with NULL overrides silently tracking the public price.
      */
@@ -3433,7 +3212,7 @@
     ) {
       /**
        * `spbc_name` must stay OUR catalog name. Sending the franchisee's name here
-       * overwrote it on every save — "RETA 30MG" became "RETATRUTIDE 30MG" — severing
+       * overwrote it on every save â€” "RETA 30MG" became "RETATRUTIDE 30MG" â€” severing
        * the link from the catalog product it prices. Verified against production: the
        * PUT returned spbc_product_id: null and the row's spbc_name was clobbered.
        *
@@ -3554,7 +3333,7 @@
       }
       err.classList.add('hidden');
 
-      // No sort_order sent → the API places new products at position 1 (top).
+      // No sort_order sent â†’ the API places new products at position 1 (top).
       const res = await fetch('/api/admin/products', {
         method: 'POST',
         credentials: 'same-origin',
@@ -3590,7 +3369,7 @@
 
       document.getElementById('addProductModal').classList.add('hidden');
       if (problems.length) {
-        showMsg(`Product added, but franchisee pricing failed — ${problems.join('; ')}`, false);
+        showMsg(`Product added, but franchisee pricing failed â€” ${problems.join('; ')}`, false);
       } else {
         showMsg('Product added at position 1 with franchisee pricing set');
       }
