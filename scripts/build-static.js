@@ -38,6 +38,19 @@ function main() {
     fs.copyFileSync(src, path.join(OUT, name));
     copied.push(name);
   }
+  // Hashed shared assets (tailwind.<hash>.css etc.). admin.html and qr.html are copied above
+  // with whatever hashes the build just wrote into them, so the matching files must ship
+  // too. Without this, /shared/tailwind.<new>.css 404'd, Pages served index.html in its
+  // place, and the admin rendered with no CSS (2026-11-22). Additive only: older hashes
+  // stay so pages still pointing at them keep working.
+  const sharedSrc = path.join(ROOT, 'shared');
+  const sharedOut = path.join(OUT, 'shared');
+  fs.mkdirSync(sharedOut, { recursive: true });
+  for (const f of fs.readdirSync(sharedSrc)) {
+    if (!/\.[a-f0-9]{8}\.(css|js)$/.test(f)) continue;
+    fs.copyFileSync(path.join(sharedSrc, f), path.join(sharedOut, f));
+    copied.push(`shared/${f}`);
+  }
   for (const name of copied) console.log(`copied ${name} -> .cf-pages/${name}`);
   if (missing.length) console.log(`skipped (not present): ${missing.join(', ')}`);
   console.log(JSON.stringify({ ok: true, copied, missing }, null, 2));
