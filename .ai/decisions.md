@@ -154,3 +154,8 @@ Append-only log. Newest at bottom.
 - Homepage secondary CTA is the dosage calculator. Contact no longer points at coaching.
 - `_redirects` + local `server.js` send `/stacks`, `/stacks.html`, `/coaching`, `/coaching.html` (and trailing-slash variants) to `/`.
 - Did not delete BAC SKUs, run `schema.sql`, or deploy master. Video files for old heroes left on disk (not linked from nav).
+
+### 2026-11-23 — Local seed guard actually runs
+- `schema.local-seed.sql` guard used `RAISE()` outside a trigger, so SQLite rejected the file on every DB (it never seeded anything). D1 also refuses TEMP tables/triggers.
+- Guard now forces `json_extract('{}', <message>)` when `products` has rows: fails with "bad JSON path: REFUSING TO SEED ...", creates nothing. Missing table fails with "no such table". The INSERT also has `WHERE NOT EXISTS (SELECT 1 FROM products)` as a second net.
+- Tested on local D1 only: empty -> 26 rows; filled -> refused, count unchanged; no table -> refused.
