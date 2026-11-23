@@ -4,8 +4,8 @@
  *
  * Env (Pages secrets / vars):
  *   ORDER_WEBHOOK_SECRET  — same HMAC secret as spbc-orders
- *   ORDERS_WEBHOOK_URL    — optional, default https://spbc-orders.spbc.workers.dev/webhooks/order
- *   ORDERS_PUBLIC_URL     — optional, default https://spbc-orders.spbc.workers.dev
+ *   ORDERS_WEBHOOK_URL    — optional, default https://spbc-orders.remycastle.workers.dev/webhooks/order
+ *   ORDERS_PUBLIC_URL     — optional, default https://spbc-orders.remycastle.workers.dev
  *
  * No vial minimum. True kit_only products (HGH) cannot be ordered as vials.
  * Vial-only rows (RETA 66MG) are priced from vial_price.
@@ -154,9 +154,9 @@ export async function onRequestPost({ request, env }) {
 
   const webhookUrl =
     env.ORDERS_WEBHOOK_URL ||
-    'https://spbc-orders.spbc.workers.dev/webhooks/order';
+    'https://spbc-orders.remycastle.workers.dev/webhooks/order';
   const publicBase =
-    (env.ORDERS_PUBLIC_URL || 'https://spbc-orders.spbc.workers.dev').replace(
+    (env.ORDERS_PUBLIC_URL || 'https://spbc-orders.remycastle.workers.dev').replace(
       /\/$/,
       ''
     );
