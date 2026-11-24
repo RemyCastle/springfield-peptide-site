@@ -201,12 +201,19 @@ export async function autoMatch(env, db, now = Date.now()) {
   let shipped = 0;
 
   // 1. Payments -> unpaid website orders
+  // Payments Remy linked or tagged by hand in the Money tab are never auto-matched.
+  const linked = new Set(
+    (await db.prepare('SELECT payment_key FROM money_links').all().catch(() => ({ results: [] }))).results.map((r) => String(r.payment_key))
+  );
   let unpaid = await listOrders(env, { status: 'pending_payment' });
   for (const { mail, e } of events) {
     if (e.type !== 'in') continue;
     const key = `pay:${e.txn || mail.id}`;
-    if (done.has(key)) continue;
-    const cands = paymentCandidates(e, unpaid);
+    if (done.has(key) || (e.txn && linked.has(String(e.txn)))) continue;
+    // A payment can only pay for an order that already existed when the payment email arrived
+    // (5 minutes of slack for clocks), so an old payment never covers a newer order.
+    const arrived = Date.parse(String(mail.received_at || '').replace(' ', 'T') + 'Z') || 0;
+    const cands = paymentCandidates(e, unpaid).filter((o) => arrived && (Date.parse(o.created_at || '') || Infinity) <= arrived + 5 * 60000);
     if (cands.length !== 1) continue;
     const o = cands[0];
     await ordersApi(env, `/admin/orders/${encodeURIComponent(o.order_number)}`, {

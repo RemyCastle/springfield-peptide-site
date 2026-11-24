@@ -220,6 +220,12 @@ export async function createOrder(env, input) {
   const lines = [...priced.items];
   const shipTo = input.shipping || {};
   const rate = dollars(s.tax_rate, 0);
+  // With sales tax on, the shipping state decides the tax, so website orders must give it now
+  // (an address added later could otherwise skip the tax).
+  const probeEmail = !String(input.email || '').includes('@');
+  if (s.tax_on === '1' && rate > 0 && !input.fromAdmin && !probeEmail && !/^[A-Za-z]{2}$/.test(String(shipTo.ship_state || '').trim())) {
+    return { status: 400, body: { error: 'validation_failed', message: 'Please enter your shipping address (with state) to place the order.' } };
+  }
   let taxCents = 0;
   if (s.tax_on === '1' && rate > 0 && String(shipTo.ship_state || '').trim().toUpperCase() === String(s.tax_state || '').toUpperCase()) {
     taxCents = Math.round((productsSubtotal * rate) / 100);
