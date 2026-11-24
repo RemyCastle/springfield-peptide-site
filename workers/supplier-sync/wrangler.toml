@@ -19,8 +19,8 @@ crons = ["17 */2 * * *", "0 13 * * *"] # sync + reminders every 2h; digest daily
 DRY_RUN = "1"
 # e.g. "SPBC <orders@springfieldpbc.com>". Empty = no emails at all (sign-ups wait in the admin).
 RESTOCK_FROM = ""
-# The spbc-orders URL (now on the Outlook account). Empty = no payment reminders / digest order list.
-ORDERS_PUBLIC_URL = ""
+# The spbc-orders URL (Outlook account). Reminders + digest also need the ORDERS_ADMIN_TOKEN secret.
+ORDERS_PUBLIC_URL = "https://spbc-orders.remycastle.workers.dev"
 
 [[d1_databases]]
 binding = "DB"
