@@ -1531,6 +1531,8 @@
         <label class="flex flex-wrap items-center gap-2 text-sm">show-me-source charges me $
           <input type="number" step="0.01" data-auto="sms_ship_cost" value="${escapeAttr(A.sms_ship_cost || '0')}" min="0" max="200" class="admin-input w-24 text-sm"> to ship one order
           <span class="text-xs text-zinc-500">(for the profit view)</span></label>
+        <label class="flex flex-wrap items-center gap-2 text-sm"><input type="checkbox" data-auto="pay_alert_on" ${chk('pay_alert_on')} class="accent-[#FDD700]">
+          Email me the moment a Venmo payment arrives, with the order it matches <span class="text-xs text-zinc-500">(to the morning-email address)</span></label>
         <label class="flex flex-wrap items-center gap-2 text-sm"><input type="checkbox" data-auto="reviews_on" ${chk('reviews_on')} class="accent-[#FDD700]">
           Ask buyers for a review <input type="number" data-auto="review_days" value="${escapeAttr(A.review_days || '10')}" min="3" max="60" class="admin-input w-20 text-sm"> days after it ships
           <span class="text-xs text-zinc-500">(you approve each review before it shows)</span></label>

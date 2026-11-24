@@ -20,6 +20,7 @@
  * its own row; the empty outer note is skipped. Outlook .msg files cannot be read here and
  * are logged as kind 'unsupported_msg' so Remy can be told to forward them inline.
  */
+import { paymentAlert } from './jobs.js';
 import PostalMime from 'postal-mime';
 import { ensureSyncSchema } from './schema.js';
 
@@ -133,6 +134,15 @@ export async function handleEmail(message, env) {
       trusted,
       auth: forwarded ? 'forwarded' : direct || 'none',
     });
+  }
+
+  // A payment just arrived: match it and tell Remy right away (each step has its own switch).
+  if (stored && trusted && kind === 'venmo') {
+    try {
+      await paymentAlert(env, env.DB, { from_addr: origFrom, subject, text_body: text, html_body: html, sent_at: email.date, received_at: new Date().toISOString() });
+    } catch (e) {
+      console.log(JSON.stringify({ msg: 'payment_alert.failed', error: String(e.message || e).slice(0, 120) }));
+    }
   }
 
   // Keep Remy's Outlook in the loop for mail show-me-source sent here directly.

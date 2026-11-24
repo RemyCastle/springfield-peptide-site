@@ -206,6 +206,7 @@ export const DEFAULT_SETTINGS = {
   reviews_on: '0', // ask buyers for a review after shipping
   review_days: '10', // ...this many days after it shipped
   cleanup_months: '0', // delete old personal data after this many months (0 = keep)
+  pay_alert_on: '0', // email Remy the moment a Venmo payment reaches supplier@
 };
 
 export async function getSettings(db) {

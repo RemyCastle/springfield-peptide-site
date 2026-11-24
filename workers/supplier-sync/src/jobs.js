@@ -331,3 +331,40 @@ export async function syncBreakAlert(env, db) {
   if (ok) await setSetting(db, 'sync_alerted', '1');
   return { sent: ok };
 }
+
+/**
+ * Instant payment alert (pay_alert_on = '1'): runs the moment a Venmo "paid you" email lands
+ * at supplier@. Runs hands-free matching right away (when that is on) and tells Remy which
+ * order it belongs to, or that none matched so he can make a Quick order.
+ */
+export async function paymentAlert(env, db, row) {
+  const s = await getSettings(db);
+  const p = parseMoneyMail(row);
+  if (!p || p.type !== 'in') return { skipped: 'not a payment' };
+  let matched = null;
+  if (s.auto_match_on === '1') matched = await autoMatch(env, db).catch(() => null);
+  if (s.pay_alert_on !== '1' || !s.digest_to || !emailReady(env)) return { skipped: 'alert off', matched };
+  let line = '';
+  try {
+    const unpaid = ordersReady(env) ? await listOrders(env, { status: 'pending_payment', max: 100 }) : [];
+    const codes = String(p.note || '').toUpperCase().match(/[A-Z0-9-]{6,}/g) || [];
+    const byCode = unpaid.find((o) => codes.includes(String(o.order_number).toUpperCase()));
+    const cands = byCode ? [byCode] : paymentCandidates(p, unpaid);
+    const justPaid = matched && matched.paid ? ' It was marked <strong>paid</strong> automatically.' : '';
+    line =
+      cands.length === 1
+        ? `Looks like order <strong>${esc(cands[0].order_number)}</strong> (${esc(cands[0].customer_name || '')}).${justPaid}`
+        : cands.length > 1
+          ? `It could be ${cands.length} open orders; check the Money tab.`
+          : 'No open website order matches. If they ordered by text, make a Quick order in the admin.';
+  } catch {
+    line = 'Could not check open orders right now.';
+  }
+  const ok = await sendEmail(env, {
+    to: s.digest_to,
+    subject: `SPBC payment: $${Number(p.amount).toFixed(2)} from ${p.name}`,
+    html: wrap(`<p><strong>${esc(p.name)}</strong> paid <strong>$${Number(p.amount).toFixed(2)}</strong> on Venmo${p.note ? ` (note: “${esc(p.note)}”)` : ''}.</p>
+<p>${line}</p><p><a href="${siteUrl(env)}/admin" style="color:#b8860b">Open the admin</a></p>`),
+  });
+  return { sent: ok, matched };
+}

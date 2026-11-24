@@ -26,3 +26,23 @@ try {
     Add-Content $log ("{0} FAILED: {1}" -f (Get-Date -Format s), $_.Exception.Message)
     exit 1
 }
+
+# Off-site copy: a cloud-synced folder, so a dead or stolen PC does not take the backups with it.
+# Google Drive for desktop is used when installed (G:\My Drive or a "My Drive" folder),
+# otherwise OneDrive. Nothing is deleted there either.
+$cloud = $null
+foreach ($c in @('G:\My Drive', (Join-Path $env:USERPROFILE 'My Drive'), (Join-Path $env:USERPROFILE 'Google Drive\My Drive'))) {
+    if ($c -and (Test-Path $c)) { $cloud = Join-Path $c 'Backups\SPBC'; $where = 'Google Drive'; break }
+}
+if (-not $cloud -and $env:OneDrive -and (Test-Path $env:OneDrive)) { $cloud = Join-Path $env:OneDrive 'Backups\SPBC'; $where = 'OneDrive' }
+if ($cloud) {
+    try {
+        New-Item -ItemType Directory -Force -Path $cloud | Out-Null
+        Copy-Item $file -Destination $cloud -Force
+        Add-Content $log ("{0} off-site copy ok ({1}): {2}" -f (Get-Date -Format s), $where, $cloud)
+    } catch {
+        Add-Content $log ("{0} off-site copy FAILED: {1}" -f (Get-Date -Format s), $_.Exception.Message)
+    }
+} else {
+    Add-Content $log ("{0} off-site copy skipped: no Google Drive or OneDrive folder found" -f (Get-Date -Format s))
+}
