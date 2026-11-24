@@ -217,3 +217,6 @@ Append-only log. Newest at bottom.
 8. Web Analytics was already on (auto-install since 2026-07); admin "Visitors" link.
 9. "Good to know" section on the home page (label usually within hours of payment, max 21h in 13 orders; USPS 2-3 business days).
 10. Health check every 2h (pages, /shared types, checkout signature via invalid-email probe; emails digest_to on new problems), `scripts/backup-d1.ps1`, `scripts/deploy-guard.js` + `npm run deploy:site|deploy:sync`.
+
+### 2026-11-24 — "SPBC fill" for show-me-source checkout
+- Place orders: "Fill at show-me-source" opens their shop with the order in `window.name` (SPBCFILL:<base64 JSON>; not in the URL). The "SPBC fill" bookmarklet (source in admin.html `#smsFillSrc`) uses their own `setProductQty(supplier_id, units)` to set the cart (kits = 10 units), fills fname/lname/email (supplier@)/phone/addr/city/state/zip, picks usps-priority, warns when `PROMO_CODE` is empty and lists products it could not find. It never ticks their agreement boxes or places the order. Tested on the live show-me-source page; test cart emptied.

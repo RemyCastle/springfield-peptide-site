@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.9cbfdf77.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.68b0c32a.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -298,6 +298,42 @@
           <button type="button" data-place-copy="supplier@springfieldpbc.com"
                   class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm shrink-0">Copy email</button>
         </div>
+        <details class="admin-card p-4 mb-4">
+          <summary class="cursor-pointer font-semibold text-white">Fill orders at show-me-source automatically (one-time setup)</summary>
+          <ol class="list-decimal ml-5 mt-2 space-y-1 text-sm text-zinc-300">
+            <li>Show your bookmarks bar (Ctrl+Shift+B).</li>
+            <li>Drag this button onto it: <a id="smsFillBookmark" href="#" class="inline-block bg-[#FDD700] text-black font-bold px-3 py-1 rounded-lg text-xs" onclick="return false">SPBC fill</a></li>
+            <li>For each order below, click <strong>Fill at show-me-source ↗</strong>. In the tab that opens, apply your pricing code if needed, then click <strong>SPBC fill</strong> in your bookmarks bar.</li>
+          </ol>
+          <p class="text-xs text-zinc-500 mt-2">It fills the cart, the customer's address and supplier@springfieldpbc.com, and picks USPS Priority. It never ticks their boxes or places the order: you check and pay.</p>
+        </details>
+        <script type="text/plain" id="smsFillSrc">(() => {
+  const PFX = 'SPBCFILL:';
+  const say = (m) => alert('SPBC fill: ' + m);
+  if (!String(window.name || '').startsWith(PFX)) return say('open this tab from SPBC admin > Place orders > "Fill at show-me-source" first.');
+  let d;
+  try { d = JSON.parse(decodeURIComponent(escape(atob(window.name.slice(PFX.length))))); } catch (e) { return say('could not read the order. Open it again from the SPBC admin.'); }
+  if (typeof setProductQty !== 'function') return say('this page is not the show-me-source shop. Go to In Stock and click again.');
+  document.querySelectorAll('input[id^="qty-"]').forEach((el) => { if ((parseInt(el.value, 10) || 0) > 0) setProductQty(el.id.slice(4), 0); });
+  const missing = [];
+  (d.items || []).forEach((it) => { if (!it.id || !setProductQty(it.id, it.units)) missing.push(it.label); });
+  const set = (id, v) => { const el = document.getElementById(id); if (!el || v == null || v === '') return; el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
+  const parts = String(d.name || '').trim().split(/\s+/);
+  set('fname', parts.shift()); set('lname', parts.join(' ')); set('email', d.email); set('phone', d.phone);
+  set('addr1', d.line1); set('addr2', d.line2); set('city', d.city); set('state', d.state); set('zip', d.zip); set('ship-zip', d.zip); set('shipping', d.shipping);
+  window.name = '';
+  const esc = (t) => String(t || '').replace(/[<>&]/g, '');
+  const noCode = typeof PROMO_CODE !== 'undefined' && !PROMO_CODE;
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;z-index:99999;left:12px;right:12px;bottom:12px;padding:14px 16px;border-radius:12px;background:#0b120e;color:#fff;border:2px solid #FDD700;font:14px/1.4 Arial,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.5)';
+  box.innerHTML = '<b style="color:#FDD700">SPBC order ' + esc(d.order) + ' filled in.</b> ' +
+    (noCode ? '<b style="color:#fca5a5">Your pricing code is NOT applied: enter it under Preferred Pricing before you pay.</b> ' : '') +
+    (missing.length ? '<span style="color:#fca5a5">Not found, add by hand: ' + esc(missing.join(', ')) + '.</span> ' : '') +
+    'Check the cart and address, pick payment, tick their boxes, then place it. Then mark it placed in the SPBC admin. ' +
+    '<button style="margin-left:8px;padding:4px 10px;border-radius:8px;border:0;background:#FDD700;font-weight:bold;cursor:pointer">OK</button>';
+  box.querySelector('button').onclick = () => box.remove();
+  document.body.appendChild(box);
+})();</script>
         <p id="placeMsg" class="text-sm mb-4 hidden"></p>
         <div id="placeBody" class="space-y-4 text-sm text-zinc-300">Loading…</div>
       </div>
@@ -989,6 +1025,38 @@
         ${placeCopy('Copy', value)}</div>`;
     }
 
+    let placeQueueCache = [];
+
+    function smsFillPayload(r, email) {
+      const a = r.address || {};
+      const d = {
+        order: r.order_number,
+        name: a.name || r.customer_name,
+        email,
+        phone: a.phone,
+        line1: a.line1,
+        line2: a.line2,
+        city: a.city,
+        state: a.state,
+        zip: a.postal,
+        shipping: 'usps-priority',
+        items: (r.items || []).map((it) => ({
+          id: it.supplier_id,
+          units: it.kind === 'kit' ? it.qty * 10 : it.qty,
+          label: `${it.supplier_name || it.spbc_name} ${it.kind} x${it.qty}`,
+        })),
+      };
+      return 'SPBCFILL:' + btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+    }
+
+    (function setupSmsFillBookmark() {
+      const src = document.getElementById('smsFillSrc');
+      const link = document.getElementById('smsFillBookmark');
+      if (!src || !link) return;
+      const code = src.textContent.replace(/\n\s*/g, ' ').trim();
+      link.setAttribute('href', 'javascript:' + encodeURIComponent(code));
+    })();
+
     function updatePlaceCount(n) {
       const el = document.getElementById('placeCount');
       if (!el) return;
@@ -1042,6 +1110,7 @@
         return;
       }
       const q = d.queue || [];
+      placeQueueCache = q;
       updatePlaceCount(q.length);
       const email = d.checkout_email || '';
       let html = q.length
@@ -1088,7 +1157,8 @@
             ${placeField('State', a.state)}
             ${placeField('ZIP', a.postal)}
             ${placeField('Phone', a.phone)}
-            <div class="mt-1">${placeCopy('Copy whole address', fullAddr)}</div>
+            <div class="mt-1 flex flex-wrap gap-2">${placeCopy('Copy whole address', fullAddr)}
+              <button type="button" data-place-fill="${escapeAttr(r.order_number)}" class="text-[11px] bg-[#FDD700] text-black font-bold px-2 py-0.5 rounded-lg">Fill at show-me-source ↗</button></div>
           </div>
 
           <div>
@@ -1151,6 +1221,20 @@
         } catch {
           copyBtn.textContent = 'Copy failed';
         }
+        return;
+      }
+      const fill = e.target.closest('[data-place-fill]');
+      if (fill) {
+        const r = placeQueueCache.find((x) => x.order_number === fill.dataset.placeFill);
+        if (!r) return;
+        const w = window.open('https://show-me-source.com/', smsFillPayload(r, 'supplier@springfieldpbc.com'));
+        if (!w) return placeMsg('Allow pop-ups for this page to open show-me-source.', false);
+        try {
+          w.opener = null;
+        } catch {
+          /* ignore */
+        }
+        placeMsg('Opened show-me-source. Apply your pricing code if needed, then click SPBC fill in your bookmarks bar.');
         return;
       }
       const use = e.target.closest('[data-place-use]');
