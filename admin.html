@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.8d39db61.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.94be7908.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -608,6 +608,108 @@
       if (tab === 'report') await loadReport();
     }
 
+    /* ---------- Place at show-me-source (order helper) ---------- */
+    async function loadSmsPlaced() {
+      try {
+        const res = await fetch('/api/admin/supplier-orders', { credentials: 'same-origin' });
+        if (!res.ok) return {};
+        return (await res.json()).placed || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function smsChip(o, placed) {
+      if (isWholesaleOrder(o)) return '';
+      if (placed[o.order_number]) {
+        return ' <span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border border-emerald-800 text-emerald-300" title="Placed at show-me-source">SMS ✓</span>';
+      }
+      if (o.status === 'paid') {
+        return ' <span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border border-amber-800 text-amber-300" title="Paid, not yet placed at show-me-source">To place</span>';
+      }
+      return '';
+    }
+
+    function smsCopyBtn(label, text) {
+      return `<button type="button" data-sms-copy="${escapeAttr(text)}" class="text-[11px] border border-zinc-600 text-zinc-300 hover:border-[#FDD700] px-2 py-0.5 rounded-lg">${escapeHtml(label)}</button>`;
+    }
+
+    async function loadSmsHelper(orderNumber) {
+      const box = document.getElementById('smsHelper');
+      if (!box) return;
+      box.innerHTML = '<p class="text-xs text-zinc-500">Loading show-me-source helper…</p>';
+      let d;
+      try {
+        const res = await fetch(`/api/admin/supplier-orders?order=${encodeURIComponent(orderNumber)}`, { credentials: 'same-origin' });
+        if (!res.ok) throw new Error();
+        d = await res.json();
+      } catch {
+        box.innerHTML = '<p class="text-xs text-red-400">Could not load the show-me-source helper.</p>';
+        return;
+      }
+      const r = d.ready || {};
+      const a = r.address || {};
+      const addrText = [a.name, a.line1, a.line2, `${a.city}, ${a.state} ${a.postal}`, a.phone].filter((x) => x && x.trim() && x.trim() !== ',').join('\n');
+      const itemsText = (r.items || [])
+        .map((it) => `${it.qty} x ${it.supplier_name || it.spbc_name} (${it.kind === 'vial' ? 'vial' : 'kit of 10'})`)
+        .join('\n');
+      const rows = (r.items || [])
+        .map(
+          (it) => `<li class="flex justify-between gap-2"><span>${escapeHtml(String(it.qty))} × <strong class="text-white">${escapeHtml(it.supplier_name || it.spbc_name)}</strong>
+            <span class="text-zinc-500">${it.kind === 'vial' ? 'vial' : 'kit'}</span>${it.supplier_name ? '' : ' <span class="text-amber-300">(no supplier match)</span>'}</span>
+            <span class="tabular-nums text-zinc-400">~$${Number(it.supplier_unit_cost * it.qty).toFixed(2)}</span></li>`
+        )
+        .join('');
+      const placed = d.placed;
+      const notPaid = r.status === 'pending_payment';
+      box.innerHTML = `<div class="rounded-xl border ${placed ? 'border-emerald-800' : 'border-amber-700/60'} p-3 space-y-2">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-xs uppercase tracking-wide text-[#FDD700]">Place at show-me-source</h3>
+          ${placed
+            ? `<span class="text-xs text-emerald-300">Placed ${escapeHtml(String(placed.placed_at || '').slice(0, 16))}${placed.sms_ref ? ` · their order ${escapeHtml(placed.sms_ref)}` : ''}</span>`
+            : notPaid
+              ? '<span class="text-xs text-zinc-500">Wait for payment first</span>'
+              : '<span class="text-xs text-amber-300">Not placed yet</span>'}
+        </div>
+        <ul class="text-sm text-zinc-300 space-y-1">${rows}</ul>
+        <p class="text-xs text-zinc-400">Their cost ~<strong class="text-white">$${Number(r.supplier_cost || 0).toFixed(2)}</strong> + their shipping ·
+          customer paid ${formatCents(r.customer_paid_cents || 0)}</p>
+        <pre class="text-xs bg-black border border-zinc-800 rounded-lg p-2 whitespace-pre-wrap">${escapeHtml(addrText || 'No shipping address yet')}</pre>
+        <div class="flex flex-wrap gap-2 items-center">
+          ${smsCopyBtn('Copy address', addrText)} ${smsCopyBtn('Copy items', itemsText)}
+          ${placed
+            ? '<button type="button" data-sms-unplace class="text-[11px] border border-zinc-600 text-zinc-400 px-2 py-0.5 rounded-lg">Undo placed</button>'
+            : `<input data-sms-ref type="text" placeholder="Their order # (optional)" class="admin-input text-xs max-w-[12rem]">
+               <button type="button" data-sms-place class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-1 rounded-lg text-xs">Mark placed</button>`}
+        </div>
+      </div>`;
+      box.querySelectorAll('[data-sms-copy]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(b.dataset.smsCopy);
+            b.textContent = 'Copied';
+          } catch {
+            b.textContent = 'Copy failed';
+          }
+        })
+      );
+      const post = async (payload) => {
+        const res = await fetch('/api/admin/supplier-orders', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (res.status === 401) return showLogin();
+        await loadSmsHelper(orderNumber);
+        if (typeof loadOrders === 'function') loadOrders();
+      };
+      box.querySelector('[data-sms-place]')?.addEventListener('click', () =>
+        post({ order_number: orderNumber, placed: true, sms_ref: box.querySelector('[data-sms-ref]')?.value || '' })
+      );
+      box.querySelector('[data-sms-unplace]')?.addEventListener('click', () => post({ order_number: orderNumber, placed: false }));
+    }
+
     /* ---------- Supplier sync (show-me-source) ---------- */
     function syncWhen(t) {
       if (!t) return '';
@@ -650,6 +752,21 @@
       const d = await res.json();
       const last = d.runs[0];
       let html = '';
+
+      const labOn = !!(d.settings && d.settings.show_lab_reports);
+      html += `<div class="admin-card p-4 flex flex-wrap items-center justify-between gap-3">
+        <div><p class="font-semibold text-white">Lab reports on the shop</p>
+        <p class="text-xs text-zinc-400">${d.lab_reports_found || 0} products have a lab report from show-me-source.
+        They open through springfieldpbc.com, but the document itself may name the supplier. Open one before turning this on.</p></div>
+        <button type="button" id="syncLabToggle" class="${labOn ? 'bg-emerald-700 text-white' : 'bg-zinc-800 text-zinc-200'} font-bold px-4 py-2 rounded-xl text-sm">
+          ${labOn ? 'Shown · turn off' : 'Hidden · turn on'}</button></div>`;
+
+      const waiting = d.restock_waiting || [];
+      html += `<div class="admin-card p-4"><p class="font-semibold text-white mb-1">Waiting for restock emails</p>` +
+        (waiting.length
+          ? '<ul class="text-sm space-y-0.5">' + waiting.map((w) => `<li>${escapeHtml(w.spbc_name)}: <strong>${w.n}</strong> ${w.n === 1 ? 'person' : 'people'}</li>`).join('') + '</ul>'
+          : '<p class="text-xs text-zinc-500">Nobody is waiting.</p>') +
+        '<p class="text-[11px] text-zinc-500 mt-1">They get one email when the product is back on the shop (needs the email sender set up on the sync).</p></div>';
 
       // Last run
       if (!last) {
@@ -727,6 +844,17 @@
       html += '</div>';
 
       body.innerHTML = html;
+      document.getElementById('syncLabToggle')?.addEventListener('click', async () => {
+        const res = await fetch('/api/admin/supplier-sync', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'set_lab_reports', on: !labOn }),
+        });
+        const r = await res.json().catch(() => ({}));
+        syncShowMsg(r.message || (res.ok ? 'Saved' : 'Failed'), res.ok);
+        await loadSupplierSync();
+      });
       body.querySelectorAll('[data-sync-act]').forEach((btn) => {
         btn.addEventListener('click', () => supplierSyncAction(btn.dataset.syncAct, btn.dataset.id));
       });
@@ -1286,6 +1414,7 @@
 
       const data = await res.json();
       const orders = data.orders || [];
+      const smsPlaced = await loadSmsPlaced();
       const clearedNote = showCleared ? ' · cleared only' : '';
       ordersMeta.textContent = `${data.total ?? orders.length} orders · page ${data.page ?? ordersPage} / ${data.total_pages ?? 1}${clearedNote}`;
       ordersTbody.innerHTML = '';
@@ -1322,7 +1451,7 @@
             voidBtn;
         tr.innerHTML =
           `<td class="px-3 py-2.5 font-semibold ${numClass}">${escapeHtml(o.order_number)}${chip}</td>` +
-          `<td class="px-3 py-2.5">${statusBadge(o.status)}</td>` +
+          `<td class="px-3 py-2.5">${statusBadge(o.status)}${smsChip(o, smsPlaced)}</td>` +
           `<td class="px-3 py-2.5">${escapeHtml(o.customer_name)}<br><span class="text-xs text-zinc-500">${escapeHtml(o.customer_email)}</span></td>` +
           `<td class="px-3 py-2.5">${formatCents(o.total_cents)}</td>` +
           `<td class="px-3 py-2.5">${o.shipping_complete ? '✓' : '—'}</td>` +
@@ -1477,6 +1606,7 @@
         </div>`
             : ''
         }
+        <div id="smsHelper"></div>
         <div>
           <h3 class="text-xs uppercase tracking-wide text-[#FDD700] mb-2">Items</h3>
           ${itemsHtml}
@@ -1497,6 +1627,7 @@
         orderDetail.innerHTML = '';
         selectedOrder = null;
       });
+      if (!wholesale) loadSmsHelper(o.order_number);
 
       const actions = document.getElementById('orderActions');
       for (const s of next) {

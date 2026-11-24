@@ -1,0 +1,103 @@
+/**
+ * D1 tables for the show-me-source features. Shared by the sync Worker and the
+ * Pages Functions (admin Supplier sync tab, restock sign-ups, lab reports, order helper).
+ * All CREATE IF NOT EXISTS / add-column-if-missing: safe to call on every request.
+ */
+import { SEED_MAP } from './seedMap.js';
+
+const TABLES = [
+  `CREATE TABLE IF NOT EXISTS supplier_map (
+    supplier_id INTEGER PRIMARY KEY,
+    supplier_name TEXT,
+    spbc_name TEXT,
+    skip INTEGER NOT NULL DEFAULT 0,
+    hidden_by_sync INTEGER NOT NULL DEFAULT 0,
+    low_inventory INTEGER NOT NULL DEFAULT 0,
+    coa_url TEXT,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS supplier_sync_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    kind TEXT NOT NULL,
+    status TEXT NOT NULL,
+    spbc_name TEXT,
+    supplier_id INTEGER,
+    vial REAL,
+    kit REAL,
+    detail TEXT
+  )`,
+  // "Email me when it's back" sign-ups.
+  `CREATE TABLE IF NOT EXISTS restock_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    spbc_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    notified_at TEXT,
+    UNIQUE (spbc_name, email)
+  )`,
+  // Small on/off switches Remy controls from the admin.
+  `CREATE TABLE IF NOT EXISTS site_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  // Which SPBC orders Remy has placed at show-me-source.
+  `CREATE TABLE IF NOT EXISTS supplier_orders (
+    order_number TEXT PRIMARY KEY,
+    placed_at TEXT NOT NULL DEFAULT (datetime('now')),
+    sms_ref TEXT,
+    note TEXT
+  )`,
+];
+
+const LATE_COLUMNS = [
+  ['supplier_map', 'low_inventory', 'INTEGER NOT NULL DEFAULT 0'],
+  ['supplier_map', 'coa_url', 'TEXT'],
+];
+
+let ready = false;
+
+export async function ensureSyncSchema(db) {
+  if (ready) return;
+  await db.batch(TABLES.map((sql) => db.prepare(sql)));
+  for (const [table, col, type] of LATE_COLUMNS) {
+    const cols = (await db.prepare(`PRAGMA table_info(${table})`).all()).results.map((c) => c.name);
+    if (!cols.includes(col)) await db.prepare(`ALTER TABLE ${table} ADD COLUMN ${col} ${type}`).run();
+  }
+  const { results } = await db.prepare('SELECT COUNT(*) AS n FROM supplier_map').all();
+  if (!results[0].n) {
+    await db.batch(
+      SEED_MAP.map((m) =>
+        db
+          .prepare(
+            'INSERT OR IGNORE INTO supplier_map (supplier_id, supplier_name, spbc_name, skip, hidden_by_sync) VALUES (?, ?, ?, ?, ?)'
+          )
+          .bind(m.supplier_id, m.supplier_name, m.spbc_name ?? null, m.skip ? 1 : 0, m.hidden_by_sync ? 1 : 0)
+      )
+    );
+  }
+  ready = true;
+}
+
+export async function getSetting(db, key, fallback = null) {
+  const row = await db.prepare('SELECT value FROM site_settings WHERE key = ?').bind(key).first();
+  return row ? row.value : fallback;
+}
+
+export async function setSetting(db, key, value) {
+  await db
+    .prepare(
+      "INSERT INTO site_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+    )
+    .bind(key, value == null ? null : String(value))
+    .run();
+}
+
+/** Supplier cost of one SPBC order line, from SPBC's own price (vial -$25, kit -$200). */
+export function supplierUnitCost(line) {
+  const name = String(line.name || '');
+  const unit = Number(line.unit_price_cents) / 100;
+  const isVial = /\(\s*Vial\s*\)\s*$/i.test(name) || /-VIAL$/i.test(String(line.sku || ''));
+  return Math.max(0, Math.round((unit - (isVial ? 25 : 200)) * 100) / 100);
+}

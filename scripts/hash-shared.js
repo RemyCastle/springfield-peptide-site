@@ -17,6 +17,7 @@ const pairs = [
   ['age-gate.js', 'age-gate'],
   ['store.js', 'store'],
   ['calculator.js', 'calculator'],
+  ['track.js', 'track'],
 ];
 
 const mapping = {};
@@ -48,6 +49,7 @@ const htmlFiles = [
   'index.html',
   'calculator.html',
   'contact.html',
+  'track.html',
   'admin.html',
   'qr.html',
 ];
@@ -60,6 +62,7 @@ const rewrites = [
   [/\/shared\/age-gate\.[a-f0-9]{8}\.js/g, `/shared/${mapping['age-gate.js']}`],
   [/\/shared\/store\.[a-f0-9]{8}\.js/g, `/shared/${mapping['store.js']}`],
   [/\/shared\/calculator\.[a-f0-9]{8}\.js/g, `/shared/${mapping['calculator.js']}`],
+  [/\/shared\/track\.[a-f0-9]{8}\.js/g, `/shared/${mapping['track.js']}`],
   [/\/shared\/titration\.[a-f0-9]{8}\.js/g, `/shared/${mapping['titration.js']}`],
 ];
 

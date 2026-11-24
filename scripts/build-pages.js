@@ -24,7 +24,7 @@ const PAGES = path.join(SRC, 'pages');
 const STYLES = path.join(SRC, 'styles');
 const SCRIPTS = path.join(SRC, 'scripts');
 
-const PAGE_NAMES = ['index', 'calculator', 'contact', 'titration'];
+const PAGE_NAMES = ['index', 'calculator', 'contact', 'titration', 'track'];
 
 function read(p) {
   return fs.readFileSync(p, 'utf8');
@@ -63,6 +63,7 @@ function assetTokens() {
     // Page scripts (Unit C) — hashed when present
     store_js: tryHashed('store', 'js'),
     calculator_js: tryHashed('calculator', 'js'),
+    track_js: tryHashed('track', 'js'),
     titration_js: tryHashed('titration', 'js'),
   };
 }
@@ -186,6 +187,7 @@ function buildPage(pageName) {
   const pageAppMap = {
     index: assets.store_js,
     calculator: assets.calculator_js,
+    track: assets.track_js,
     titration: '', // retired notice only — do not load the old planner JS
   };
   const tokens = {

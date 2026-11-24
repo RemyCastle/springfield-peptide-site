@@ -4,6 +4,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -24,8 +25,21 @@ http
       if (req.method === 'POST' && req.url === '/') {
         return send(302, {}, { 'Set-Cookie': 'sms_session=ok; Path=/; HttpOnly', Location: '/' });
       }
+      // Stand-in for the Resend email API (RESEND_API_URL in tests).
+      if (req.method === 'POST' && req.url === '/emails') {
+        fs.appendFileSync(process.env.STUB_EMAIL_LOG || path.join(os.tmpdir(), 'spbc-stub-emails.log'), body + '\n');
+        return send(200, { id: 'stub-email' });
+      }
+      // Like the real site's images: public, no site key needed.
+      if (req.url.startsWith('/coas/')) {
+        res.writeHead(200, { 'Content-Type': 'application/pdf' });
+        return res.end('%PDF-1.4 stub lab report');
+      }
       if (!authed) return send(403, { success: false, error: 'Site access required' });
       if (req.url.startsWith('/inventory.php?stock=1')) return send(200, { success: true, products: fx.stock });
+      if (req.method === 'GET' && /^\/inventory\.php\?_=/.test(req.url)) {
+        return send(200, { success: true, products: fx.details || {} });
+      }
       if (req.method === 'POST' && req.url.startsWith('/inventory.php')) {
         const unlocked = {};
         const products = {};

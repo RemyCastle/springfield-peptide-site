@@ -48,17 +48,62 @@ export async function onRequestGet({ request, env }) {
     return json({ error: 'Database not configured' }, 500);
   }
   try {
+    // Supplier extras (low stock, lab report, out of stock) come from the show-me-source
+    // sync tables. If those tables are not there yet, fall back to the plain list.
+    const extras = await loadSupplierExtras(env.DB);
+    if (extras) return json(extras);
     const { results } = await env.DB.prepare(
       `SELECT id, name, vial_price, pack_price, kit_only, sort_order, active
        FROM products
        WHERE active = 1
        ORDER BY sort_order ASC, id ASC`
     ).all();
-    // Prices in D1 ARE the customer price (raised once). Everyone — storefront, admin,
-    // and the spbc-orders worker — gets the same stored price. Franchisee cost is a
-    // separate per-item override held in the worker (product_links.franchisee_*), not here.
-    return json({ products: (results || []).map(productToPublic) });
+    // Prices in D1 ARE the customer price. Everyone (storefront, admin, spbc-orders) gets
+    // the same stored price.
+    return json({ products: (results || []).map(productToPublic), out_of_stock: [] });
   } catch (e) {
     return json({ error: 'Failed to load products', detail: String(e.message || e) }, 500);
+  }
+}
+
+/**
+ * products: active rows + low_stock / lab_report flags.
+ * out_of_stock: products the supplier sync hid (sold out at show-me-source), so the
+ * shop can offer "Email me when it's back". Kept out of `products` on purpose: the
+ * spbc-orders worker also reads this list.
+ */
+async function loadSupplierExtras(db) {
+  try {
+    const labOn = await db
+      .prepare("SELECT value FROM site_settings WHERE key = 'show_lab_reports'")
+      .first();
+    const showLab = !!labOn && labOn.value === '1';
+    const { results } = await db
+      .prepare(
+        `SELECT p.id, p.name, p.vial_price, p.pack_price, p.kit_only, p.sort_order, p.active,
+                m.low_inventory, m.coa_url
+         FROM products p
+         LEFT JOIN supplier_map m ON m.spbc_name = p.name AND m.skip = 0
+         WHERE p.active = 1
+         ORDER BY p.sort_order ASC, p.id ASC`
+      )
+      .all();
+    const out = await db
+      .prepare(
+        `SELECT p.name, p.sort_order FROM products p
+         JOIN supplier_map m ON m.spbc_name = p.name AND m.skip = 0 AND m.hidden_by_sync = 1
+         WHERE p.active = 0 ORDER BY p.sort_order ASC, p.id ASC`
+      )
+      .all();
+    return {
+      products: (results || []).map((r) => ({
+        ...productToPublic(r),
+        low_stock: r.low_inventory === 1,
+        lab_report: showLab && !!r.coa_url,
+      })),
+      out_of_stock: (out.results || []).map((r) => ({ name: r.name })),
+    };
+  } catch {
+    return null; // sync tables not created yet
   }
 }

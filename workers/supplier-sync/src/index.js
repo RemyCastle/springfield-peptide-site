@@ -5,52 +5,21 @@
  * Secrets (Remy sets them himself with `wrangler secret put`; never commit or print them):
  *   SMS_SITE_KEY      the show-me-source site key
  *   SMS_PRICING_CODE  Remy's pricing code
+ *   RESEND_API_KEY    optional: sends "back in stock" emails (with RESTOCK_FROM)
  * Vars:
  *   DRY_RUN = "1"     log what would change, change nothing (default until Remy says go)
+ *   RESTOCK_FROM      sender for back-in-stock emails, on a domain verified in Resend
  */
 import { planSync, feedProblem } from './plan.js';
-import { SEED_MAP } from './seedMap.js';
+import { ensureSyncSchema } from './schema.js';
+import { updateProductMeta, sendRestockEmails } from './extras.js';
+
+export { ensureSyncSchema };
 
 const DEFAULT_BASE = 'https://show-me-source.com';
 /** SMS_BASE_URL only for local tests against a stub. */
 const base = (env) => String(env.SMS_BASE_URL || DEFAULT_BASE).replace(/\/$/, '');
 const UA = 'Mozilla/5.0 (compatible; spbc-supplier-sync/1.0)';
-
-export async function ensureSyncSchema(db) {
-  await db.batch([
-    db.prepare(`CREATE TABLE IF NOT EXISTS supplier_map (
-      supplier_id INTEGER PRIMARY KEY,
-      supplier_name TEXT,
-      spbc_name TEXT,
-      skip INTEGER NOT NULL DEFAULT 0,
-      hidden_by_sync INTEGER NOT NULL DEFAULT 0,
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-    )`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS supplier_sync_events (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      kind TEXT NOT NULL,
-      status TEXT NOT NULL,
-      spbc_name TEXT,
-      supplier_id INTEGER,
-      vial REAL,
-      kit REAL,
-      detail TEXT
-    )`),
-  ]);
-  const { results } = await db.prepare('SELECT COUNT(*) AS n FROM supplier_map').all();
-  if (!results[0].n) {
-    await db.batch(
-      SEED_MAP.map((m) =>
-        db
-          .prepare(
-            'INSERT OR IGNORE INTO supplier_map (supplier_id, supplier_name, spbc_name, skip, hidden_by_sync) VALUES (?, ?, ?, ?, ?)'
-          )
-          .bind(m.supplier_id, m.supplier_name, m.spbc_name ?? null, m.skip ? 1 : 0, m.hidden_by_sync ? 1 : 0)
-      )
-    );
-  }
-}
 
 async function smsLogin(env) {
   const res = await fetch(`${base(env)}/`, {
@@ -88,7 +57,16 @@ export async function fetchSupplier(env) {
   });
   const stock = await smsJson(env, 'inventory.php?stock=1', cookie);
   const feed = { ...(quote.products || {}), ...(quote.unlocked_products || {}) };
-  return { tier: quote.pricing_tier, feed, stock: stock.products || {} };
+  // Full product rows (lab reports). Optional: the sync works without them.
+  let details = {};
+  try {
+    const full = await smsJson(env, 'inventory.php', cookie);
+    const list = full.products || {};
+    details = Array.isArray(list) ? Object.fromEntries(list.map((r) => [String(r.id), r])) : list;
+  } catch {
+    details = {};
+  }
+  return { tier: quote.pricing_tier, feed, stock: stock.products || {}, details };
 }
 
 async function logEvent(db, e) {
@@ -176,8 +154,19 @@ export async function runSync(env, { dryRun } = {}) {
       await logEvent(db, { kind: a.kind, status: 'error', spbc_name: a.spbc_name, supplier_id: a.supplier_id, detail: a });
     }
   }
-  await logEvent(db, { kind: 'run', status, detail: { tier: supplier.tier, feed_products: Object.keys(supplier.feed).length, counts } });
-  return { ok: true, dry, counts, actions };
+  const metaUpdated = await updateProductMeta(db, {
+    stock: supplier.stock,
+    details: supplier.details,
+    feed: supplier.feed,
+    baseUrl: base(env),
+  });
+  const restock = await sendRestockEmails(db, env);
+  await logEvent(db, {
+    kind: 'run',
+    status,
+    detail: { tier: supplier.tier, feed_products: Object.keys(supplier.feed).length, counts, meta_updated: metaUpdated, restock },
+  });
+  return { ok: true, dry, counts, actions, restock };
 }
 
 export default {

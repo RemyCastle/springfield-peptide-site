@@ -580,7 +580,18 @@ const CART_KEY = "spbc_cart_draft";
                 article.setAttribute('data-pack', String(p.pack_price));
             }
 
-            let body = `<h3 class="price-card-title break-word">${escapeHtml(name)}</h3><div class="price-card-body">`;
+            let body = `<h3 class="price-card-title break-word">${escapeHtml(name)}</h3>`;
+            if (p.low_stock || p.lab_report) {
+                body += '<div class="flex flex-wrap items-center gap-2 mb-2">';
+                if (p.low_stock) {
+                    body += '<span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border border-amber-700/30 text-amber-300">Low stock</span>';
+                }
+                if (p.lab_report) {
+                    body += `<a href="/api/lab-report?p=${encodeURIComponent(name)}" target="_blank" rel="noopener" class="text-[11px] font-semibold text-emerald-300 hover:underline">View lab report</a>`;
+                }
+                body += '</div>';
+            }
+            body += `<div class="price-card-body">`;
             // Vial stepper when D1 has a vial price. True kit_only (HGH) has no vial_price.
             // RETA 66MG is vial-only (same 70/70 dummy pack) — Vial, not 10-pack.
             if (showVial) {
@@ -607,6 +618,61 @@ const CART_KEY = "spbc_cart_draft";
             article.innerHTML = body;
             wireStepper(article);
             return article;
+        }
+
+        /** Sold out at the supplier: name + "Email me when it's back". Lives outside #priceTable. */
+        function renderSoldOut(list) {
+            let box = document.getElementById('soldOutList');
+            if (!box) {
+                box = document.createElement('div');
+                box.id = 'soldOutList';
+                box.className = 'mt-8';
+                const table = document.getElementById('priceTable');
+                table.parentNode.insertBefore(box, table.nextSibling);
+            }
+            if (!list || !list.length) {
+                box.innerHTML = '';
+                return;
+            }
+            const savedEmail = (() => {
+                try { return (JSON.parse(localStorage.getItem(CONTACT_KEY) || '{}').email) || ''; } catch (_) { return ''; }
+            })();
+            box.innerHTML = `<h3 class="price-group-heading">Sold out, back soon</h3>
+                <div class="grid gap-3 sm:grid-cols-2">` +
+                list.map((p) => `
+                    <form class="depth-card p-4 space-y-2" data-restock="${escapeHtml(p.name)}" novalidate>
+                        <p class="font-bold text-zinc-100 break-word">${escapeHtml(p.name)}</p>
+                        <div class="flex gap-2">
+                            <input type="email" required placeholder="Your email" value="${escapeHtml(savedEmail)}"
+                                   aria-label="Email for ${escapeHtml(p.name)} restock"
+                                   class="min-w-0 flex-1 bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
+                            <button type="submit" class="shrink-0 px-3 py-2 rounded-xl text-sm font-bold bg-[#FDD700] text-black">Email me when it's back</button>
+                        </div>
+                        <p class="text-xs text-zinc-400 hidden" data-restock-msg></p>
+                    </form>`).join('') +
+                '</div>';
+            box.querySelectorAll('form[data-restock]').forEach((form) => {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const msg = form.querySelector('[data-restock-msg]');
+                    const email = form.querySelector('input').value.trim();
+                    msg.classList.remove('hidden');
+                    msg.textContent = 'Saving…';
+                    try {
+                        const res = await fetch('/api/restock-request', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ product: form.getAttribute('data-restock'), email }),
+                        });
+                        const d = await res.json().catch(() => ({}));
+                        msg.textContent = d.message || (res.ok ? "We'll email you when it's back." : 'Could not save. Try again.');
+                        msg.className = `text-xs ${res.ok ? 'text-emerald-300' : 'text-red-400'}`;
+                    } catch (_) {
+                        msg.textContent = 'Could not save. Try again.';
+                        msg.className = 'text-xs text-red-400';
+                    }
+                });
+            });
         }
 
         function renderProducts(products) {
@@ -664,6 +730,7 @@ const CART_KEY = "spbc_cart_draft";
                 if (!res.ok) throw new Error('bad status');
                 const data = await res.json();
                 renderProducts(data.products || []);
+                renderSoldOut(data.out_of_stock || []);
             } catch (e) {
                 root.innerHTML = `
                     <div class="text-center py-8 space-y-3">
@@ -1171,6 +1238,10 @@ const CART_KEY = "spbc_cart_draft";
                     '$' + (Number(data.total_cents || subtotalFinal + dollarsToCents(SHIPPING_FLAT)) / 100).toFixed(2);
                 document.getElementById('successPayLink').href =
                     data.pay_url || `https://spbc-orders.spbc.workers.dev/pay/${encodeURIComponent(data.order_number)}`;
+                const trackLink = document.getElementById('successTrackLink');
+                if (trackLink) {
+                    trackLink.href = `/track.html?order=${encodeURIComponent(data.order_number)}&email=${encodeURIComponent(email)}`;
+                }
                 const shipLink = document.getElementById('successShipLink');
                 shipLink.href =
                     data.shipping_url || `https://spbc-orders.spbc.workers.dev/shipping/${encodeURIComponent(data.order_number)}`;

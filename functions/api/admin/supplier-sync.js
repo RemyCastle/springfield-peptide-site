@@ -10,7 +10,7 @@
  *   skip_new     never sell this supplier product
  */
 import { json, requireAdmin } from '../../lib/auth.js';
-import { ensureSyncSchema } from '../../../workers/supplier-sync/src/index.js';
+import { ensureSyncSchema, getSetting, setSetting } from '../../../workers/supplier-sync/src/schema.js';
 
 export async function onRequestGet({ request, env }) {
   const denied = await requireAdmin(request, env);
@@ -27,6 +27,11 @@ export async function onRequestGet({ request, env }) {
       await all("SELECT * FROM supplier_sync_events WHERE kind <> 'run' AND status <> 'pending' ORDER BY id DESC LIMIT 40")
     ),
     products: await all('SELECT name, active FROM products ORDER BY sort_order, name'),
+    settings: { show_lab_reports: (await getSetting(db, 'show_lab_reports', '0')) === '1' },
+    lab_reports_found: (await all("SELECT COUNT(*) AS n FROM supplier_map WHERE skip = 0 AND coa_url IS NOT NULL"))[0].n,
+    restock_waiting: await all(
+      'SELECT spbc_name, COUNT(*) AS n FROM restock_requests WHERE notified_at IS NULL GROUP BY spbc_name ORDER BY n DESC'
+    ),
   });
 }
 
@@ -36,6 +41,10 @@ export async function onRequestPost({ request, env }) {
   const db = env.DB;
   await ensureSyncSchema(db);
   const body = await request.json().catch(() => ({}));
+  if (body.action === 'set_lab_reports') {
+    await setSetting(db, 'show_lab_reports', body.on ? '1' : '0');
+    return json({ ok: true, message: body.on ? 'Lab reports are now shown on the shop' : 'Lab reports are hidden' });
+  }
   const id = parseInt(body.id, 10);
   const ev = await db.prepare('SELECT * FROM supplier_sync_events WHERE id = ?').bind(id).first();
   if (!ev || ev.status !== 'pending') return json({ error: 'not_found', message: 'That item was already handled.' }, 404);
