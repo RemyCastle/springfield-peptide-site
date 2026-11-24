@@ -135,6 +135,8 @@ export const DEFAULT_SETTINGS = {
   free_ship_after: '0', // free shipping once a customer has this many paid orders (0 = off)
   price_alerts_on: '0', // "Tell me if the price drops" on the shop
   sms_ship_cost: '0', // what show-me-source charges you to ship one order (profit view)
+  auto_match_on: '0', // hands-free: mark website orders paid/shipped from emails (strong matches only)
+  free_ship_over: '0', // free shipping when the order's items reach this many dollars (0 = off)
 };
 
 export async function getSettings(db) {

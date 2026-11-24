@@ -10,9 +10,9 @@
 import { json, requireAdmin } from '../../lib/auth.js';
 import { proxyOrdersAdmin } from '../../lib/ordersProxy.js';
 import { ensureSyncSchema } from '../../../workers/supplier-sync/src/schema.js';
-import { nameScore } from '../../../workers/supplier-sync/src/money.js';
 import { buildPlacement, supplierNameMap } from '../../lib/supplierPlacement.js';
-import { loadSmsOrders, trackingUrl } from '../../lib/moneyMail.js';
+import { loadSmsOrders } from '../../lib/moneyMail.js';
+import { findSmsMatch } from '../../../workers/supplier-sync/src/match.js';
 
 export async function onRequestGet({ request, env }) {
   const denied = await requireAdmin(request, env);
@@ -61,37 +61,4 @@ export async function onRequestGet({ request, env }) {
     recent: placedRows.slice(0, 15),
     checkout_email: env.SUPPLIER_CHECKOUT_EMAIL || 'supplier@springfieldpbc.com',
   });
-}
-
-function findSmsMatch(p, placed, smsOrders, takenSms) {
-  const view = (o, why) =>
-    o && {
-      sms: o.sms,
-      name: o.name,
-      cost: o.cost,
-      date: o.date,
-      items: o.items,
-      ship_to: o.ship_to,
-      carrier: o.carrier,
-      tracking: o.tracking,
-      tracking_url: trackingUrl(o.carrier, o.tracking),
-      why,
-    };
-  if (placed && placed.sms_ref) {
-    const exact = smsOrders.find((o) => o.sms === String(placed.sms_ref).toUpperCase());
-    return view(exact, 'their order number you typed');
-  }
-  const after = Date.parse(p.created_at || '') - 86400000 || 0;
-  const who = p.address.name || p.customer_name;
-  const zip = String(p.address.postal || '').slice(0, 5);
-  let best = null;
-  for (const o of smsOrders) {
-    if (takenSms.has(o.sms)) continue;
-    if ((Date.parse(o.date || '') || 0) < after) continue;
-    let score = nameScore(who, o.name);
-    if (zip && o.ship_to && o.ship_to.includes(zip)) score += 1;
-    if (score < 2) continue; // name + zip, or a full name match
-    if (!best || score > best.score || (score === best.score && String(o.date) < String(best.o.date))) best = { o, score };
-  }
-  return best ? view(best.o, best.score >= 3 ? 'name and ZIP match' : 'name matches') : null;
 }

@@ -171,6 +171,35 @@ function venmoNote(text) {
   return /^(see transaction|money credited|\[)/i.test(note) ? '' : note;
 }
 
+/* ---------------- what the customer should have paid ---------------- */
+
+/**
+ * Estimate what a show-me-source order is worth at SPBC prices: their "Items:" line
+ * ("R 30 MG x20 (...) | 30mL Bac Water x2 (...)") -> kits of 10 + single vials, priced from
+ * SPBC products via supplier_map, plus flat shipping. Items with no SPBC product are skipped
+ * and counted in `unknown`.
+ * @param {string} items
+ * @param {Map<string, {vial: number|null, kit: number|null}>} prices  supplier name (lower) -> SPBC prices
+ */
+export function estimateCharge(items, prices, shipping = 15) {
+  let total = 0;
+  let unknown = 0;
+  for (const part of String(items || '').split('|')) {
+    const m = part.match(/^\s*(.+?)\s+x(\d+)/i);
+    if (!m) continue;
+    const p = prices.get(m[1].trim().toLowerCase());
+    const qty = parseInt(m[2], 10) || 0;
+    if (!p || (!p.kit && !p.vial)) {
+      unknown += 1;
+      continue;
+    }
+    const kits = p.kit ? Math.floor(qty / 10) : 0;
+    const vials = qty - kits * 10;
+    total += kits * (p.kit || 0) + (vials ? (p.vial ? vials * p.vial : Math.ceil(vials / 10) * (p.kit || 0)) : 0);
+  }
+  return { total: total ? round(total + shipping) : 0, unknown };
+}
+
 /* ---------------- ledger ---------------- */
 
 /** Merge the 2-4 emails of one show-me-source order into one order. Invoices never paid are dropped. */
@@ -207,7 +236,7 @@ const DAY = 86400000;
  * cost within 3 days is that order's payment to the supplier (not an extra cost).
  * `links` (manual decisions) can force a payment onto an order or mark it 'not_sale'.
  */
-export function buildLedger(events, { links = [] } = {}) {
+export function buildLedger(events, { links = [], prices = null } = {}) {
   const ins = events.filter((e) => e && e.type === 'in').map((e, i) => ({ ...e, key: e.txn || `in${i}` }));
   const outs = events.filter((e) => e && e.type === 'out').map((e, i) => ({ ...e, key: e.txn || `out${i}` }));
   const orders = smsOrders(events);
@@ -294,7 +323,7 @@ export function buildLedger(events, { links = [] } = {}) {
   }
   return {
     totals,
-    customers: customerSummary(ins.filter((p) => !notSale.has(p.key)), orders, forced),
+    customers: customerSummary(ins.filter((p) => !notSale.has(p.key)), orders, forced, prices),
     months: [...months.values()].sort((a, b) => b.month.localeCompare(a.month)),
     sales: sales.reverse(),
     unmatched_in: unmatchedIn.reverse(),
@@ -307,12 +336,12 @@ export function buildLedger(events, { links = [] } = {}) {
  * Handles customers who pay in lumps or later (resellers). Names are grouped when they
  * match (nicknames/typos/same family name count).
  */
-export function customerSummary(ins, orders, forced = new Map()) {
+export function customerSummary(ins, orders, forced = new Map(), prices = null) {
   const groups = [];
   const place = (name, fn) => {
     let g = groups.find((x) => x.names.some((n) => nameScore(n, name) >= 1));
     if (!g) {
-      g = { names: [], money_in: 0, fees: 0, payments: 0, supplier_cost: 0, orders: 0, last: '' };
+      g = { names: [], money_in: 0, fees: 0, payments: 0, supplier_cost: 0, orders: 0, last: '', expected: 0, unknown: 0, history: [] };
       groups.push(g);
     }
     if (!g.names.includes(name)) g.names.push(name);
@@ -325,6 +354,7 @@ export function customerSummary(ins, orders, forced = new Map()) {
       g.money_in += p.amount || 0;
       g.fees += p.fee || 0;
       g.payments += 1;
+      g.history.push({ type: 'payment', date: p.date, amount: p.amount, note: p.note || '', name: p.name });
       if (String(p.date) > g.last) g.last = String(p.date);
     });
   }
@@ -332,6 +362,10 @@ export function customerSummary(ins, orders, forced = new Map()) {
     place(o.name, (g) => {
       g.supplier_cost += o.cost || 0;
       g.orders += 1;
+      const est = prices ? estimateCharge(o.items, prices) : { total: 0, unknown: 0 };
+      g.expected += est.total;
+      g.unknown += est.unknown;
+      g.history.push({ type: 'order', date: o.date, sms: o.sms, items: o.items, cost: o.cost, expected: est.total });
       if (String(o.date) > g.last) g.last = String(o.date);
     });
   }
@@ -340,11 +374,17 @@ export function customerSummary(ins, orders, forced = new Map()) {
       customer: g.names.join(' / '),
       payments: g.payments,
       money_in: round(g.money_in - g.fees),
+      paid_total: round(g.money_in), // what they actually sent
       orders: g.orders,
       supplier_cost: round(g.supplier_cost),
       profit: round(g.money_in - g.fees - g.supplier_cost),
       complete: g.payments > 0 && g.orders > 0,
       last: g.last,
+      // At SPBC prices (estimate): positive = still owes, negative = paid more (e.g. wholesale/other deals).
+      expected: prices ? round(g.expected) : null,
+      balance: prices ? round(g.expected - g.money_in) : null, // g.money_in = what they actually sent (before Venmo's fee)
+      unpriced_items: g.unknown,
+      history: g.history.sort((a, b) => String(a.date).localeCompare(String(b.date))),
     }))
     .sort((a, b) => b.last.localeCompare(a.last));
 }

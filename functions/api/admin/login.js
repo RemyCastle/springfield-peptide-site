@@ -4,11 +4,20 @@ import {
   timingSafeEqualStr,
 } from '../../lib/auth.js';
 import { verifyCredential } from '../../lib/adminCredential.js';
+import { loginLocked, noteLoginResult } from '../../lib/loginThrottle.js';
 
 /** Shared master login with Patriotic: remy + MASTER_ADMIN_PASSWORD */
 const DEFAULT_MASTER_USER = 'remy';
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(ctx) {
+  const locked = await loginLocked(ctx.request, ctx.env);
+  if (locked) return locked;
+  const res = await handleLogin(ctx);
+  await noteLoginResult(ctx.request, ctx.env, res.status);
+  return res;
+}
+
+async function handleLogin({ request, env }) {
   /**
    * Preferred path: the hashed credential in D1, set through first-run setup and
    * rotatable from the admin UI. The env-var paths below stay as a fallback so this

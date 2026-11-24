@@ -1,4 +1,5 @@
 import { json, productToPublic } from '../lib/auth.js';
+import { freeShipOverCents } from '../lib/createOrder.js';
 
 /** Soft member session cookie set after 21+ age gate accept (client). Not hard security. */
 const MEMBER_COOKIE = 'spbc_member';
@@ -50,8 +51,9 @@ export async function onRequestGet({ request, env }) {
   try {
     // Supplier extras (low stock, lab report, out of stock) come from the show-me-source
     // sync tables. If those tables are not there yet, fall back to the plain list.
+    const free_ship_over = (await freeShipOverCents(env)) / 100;
     const extras = await loadSupplierExtras(env.DB);
-    if (extras) return json(extras);
+    if (extras) return json({ ...extras, free_ship_over });
     const { results } = await env.DB.prepare(
       `SELECT id, name, vial_price, pack_price, kit_only, sort_order, active
        FROM products
@@ -60,7 +62,7 @@ export async function onRequestGet({ request, env }) {
     ).all();
     // Prices in D1 ARE the customer price. Everyone (storefront, admin, spbc-orders) gets
     // the same stored price.
-    return json({ products: (results || []).map(productToPublic), out_of_stock: [] });
+    return json({ products: (results || []).map(productToPublic), out_of_stock: [], free_ship_over });
   } catch (e) {
     return json({ error: 'Failed to load products', detail: String(e.message || e) }, 500);
   }

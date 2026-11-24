@@ -22,15 +22,4 @@ export async function loadSmsOrders(db) {
   return smsOrders(await loadMoneyEvents(db));
 }
 
-/** Tracking URL for the common carriers (customers get this in the shipped email). */
-export function trackingUrl(carrier, number) {
-  const n = encodeURIComponent(String(number || '').trim());
-  const c = String(carrier || '').toLowerCase();
-  if (!n) return '';
-  if (c.includes('usps')) return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${n}`;
-  if (c.includes('ups')) return `https://www.ups.com/track?tracknum=${n}`;
-  if (c.includes('fedex')) return `https://www.fedex.com/fedextrack/?trknbr=${n}`;
-  if (/^1Z/i.test(number)) return `https://www.ups.com/track?tracknum=${n}`;
-  if (/^9\d{15,}$/.test(String(number))) return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${n}`;
-  return '';
-}
+export { trackingUrl } from '../../workers/supplier-sync/src/match.js';

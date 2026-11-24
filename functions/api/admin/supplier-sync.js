@@ -12,8 +12,8 @@
 import { json, requireAdmin } from '../../lib/auth.js';
 import { ensureSyncSchema, getSetting, setSetting, getSettings } from '../../../workers/supplier-sync/src/schema.js';
 
-const SWITCHES = ['reminders_on', 'digest_on', 'price_alerts_on'];
-const NUMBERS = { reminder_hours: [1, 336], auto_cancel_days: [0, 60], free_ship_after: [0, 50], sms_ship_cost: [0, 200] };
+const SWITCHES = ['reminders_on', 'digest_on', 'price_alerts_on', 'auto_match_on'];
+const NUMBERS = { reminder_hours: [1, 336], auto_cancel_days: [0, 60], free_ship_after: [0, 50], sms_ship_cost: [0, 200], free_ship_over: [0, 5000] };
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
 
 /** Only known switches, checked values. */

@@ -19,13 +19,13 @@ preview_urls = false
 crons = ["17 */2 * * *", "0 13 * * *"] # sync + reminders every 2h; digest daily 13:00 UTC (7am Central)
 
 [vars]
-# "1" = test mode: log what would change, change nothing. Set to "0" after Remy reviews a few runs.
-DRY_RUN = "1"
+# "1" = test mode (log only). Live since 2026-11-24 after a clean test run (0 changes needed).
+DRY_RUN = "0"
 # Partner (Patriotic) wholesale markups over the supplier price.
 PARTNER_VIAL_MARKUP = "15"
 PARTNER_KIT_MARKUP = "100"
 # e.g. "SPBC <orders@springfieldpbc.com>". Empty = no emails at all (sign-ups wait in the admin).
-RESTOCK_FROM = ""
+RESTOCK_FROM = "SPBC <orders@springfieldpbc.com>"
 # The spbc-orders URL (Outlook account). Reminders + digest also need the ORDERS_ADMIN_TOKEN secret.
 ORDERS_PUBLIC_URL = "https://spbc-orders.remycastle.workers.dev"
 # supplier@springfieldpbc.com: mail straight from these domains is trusted when DKIM/SPF pass.

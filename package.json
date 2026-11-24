@@ -9,7 +9,10 @@
     "build:css": "tailwindcss -i ./shared/tailwind.input.css -o ./shared/tailwind.build.css --minify && node scripts/hash-tailwind.js",
     "build:hash": "node scripts/hash-shared.js",
     "build": "npm run build:css && npm run build:hash && npm run build:pages && npm run build:static",
-    "watch:css": "tailwindcss -i ./shared/tailwind.input.css -o ./shared/tailwind.build.css --watch"
+    "watch:css": "tailwindcss -i ./shared/tailwind.input.css -o ./shared/tailwind.build.css --watch",
+    "deploy:guard": "node scripts/deploy-guard.js",
+    "deploy:site": "node scripts/deploy-guard.js && npm run build && wrangler pages deploy .cf-pages --project-name springfieldpeps --branch main",
+    "deploy:sync": "node scripts/deploy-guard.js && cd workers/supplier-sync && wrangler deploy"
   },
   "overrides": {
     "nanoid": "^3.3.18"

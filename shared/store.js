@@ -559,6 +559,8 @@ const CART_KEY = "spbc_cart_draft";
 
         /** Set from /api/products: show "Price drop alert" on each card. */
         let priceAlertsOn = false;
+        /** Set from /api/products: items total (dollars) that ships free; 0 = off. The server decides the real charge. */
+        let freeShipOver = 0;
 
         function savedContactEmail() {
             try { return (JSON.parse(localStorage.getItem(CONTACT_KEY) || '{}').email) || ''; } catch (_) { return ''; }
@@ -780,6 +782,7 @@ const CART_KEY = "spbc_cart_draft";
                 if (!res.ok) throw new Error('bad status');
                 const data = await res.json();
                 priceAlertsOn = !!data.price_alerts;
+                freeShipOver = Number(data.free_ship_over) || 0;
                 renderProducts(data.products || []);
                 renderSoldOut(data.out_of_stock || []);
             } catch (e) {
@@ -883,7 +886,8 @@ const CART_KEY = "spbc_cart_draft";
             const kitDiscountPct = 0;
             const subtotal = vialSubtotal + packSubtotal + nonDiscountSubtotal;
             const hasAny = singleVials > 0 || kitCount > 0;
-            const shipping = hasAny ? SHIPPING_FLAT : 0;
+            const freeShip = freeShipOver > 0 && subtotal >= freeShipOver;
+            const shipping = hasAny && !freeShip ? SHIPPING_FLAT : 0;
             const total = subtotal + shipping;
             const minimumMet = kitCount >= 1 || singleVials >= MIN_ORDER_VIALS;
 
@@ -933,6 +937,10 @@ const CART_KEY = "spbc_cart_draft";
                     hint: `Add ${need} more vial${need === 1 ? '' : 's'} or any kit (${MIN_ORDER_VIALS}-vial minimum)`,
                 };
             }
+            if (freeShipOver > 0 && t.subtotal < freeShipOver) {
+                return { pct: 100, hint: `Ready to order · add $${money(freeShipOver - t.subtotal)} more for free shipping` };
+            }
+            if (freeShipOver > 0) return { pct: 100, hint: 'Ready to order · free shipping' };
             return { pct: 100, hint: 'Ready to order' };
         }
 
@@ -1193,6 +1201,8 @@ const CART_KEY = "spbc_cart_draft";
             document.getElementById('reviewEmail').textContent = email;
             document.getElementById('reviewName').textContent = name;
             document.getElementById('reviewTotal').textContent = `$${money(t.total)}`;
+            const rs = document.getElementById('reviewShipping');
+            if (rs) rs.textContent = t.shipping ? `$${money(t.shipping)}` : 'Free';
             let reviewShip = document.getElementById('reviewShip');
             if (!reviewShip) {
                 const wrap = document.getElementById('reviewEmail')?.closest('.border-t') || document.getElementById('reviewEmail')?.parentElement?.parentElement;
@@ -1264,8 +1274,9 @@ const CART_KEY = "spbc_cart_draft";
                     body: JSON.stringify({
                         customer: { name, email },
                         items,
-                        shipping_cents: dollarsToCents(SHIPPING_FLAT),
-                        total_cents: subtotalFinal + dollarsToCents(SHIPPING_FLAT),
+                        // Server sets the real shipping; these are display hints only.
+                        shipping_cents: dollarsToCents(tallyOrder().shipping),
+                        total_cents: subtotalFinal + dollarsToCents(tallyOrder().shipping),
                         currency: 'USD',
                         notes: notes || undefined,
                         shipping,
@@ -1287,7 +1298,7 @@ const CART_KEY = "spbc_cart_draft";
                 document.getElementById('successOrderNumber').textContent = data.order_number;
                 document.getElementById('successTotal').textContent =
                     '$' + (Number(data.total_cents || subtotalFinal + dollarsToCents(SHIPPING_FLAT)) / 100).toFixed(2) +
-                    (data.perk === 'free_shipping' ? ' (free shipping, thanks for coming back!)' : '');
+                    (data.perk === 'free_shipping' ? ' (free shipping, thanks for coming back!)' : data.perk === 'free_shipping_over' ? ' (free shipping)' : '');
                 document.getElementById('successPayLink').href =
                     data.pay_url || `https://spbc-orders.remycastle.workers.dev/pay/${encodeURIComponent(data.order_number)}`;
                 const trackLink = document.getElementById('successTrackLink');

@@ -13,8 +13,9 @@
 import { planSync, feedProblem } from './plan.js';
 import { ensureSyncSchema } from './schema.js';
 import { updateProductMeta, sendRestockEmails } from './extras.js';
-import { paymentReminders, dailyDigest, priceDropAlerts } from './jobs.js';
+import { paymentReminders, dailyDigest, priceDropAlerts, autoMatch } from './jobs.js';
 import { handleEmail } from './mailbox.js';
+import { healthCheck } from './health.js';
 import { partnerPriceList } from './partner.js';
 
 export { ensureSyncSchema };
@@ -187,7 +188,12 @@ export async function runScheduled(cron, env) {
   if (!reminders.skipped) {
     await logEvent(db, { kind: 'reminders', status: reminders.error ? 'error' : 'done', detail: reminders });
   }
-  return { sync, reminders };
+  const matched = await autoMatch(env, db).catch((e) => ({ error: String(e.message || e) }));
+  if (!matched.skipped && (matched.error || matched.paid || matched.shipped)) {
+    await logEvent(db, { kind: 'auto_match', status: matched.error ? 'error' : 'done', detail: matched });
+  }
+  const health = await healthCheck(env, db).catch((e) => ({ ok: false, problems: [String(e.message || e)] }));
+  return { sync, reminders, matched, health };
 }
 
 /** Constant-time-ish string compare for bearer tokens. */

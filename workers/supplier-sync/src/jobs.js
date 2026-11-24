@@ -5,6 +5,8 @@
 import { getSettings } from './schema.js';
 import { sendEmail, emailReady, esc, siteUrl, wrap } from './email.js';
 import { ordersReady, listOrders, ordersApi, payUrl } from './orders.js';
+import { parseMoneyMail, smsOrders } from './money.js';
+import { findSmsMatch, paymentCandidates } from './match.js';
 
 const HOUR = 3600 * 1000;
 
@@ -148,4 +150,103 @@ export async function priceDropAlerts(env, db, priceActions) {
     }
   }
   return { sent };
+}
+
+/**
+ * Hands-free matching (site_settings.auto_match_on = '1'). Runs with the 2-hourly sync.
+ *  1. A Venmo payment email (supplier@) with no order code: if exactly one unpaid website order
+ *     has the same full name and the exact amount, mark it paid.
+ *  2. A show-me-source tracking email from the last 3 days for an order Remy marked placed:
+ *     if it matches by his typed show-me-source number, or name + ZIP, mark the website order
+ *     shipped with that tracking (the customer gets the shipped email).
+ * Each email is acted on once (logged as auto_paid / auto_shipped events).
+ */
+export async function autoMatch(env, db, now = Date.now()) {
+  const s = await getSettings(db);
+  if (s.auto_match_on !== '1' || !ordersReady(env)) return { skipped: true };
+  const { results: rows } = await db
+    .prepare(
+      `SELECT id, from_addr, subject, sent_at, received_at, text_body, html_body FROM supplier_mail
+       WHERE trusted = 1 AND kind IN ('venmo','chime','paypal','sms_order','sms_shipping') AND received_at > datetime('now', '-30 days')`
+    )
+    .all();
+  const events = rows.map((r) => ({ mail: r, e: parseMoneyMail(r) })).filter((x) => x.e);
+  const done = new Set(
+    (await db.prepare("SELECT detail FROM supplier_sync_events WHERE kind IN ('auto_paid','auto_shipped')").all()).results
+      .map((r) => {
+        try {
+          return JSON.parse(r.detail).key;
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean)
+  );
+  const log = (kind, detail) =>
+    db.prepare('INSERT INTO supplier_sync_events (kind, status, detail) VALUES (?, ?, ?)').bind(kind, 'done', JSON.stringify(detail)).run();
+  let paid = 0;
+  let shipped = 0;
+
+  // 1. Payments -> unpaid website orders
+  let unpaid = await listOrders(env, { status: 'pending_payment' });
+  for (const { mail, e } of events) {
+    if (e.type !== 'in') continue;
+    const key = `pay:${e.txn || mail.id}`;
+    if (done.has(key)) continue;
+    const cands = paymentCandidates(e, unpaid);
+    if (cands.length !== 1) continue;
+    const o = cands[0];
+    await ordersApi(env, `/admin/orders/${encodeURIComponent(o.order_number)}`, {
+      method: 'PATCH',
+      body: { status: 'paid', note: `Auto-matched ${e.source} payment from ${e.name} ($${e.amount})` },
+    });
+    await log('auto_paid', { key, order: o.order_number, payer: e.name, amount: e.amount });
+    unpaid = unpaid.filter((x) => x.order_number !== o.order_number);
+    paid += 1;
+  }
+
+  // 2. Tracking -> placed website orders
+  const recentTracking = new Set(
+    events
+      .filter(
+        ({ mail, e }) =>
+          e.type === 'sms' && e.stage === 'tracking' && now - (Date.parse(String(mail.received_at).replace(' ', 'T') + 'Z') || 0) < 3 * 86400000
+      )
+      .map(({ e }) => e.sms)
+  );
+  if (recentTracking.size) {
+    const orders = smsOrders(events.map((x) => x.e));
+    const placedRows = (await db.prepare('SELECT * FROM supplier_orders').all()).results;
+    const placedBy = new Map(placedRows.map((r) => [r.order_number, r]));
+    const taken = new Set(placedRows.map((r) => String(r.sms_ref || '').toUpperCase()).filter(Boolean));
+    const waiting = (await listOrders(env, { status: 'paid' })).filter((o) => placedBy.has(o.order_number));
+    for (const o of waiting) {
+      const placed = placedBy.get(o.order_number);
+      const own = new Set([...taken].filter((x) => x !== String(placed.sms_ref || '').toUpperCase()));
+      const view = { customer_name: o.customer_name, created_at: o.created_at, address: { name: o.ship_name || o.customer_name, postal: o.ship_postal } };
+      const m = findSmsMatch(view, placed, orders, own);
+      if (!m || !m.tracking || m.score < 3 || !recentTracking.has(m.sms)) continue;
+      const key = `ship:${m.sms}`;
+      if (done.has(key)) continue;
+      await ordersApi(env, `/admin/orders/${encodeURIComponent(o.order_number)}`, {
+        method: 'PATCH',
+        body: {
+          status: 'shipped',
+          tracking_number: m.tracking,
+          tracking_carrier: m.carrier || undefined,
+          tracking_url: m.tracking_url || undefined,
+          note: `Auto: tracking from show-me-source ${m.sms}`,
+        },
+      });
+      if (!placed.sms_ref) {
+        await db
+          .prepare('UPDATE supplier_orders SET sms_ref = ?, sms_cost = COALESCE(sms_cost, ?) WHERE order_number = ?')
+          .bind(m.sms, m.cost ?? null, o.order_number)
+          .run();
+      }
+      await log('auto_shipped', { key, order: o.order_number, sms: m.sms, tracking: m.tracking });
+      shipped += 1;
+    }
+  }
+  return { paid, shipped };
 }

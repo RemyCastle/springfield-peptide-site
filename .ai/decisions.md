@@ -205,3 +205,15 @@ Append-only log. Newest at bottom.
 - Each payment goes to the nearest show-me-source order of the same customer within 21 days; per-customer summary handles lump payers. Remy fixes pairs in the Money tab (`money_links`: link to SMS-### or "Not a sale").
 - Place orders: suggests the show-me-source order for each website order (typed SMS #, or name + ZIP / full name after the order date); "mark placed" fills their # and cost; "Placed, waiting to ship" offers "Mark shipped + email customer" with their tracking (spbc-orders PATCH shipped).
 - Real samples showed many sales happen by Venmo outside the website and some payments are training/refunds, hence manual tags.
+
+### 2026-11-24 — Ten upgrades
+1. Quick order (admin Orders tab, `/api/admin/quick-order`): real order + pay link message for direct/Venmo customers; checkout logic shared in `functions/lib/createOrder.js`.
+2. Sync live (DRY_RUN=0 after a clean run), RESTOCK_FROM=orders@springfieldpbc.com (domain verified in Resend). RESEND_API_KEY + ORDERS_ADMIN_TOKEN secrets on spbc-supplier-sync set by Remy.
+3. Hands-free matching (`auto_match_on`, off by default): Venmo full name + exact amount + single unpaid order -> paid; recent show-me-source tracking matched by typed SMS # or name+ZIP -> shipped. Shared rules in `workers/supplier-sync/src/match.js`.
+4. Money tab: per-customer balance at today's prices + printable statement.
+5. `free_ship_over` (dollars) honoured by checkout, quick order and the cart hint.
+6. Pay page already lists Venmo first with the code prefilled; Chime kept second on purpose (no prefill = no auto-match).
+7. Remy declined the Zero Trust plan; added a login lockout instead (8 wrong tries / 15 min per IP, `login_attempts`).
+8. Web Analytics was already on (auto-install since 2026-07); admin "Visitors" link.
+9. "Good to know" section on the home page (label usually within hours of payment, max 21h in 13 orders; USPS 2-3 business days).
+10. Health check every 2h (pages, /shared types, checkout signature via invalid-email probe; emails digest_to on new problems), `scripts/backup-d1.ps1`, `scripts/deploy-guard.js` + `npm run deploy:site|deploy:sync`.

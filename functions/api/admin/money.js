@@ -17,7 +17,13 @@ export async function onRequestGet({ request, env }) {
   await ensureSyncSchema(env.DB);
   const events = await loadMoneyEvents(env.DB);
   const links = (await env.DB.prepare('SELECT payment_key, sms, tag FROM money_links').all()).results;
-  const ledger = buildLedger(events, { links });
+  // SPBC prices keyed by show-me-source product name, for "what they should have paid".
+  const { results: pr } = await env.DB.prepare(
+    `SELECT m.supplier_name, p.vial_price, p.pack_price FROM supplier_map m JOIN products p ON p.name = m.spbc_name
+     WHERE m.skip = 0 AND m.supplier_name IS NOT NULL`
+  ).all();
+  const prices = new Map(pr.map((r) => [String(r.supplier_name).toLowerCase(), { vial: r.vial_price, kit: r.pack_price }]));
+  const ledger = buildLedger(events, { links, prices });
   return json({
     ...ledger,
     links,

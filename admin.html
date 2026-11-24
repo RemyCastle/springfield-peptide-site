@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.70199955.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.a8fcfa12.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -323,6 +323,8 @@
               <option value="365">Last 12 months</option>
               <option value="0">All time</option>
             </select>
+            <a href="https://dash.cloudflare.com/54b9c619cd4378135d3b2d45ffe85f36/web-analytics" target="_blank" rel="noopener noreferrer"
+               class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm" title="Cloudflare Web Analytics: visits, pages, countries (no cookies)">Visitors ↗</a>
             <button id="reportRefreshBtn" type="button"
                     class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
               Refresh
@@ -359,6 +361,44 @@
             </button>
           </div>
         </div>
+
+        <details id="quickOrderBox" class="admin-card p-4 mb-4">
+          <summary class="cursor-pointer font-bold text-[#FDD700]">+ Quick order for a customer who texted or Venmo'd you</summary>
+          <p class="text-xs text-zinc-500 mt-2 mb-3">
+            Makes a real order (same prices and rules as the website) and gives you a message with their pay link.
+            The order code is filled into their Venmo note, so the payment matches automatically and they get tracking.
+          </p>
+          <div class="grid gap-2 sm:grid-cols-2">
+            <input id="qoName" type="text" placeholder="Customer name" class="admin-input text-sm">
+            <input id="qoEmail" type="email" placeholder="Email (optional, for receipts + tracking)" class="admin-input text-sm">
+          </div>
+          <div id="qoLines" class="space-y-2 mt-3"></div>
+          <button id="qoAddLine" type="button" class="mt-2 text-xs border border-zinc-600 text-zinc-300 px-2 py-1 rounded-lg">+ Add item</button>
+          <details class="mt-3"><summary class="cursor-pointer text-xs text-zinc-400">Shipping address (optional; otherwise they get a link to add it)</summary>
+            <div class="grid gap-2 sm:grid-cols-2 mt-2">
+              <input id="qoShipLine1" placeholder="Street" class="admin-input text-sm">
+              <input id="qoShipLine2" placeholder="Apt / unit" class="admin-input text-sm">
+              <input id="qoShipCity" placeholder="City" class="admin-input text-sm">
+              <input id="qoShipState" placeholder="State (2 letters)" maxlength="2" class="admin-input text-sm">
+              <input id="qoShipPostal" placeholder="ZIP" class="admin-input text-sm">
+              <input id="qoShipPhone" placeholder="Phone" class="admin-input text-sm">
+            </div>
+          </details>
+          <div class="flex flex-wrap items-center gap-3 mt-3">
+            <button id="qoCreate" type="button" class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm">Make order + get pay link</button>
+            <span id="qoTotal" class="text-sm text-zinc-400"></span>
+          </div>
+          <p id="qoError" class="text-sm text-red-400 mt-2 hidden"></p>
+          <div id="qoResult" class="hidden mt-3 rounded-xl border border-emerald-700 bg-emerald-950/30 p-3 space-y-2">
+            <p id="qoResultTitle" class="text-emerald-300 font-semibold"></p>
+            <textarea id="qoMessage" rows="5" class="w-full bg-black border border-zinc-700 rounded-xl p-2 text-sm text-white"></textarea>
+            <div class="flex flex-wrap gap-2">
+              <button id="qoCopy" type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Copy message</button>
+              <a id="qoPayLink" href="#" target="_blank" rel="noopener" class="border border-zinc-600 text-zinc-200 px-3 py-1.5 rounded-lg text-xs">Open pay page</a>
+              <button id="qoNew" type="button" class="border border-zinc-600 text-zinc-300 px-3 py-1.5 rounded-lg text-xs">Start another</button>
+            </div>
+          </div>
+        </details>
 
         <div class="filter-row">
           <select id="orderStatus"
@@ -628,6 +668,131 @@
       if (tab === 'report') await loadReport();
     }
 
+    /* ---------- Quick order ---------- */
+    let qoProducts = null;
+    let qoAdding = false;
+    async function qoLoadProducts() {
+      if (qoProducts) return qoProducts;
+      const res = await fetch('/api/admin/products', { credentials: 'same-origin' });
+      if (res.status === 401) return showLogin();
+      const d = await res.json().catch(() => ({}));
+      qoProducts = (d.products || d || []).filter((p) => p.active);
+      return qoProducts;
+    }
+    function qoPrice(p, kind) {
+      return kind === 'vial' ? p.vial_price : p.pack_price;
+    }
+    function qoUpdateTotal() {
+      let sub = 0;
+      document.querySelectorAll('#qoLines [data-qo-line]').forEach((row) => {
+        const p = (qoProducts || []).find((x) => x.name === row.querySelector('[data-qo-product]').value);
+        const kind = row.querySelector('[data-qo-kind]').value;
+        const qty = parseInt(row.querySelector('[data-qo-qty]').value, 10) || 0;
+        if (p && qoPrice(p, kind)) sub += Number(qoPrice(p, kind)) * qty;
+      });
+      document.getElementById('qoTotal').textContent = sub ? `Items $${sub.toFixed(2)} + shipping (worked out when you make it)` : '';
+    }
+    async function qoAddLine() {
+      const products = await qoLoadProducts();
+      if (!products) return;
+      const row = document.createElement('div');
+      row.dataset.qoLine = '1';
+      row.className = 'flex flex-wrap gap-2 items-center';
+      row.innerHTML = `<select data-qo-product class="admin-input text-sm flex-1 min-w-[12rem]">${products
+        .map((p) => `<option value="${escapeAttr(p.name)}">${escapeHtml(p.name)}</option>`)
+        .join('')}</select>
+        <select data-qo-kind class="admin-input text-sm w-28"><option value="kit">Kit (10)</option><option value="vial">Vial</option></select>
+        <input data-qo-qty type="number" min="1" value="1" class="admin-input text-sm w-20">
+        <button type="button" data-qo-remove class="text-xs text-zinc-500 underline">remove</button>`;
+      document.getElementById('qoLines').appendChild(row);
+      qoUpdateTotal();
+    }
+    document.getElementById('quickOrderBox')?.addEventListener('toggle', async (e) => {
+      if (!e.target.open || qoAdding || document.querySelector('#qoLines [data-qo-line]')) return;
+      qoAdding = true;
+      try {
+        await qoAddLine();
+      } finally {
+        qoAdding = false;
+      }
+    });
+    document.getElementById('qoAddLine')?.addEventListener('click', qoAddLine);
+    document.getElementById('qoLines')?.addEventListener('change', qoUpdateTotal);
+    document.getElementById('qoLines')?.addEventListener('input', qoUpdateTotal);
+    document.getElementById('qoLines')?.addEventListener('click', (e) => {
+      if (e.target.closest('[data-qo-remove]')) {
+        e.target.closest('[data-qo-line]').remove();
+        qoUpdateTotal();
+      }
+    });
+    document.getElementById('qoCreate')?.addEventListener('click', async () => {
+      const err = document.getElementById('qoError');
+      err.classList.add('hidden');
+      const items = [...document.querySelectorAll('#qoLines [data-qo-line]')].map((row) => ({
+        product: row.querySelector('[data-qo-product]').value,
+        kind: row.querySelector('[data-qo-kind]').value,
+        qty: row.querySelector('[data-qo-qty]').value,
+      }));
+      const v = (id) => document.getElementById(id).value.trim();
+      const btn = document.getElementById('qoCreate');
+      btn.disabled = true;
+      btn.textContent = 'Making order…';
+      try {
+        const res = await fetch('/api/admin/quick-order', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: v('qoName'),
+            email: v('qoEmail'),
+            items,
+            shipping: {
+              ship_name: v('qoName'),
+              ship_line1: v('qoShipLine1'),
+              ship_line2: v('qoShipLine2'),
+              ship_city: v('qoShipCity'),
+              ship_state: v('qoShipState'),
+              ship_postal: v('qoShipPostal'),
+              ship_phone: v('qoShipPhone'),
+            },
+          }),
+        });
+        if (res.status === 401) return showLogin();
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok || !d.ok) {
+          err.textContent = d.message || d.error || 'Could not make the order.';
+          err.classList.remove('hidden');
+          return;
+        }
+        document.getElementById('qoResultTitle').textContent =
+          `Order ${d.order_number} made: ${formatCents(d.total_cents)}${d.no_email ? ' (no email: send them this message)' : ' (they also got an email)'}`;
+        document.getElementById('qoMessage').value = d.message;
+        document.getElementById('qoPayLink').href = d.pay_url;
+        document.getElementById('qoResult').classList.remove('hidden');
+        loadOrders();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Make order + get pay link';
+      }
+    });
+    document.getElementById('qoCopy')?.addEventListener('click', async (e) => {
+      try {
+        await navigator.clipboard.writeText(document.getElementById('qoMessage').value);
+        e.target.textContent = 'Copied';
+      } catch {
+        document.getElementById('qoMessage').select();
+      }
+    });
+    document.getElementById('qoNew')?.addEventListener('click', () => {
+      ['qoName', 'qoEmail', 'qoShipLine1', 'qoShipLine2', 'qoShipCity', 'qoShipState', 'qoShipPostal', 'qoShipPhone'].forEach((id) => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('qoLines').innerHTML = '';
+      document.getElementById('qoResult').classList.add('hidden');
+      document.getElementById('qoCopy').textContent = 'Copy message';
+      qoAddLine();
+    });
+
     /* ---------- Money tab ---------- */
     const $m = (n) => (n == null ? '—' : (n < 0 ? '-$' : '$') + Math.abs(Number(n)).toFixed(2));
     const mDay = (d) => escapeHtml(String(d || '').slice(0, 10));
@@ -696,12 +861,14 @@
 
       if ((d.customers || []).length) {
         html += '<div class="admin-card p-4 overflow-x-auto"><p class="font-semibold text-white mb-1">By customer</p>' +
-          '<p class="text-xs text-zinc-500 mb-2">Everything each customer paid vs everything you paid show-me-source for them. Best for customers who pay in lumps.</p>' +
-          '<table class="w-full min-w-[520px]"><thead class="text-xs text-zinc-500 text-left"><tr><th class="py-1">Customer</th><th class="text-right">Paid you</th><th class="text-right">Show-me-source</th><th class="text-right">Profit</th></tr></thead><tbody>' +
-          d.customers.map((c) => `<tr class="border-t border-zinc-800"><td class="py-1">${escapeHtml(c.customer)}${c.complete ? '' : ' <span class="text-xs text-amber-300">(one side missing)</span>'}</td>
+          '<p class="text-xs text-zinc-500 mb-2">Everything each customer paid vs everything you paid show-me-source for them. "Balance" estimates what they still owe at <strong>today&#39;s</strong> prices (orders × today&#39;s price + $15 shipping, minus what they sent). Orders sold at older or wholesale prices will look owed, so check before asking anyone to pay.</p>' +
+          '<table class="w-full min-w-[720px]"><thead class="text-xs text-zinc-500 text-left"><tr><th class="py-1">Customer</th><th class="text-right">Paid you</th><th class="text-right">Show-me-source</th><th class="text-right">Profit</th><th class="text-right" title="At today&#39;s prices, so orders sold at older or wholesale prices look owed">Balance at today&#39;s prices</th><th></th></tr></thead><tbody>' +
+          d.customers.map((c, i) => `<tr class="border-t border-zinc-800"><td class="py-1">${escapeHtml(c.customer)}${c.complete ? '' : ' <span class="text-xs text-amber-300">(one side missing)</span>'}</td>
             <td class="text-right tabular-nums">${$m(c.money_in)} <span class="text-xs text-zinc-500">(${c.payments})</span></td>
             <td class="text-right tabular-nums">${$m(c.supplier_cost)} <span class="text-xs text-zinc-500">(${c.orders})</span></td>
-            <td class="text-right tabular-nums ${c.profit >= 0 ? 'text-emerald-300' : 'text-red-400'}">${$m(c.profit)}</td></tr>`).join('') +
+            <td class="text-right tabular-nums ${c.profit >= 0 ? 'text-emerald-300' : 'text-red-400'}">${$m(c.profit)}</td>
+            <td class="text-right tabular-nums ${c.balance > 0.5 ? 'text-amber-300' : 'text-zinc-400'}">${c.orders ? (c.balance > 0.5 ? 'owes ' + $m(c.balance) : c.balance < -0.5 ? 'paid ' + $m(-c.balance) + ' more' : 'even') : '—'}${c.unpriced_items ? ' <span class="text-xs text-zinc-500" title="Items with no SPBC price were left out">*</span>' : ''}</td>
+            <td class="text-right"><button type="button" data-money-statement="${i}" class="text-[11px] border border-zinc-600 text-zinc-300 px-2 py-0.5 rounded-lg">Statement</button></td></tr>`).join('') +
           '</tbody></table></div>';
       }
 
@@ -735,6 +902,30 @@
       body.innerHTML = html;
     }
 
+    /** Printable statement for one customer (opens a new window; print or save as PDF). */
+    function moneyStatement(c) {
+      if (!c) return;
+      const rows = (c.history || [])
+        .map((h) =>
+          h.type === 'payment'
+            ? `<tr><td>${mDay(h.date)}</td><td>Payment received${h.note ? ' (' + escapeHtml(h.note) + ')' : ''}</td><td></td><td class="r">${$m(h.amount)}</td></tr>`
+            : `<tr><td>${mDay(h.date)}</td><td>Order ${escapeHtml(h.sms)}: ${escapeHtml(String(h.items || '').replace(/\([^)]*\)/g, '').replace(/\s+=\s+\$[\d.,]+\)?/g, ''))}</td><td class="r">${h.expected ? $m(h.expected) : '—'}</td><td></td></tr>`
+        )
+        .join('');
+      const w = window.open('', '_blank');
+      if (!w) return moneyMsg('Allow pop-ups to open the statement.', false);
+      w.document.write(`<!doctype html><meta charset="utf-8"><title>Statement - ${escapeHtml(c.customer)}</title>
+        <style>body{font-family:Arial,sans-serif;max-width:760px;margin:24px auto;color:#111}table{width:100%;border-collapse:collapse}
+        td,th{border-bottom:1px solid #ddd;padding:6px;font-size:14px;text-align:left}.r{text-align:right}h1{font-size:20px}</style>
+        <h1>Springfield Peptide Buyers Club: statement for ${escapeHtml(c.customer.split(' / ')[0])}</h1>
+        <p>As of ${new Date().toLocaleDateString()}</p>
+        <table><tr><th>Date</th><th>What</th><th class="r">Charged</th><th class="r">Paid</th></tr>${rows}
+        <tr><th></th><th>Total</th><th class="r">${$m(c.expected)}</th><th class="r">${$m(c.paid_total ?? c.money_in)}</th></tr></table>
+        <p><strong>${c.balance > 0.5 ? 'Balance due: ' + $m(c.balance) : c.balance < -0.5 ? 'Credit: ' + $m(-c.balance) : 'Paid in full'}</strong></p>
+        <p style="font-size:12px;color:#666">Charged amounts use current prices plus $15 shipping per order. Research use only.</p>`);
+      w.document.close();
+    }
+
     async function moneyPost(payload) {
       const res = await fetch('/api/admin/money', {
         method: 'POST',
@@ -757,6 +948,8 @@
       if (ns) return moneyPost({ payment_key: ns.dataset.moneyNotsale, tag: 'not_sale' });
       const auto = e.target.closest('[data-money-auto]');
       if (auto) return moneyPost({ payment_key: auto.dataset.moneyAuto });
+      const st = e.target.closest('[data-money-statement]');
+      if (st) return moneyStatement(moneyCache.customers[Number(st.dataset.moneyStatement)]);
       if (e.target.closest('[data-money-shownotsale]')) {
         const box = document.getElementById('moneyNotSale');
         const keys = (moneyCache?.links || []).filter((l) => l.tag === 'not_sale');
@@ -1212,6 +1405,12 @@
         <label class="flex flex-wrap items-center gap-2 text-sm">Free shipping for customers with
           <input type="number" data-auto="free_ship_after" value="${escapeAttr(A.free_ship_after || '0')}" min="0" max="50" class="admin-input w-20 text-sm"> paid orders
           <span class="text-xs text-zinc-500">(0 = off)</span></label>
+        <label class="flex flex-wrap items-center gap-2 text-sm">Free shipping when items reach $
+          <input type="number" data-auto="free_ship_over" value="${escapeAttr(A.free_ship_over || '0')}" min="0" max="5000" class="admin-input w-24 text-sm">
+          <span class="text-xs text-zinc-500">(0 = off; shown on the shop)</span></label>
+        <label class="flex flex-wrap items-center gap-2 text-sm"><input type="checkbox" data-auto="auto_match_on" ${chk('auto_match_on')} class="accent-[#FDD700]">
+          Hands-free matching: mark website orders <strong>paid</strong> (Venmo: same full name + exact amount, one order only) and <strong>shipped</strong>
+          (show-me-source tracking matched by their order # or name + ZIP) <span class="text-xs text-zinc-500">(every 2 hours)</span></label>
         <label class="flex flex-wrap items-center gap-2 text-sm"><input type="checkbox" data-auto="price_alerts_on" ${chk('price_alerts_on')} class="accent-[#FDD700]">
           "Tell me if the price drops" on the shop <span class="text-xs text-zinc-500">(${d.price_watchers || 0} following)</span></label>
         <label class="flex flex-wrap items-center gap-2 text-sm">show-me-source charges me $
