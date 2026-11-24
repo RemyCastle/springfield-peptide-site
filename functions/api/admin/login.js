@@ -25,12 +25,13 @@ export async function onRequestPost(ctx) {
  * No code yet -> 428 (asks for it, not counted as a failed try). Wrong code -> 401 (counted).
  */
 async function secondStep(env, request, ok) {
-  if (!env.DB) return ok;
+  if (!env.DB) return ok; // no database at all: nothing can have turned two-step on
   let sec;
   try {
     sec = await securityGet(env.DB);
   } catch {
-    return ok;
+    // Fail closed: if we cannot tell whether two-step is on, give no session.
+    return json({ error: 'unavailable', message: 'Sign-in is unavailable for a moment. Please try again.' }, 503);
   }
   if (sec.totp_on !== '1' || !sec.totp_secret) return ok;
   const body = await request.json().catch(() => ({}));

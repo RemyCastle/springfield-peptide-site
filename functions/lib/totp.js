@@ -86,7 +86,15 @@ export async function useTotp(db, code, which = 'totp_secret') {
   const sec = await securityGet(db);
   const step = await matchTotp(sec[which], code);
   if (step == null) return false;
-  if (Number(sec.totp_last_step || 0) >= step) return false;
-  await securitySet(db, { totp_last_step: step });
-  return true;
+  // One atomic write: it only succeeds when this time step is newer than the last one used,
+  // so two sign-ins racing with the same code cannot both pass.
+  const r = await db
+    .prepare(
+      `INSERT INTO admin_security (key, value) VALUES ('totp_last_step', ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')
+       WHERE CAST(admin_security.value AS INTEGER) < CAST(excluded.value AS INTEGER)`
+    )
+    .bind(String(step))
+    .run();
+  return (r.meta?.changes || 0) === 1;
 }
