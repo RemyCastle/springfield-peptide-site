@@ -1,15 +1,25 @@
 /**
- * supplier@springfieldpbc.com: Remy's Outlook forwards show-me-source order receipts and
- * shipping emails (and payment notices, for name matching) here. Each one is saved in
- * D1 `supplier_mail` so the matching jobs (and Claude, when building them) can read it.
+ * supplier@springfieldpbc.com
  *
- * Only envelope senders in ALLOWED_FORWARDERS (a secret Remy sets, comma-separated)
- * are accepted, so strangers cannot inject fake receipts or tracking.
+ * Two ways mail arrives:
+ *   1. Directly from show-me-source: Remy uses supplier@springfieldpbc.com as the email on
+ *      his show-me-source orders, so their order receipts and shipping notices land here.
+ *   2. Forwarded by Remy (from ALLOWED_FORWARDERS, a secret), e.g. older emails.
+ *
+ * Trust: forwarded mail is trusted when the envelope sender is in ALLOWED_FORWARDERS.
+ * Direct mail is trusted when its From domain is in TRUSTED_SENDER_DOMAINS and Cloudflare's
+ * Authentication-Results say DKIM or SPF passed for that domain (so nobody can fake it).
+ * Anything else is kept as untrusted (so Remy can see who wrote) but the matching jobs
+ * ignore it. Untrusted mail is capped per day so the inbox cannot be flooded.
+ *
+ * COPY_TO (optional var): a copy of trusted direct mail is forwarded there (Remy's Outlook),
+ * so he still sees show-me-source emails. The address must be verified in Email Routing.
  */
 import PostalMime from 'postal-mime';
 import { ensureSyncSchema } from './schema.js';
 
 const MAX_BODY = 200000; // characters kept per email (text and html each)
+const MAX_UNTRUSTED_PER_DAY = 100;
 
 export function mailKind(from, subject, text) {
   const hay = `${from}\n${subject}\n${text}`.toLowerCase();
@@ -23,13 +33,46 @@ export function mailKind(from, subject, text) {
   return 'other';
 }
 
-export function allowedSender(env, from) {
-  const allowed = String(env.ALLOWED_FORWARDERS || '')
+function list(v) {
+  return String(v || '')
     .toLowerCase()
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+export function allowedSender(env, from) {
+  const allowed = list(env.ALLOWED_FORWARDERS);
   return allowed.length > 0 && allowed.includes(String(from || '').trim().toLowerCase());
+}
+
+function domainOf(addr) {
+  return String(addr || '').toLowerCase().split('@')[1] || '';
+}
+
+/** True when `dom` equals `trusted` or is a subdomain of it. */
+function sameOrSub(dom, trusted) {
+  return dom === trusted || dom.endsWith(`.${trusted}`);
+}
+
+/**
+ * Did DKIM or SPF pass for a trusted domain? Reads Authentication-Results headers
+ * (added by Cloudflare Email Routing). Returns the passing method or ''.
+ */
+export function authPass(authHeaders, fromAddr, trustedDomains) {
+  const fromDom = domainOf(fromAddr);
+  const trusted = trustedDomains.find((t) => sameOrSub(fromDom, t));
+  if (!trusted) return '';
+  for (const h of authHeaders) {
+    const v = String(h || '').toLowerCase();
+    for (const m of v.matchAll(/dkim=pass[^;]*?header\.(?:d|i)=@?([a-z0-9.-]+)/g)) {
+      if (sameOrSub(m[1], trusted)) return 'dkim';
+    }
+    for (const m of v.matchAll(/spf=pass[^;]*?smtp\.mailfrom=(?:[^@\s;]*@)?([a-z0-9.-]+)/g)) {
+      if (sameOrSub(m[1], trusted)) return 'spf';
+    }
+  }
+  return '';
 }
 
 function mask(addr) {
@@ -39,34 +82,67 @@ function mask(addr) {
 
 export async function handleEmail(message, env) {
   const envelopeFrom = String(message.from || '').trim().toLowerCase();
-  if (!allowedSender(env, envelopeFrom)) {
-    console.log(JSON.stringify({ msg: 'supplier_mail.rejected_sender', from_masked: mask(envelopeFrom) }));
-    message.setReject('Sender not allowed');
-    return { stored: false };
-  }
+  const forwarded = allowedSender(env, envelopeFrom);
   const email = await PostalMime.parse(message.raw);
   const subject = String(email.subject || '').slice(0, 500);
   const text = String(email.text || '').slice(0, MAX_BODY);
   const html = String(email.html || '').slice(0, MAX_BODY);
-  const origFrom = (email.from && email.from.address) || '';
+  const origFrom = String((email.from && email.from.address) || '').toLowerCase();
+  const authHeaders = (email.headers || [])
+    .filter((h) => String(h.key || '').toLowerCase() === 'authentication-results')
+    .map((h) => h.value);
+  const trustedDomains = list(env.TRUSTED_SENDER_DOMAINS || 'show-me-source.com');
+  const direct = forwarded ? '' : authPass(authHeaders, origFrom, trustedDomains);
+  const trusted = forwarded || !!direct;
   const kind = mailKind(origFrom, subject, text || html);
+
   await ensureSyncSchema(env.DB);
+  if (!trusted) {
+    const n = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM supplier_mail WHERE trusted = 0 AND received_at > datetime('now', '-1 day')"
+    ).first();
+    if (n && n.n >= MAX_UNTRUSTED_PER_DAY) {
+      console.log(JSON.stringify({ msg: 'supplier_mail.rejected_flood', from_masked: mask(origFrom || envelopeFrom) }));
+      message.setReject('Mailbox busy');
+      return { stored: false };
+    }
+  }
+
   const res = await env.DB.prepare(
-    `INSERT INTO supplier_mail (message_id, envelope_from, from_addr, subject, kind, text_body, html_body, sent_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(message_id) DO NOTHING`
+    `INSERT INTO supplier_mail (message_id, envelope_from, from_addr, subject, kind, text_body, html_body, sent_at, trusted, auth)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(message_id) DO NOTHING`
   )
     .bind(
       String(email.messageId || `${Date.now()}-${Math.random()}`).slice(0, 300),
       envelopeFrom,
-      String(origFrom).slice(0, 300),
+      origFrom.slice(0, 300),
       subject,
       kind,
       text,
       html,
-      email.date || null
+      email.date || null,
+      trusted ? 1 : 0,
+      forwarded ? 'forwarded' : direct || 'none'
     )
     .run();
   const stored = !!(res && res.meta && res.meta.changes);
-  console.log(JSON.stringify({ msg: stored ? 'supplier_mail.stored' : 'supplier_mail.duplicate', kind, subject: subject.slice(0, 80) }));
-  return { stored, kind };
+
+  // Keep Remy's Outlook in the loop for mail show-me-source sent here directly.
+  if (stored && direct && env.COPY_TO) {
+    try {
+      await message.forward(env.COPY_TO);
+    } catch (e) {
+      console.log(JSON.stringify({ msg: 'supplier_mail.copy_failed', error: String(e.message || e).slice(0, 120) }));
+    }
+  }
+  console.log(
+    JSON.stringify({
+      msg: stored ? 'supplier_mail.stored' : 'supplier_mail.duplicate',
+      kind,
+      trusted,
+      via: forwarded ? 'forwarded' : direct || 'untrusted',
+      from_masked: mask(origFrom || envelopeFrom),
+    })
+  );
+  return { stored, kind, trusted };
 }

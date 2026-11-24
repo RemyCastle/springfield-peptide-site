@@ -23,6 +23,10 @@ DRY_RUN = "1"
 RESTOCK_FROM = ""
 # The spbc-orders URL (Outlook account). Reminders + digest also need the ORDERS_ADMIN_TOKEN secret.
 ORDERS_PUBLIC_URL = "https://spbc-orders.remycastle.workers.dev"
+# supplier@springfieldpbc.com: mail straight from these domains is trusted when DKIM/SPF pass.
+TRUSTED_SENDER_DOMAINS = "show-me-source.com"
+# Optional: send a copy of show-me-source mail here (must be a verified Email Routing destination).
+COPY_TO = ""
 
 [[d1_databases]]
 binding = "DB"

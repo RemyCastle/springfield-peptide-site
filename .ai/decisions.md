@@ -189,3 +189,8 @@ Append-only log. Newest at bottom.
 - Money in per order = `paid_amount_cents` that spbc-orders recorded from the payment receipt (Venmo/Chime/PayPal mail forwarded to receipts@springfieldpbc.com), else the order total.
 - Money out = `supplier_orders.sms_cost`, typed by Remy in "Place at show-me-source" (what show-me-source charged, incl. their shipping), else the estimate (price - $25/vial, - $200/kit, + `sms_ship_cost`).
 - Profit view says how many orders used real numbers on each side.
+
+### 2026-11-23 — supplier@springfieldpbc.com mailbox
+- Email handler on spbc-supplier-sync saves mail to `supplier_mail`. Remy can use supplier@springfieldpbc.com as the email on his show-me-source orders so receipts/shipping notices arrive directly.
+- Trust: envelope sender in ALLOWED_FORWARDERS (secret), or From domain in TRUSTED_SENDER_DOMAINS (show-me-source.com) with DKIM/SPF pass in Authentication-Results. Untrusted mail is kept (capped 100/day) but ignored by matching. Optional COPY_TO forwards trusted direct mail to a verified Outlook address.
+- Payment notices keep going Outlook -> receipts@springfieldpbc.com (spbc-receipts, built by another session).
