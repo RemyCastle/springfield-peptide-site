@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.f61aa1e1.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.d8be5f21.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -673,7 +673,7 @@
         <div class="flex flex-wrap items-center justify-between gap-2">
           <h3 class="text-xs uppercase tracking-wide text-[#FDD700]">Place at show-me-source</h3>
           ${placed
-            ? `<span class="text-xs text-emerald-300">Placed ${escapeHtml(String(placed.placed_at || '').slice(0, 16))}${placed.sms_ref ? ` · their order ${escapeHtml(placed.sms_ref)}` : ''}</span>`
+            ? `<span class="text-xs text-emerald-300">Placed ${escapeHtml(String(placed.placed_at || '').slice(0, 16))}${placed.sms_ref ? ` · their order ${escapeHtml(placed.sms_ref)}` : ''}${placed.sms_cost != null ? ` · paid them $${Number(placed.sms_cost).toFixed(2)}` : ''}</span>`
             : notPaid
               ? '<span class="text-xs text-zinc-500">Wait for payment first</span>'
               : '<span class="text-xs text-amber-300">Not placed yet</span>'}
@@ -685,10 +685,14 @@
         <div class="flex flex-wrap gap-2 items-center">
           ${smsCopyBtn('Copy address', addrText)} ${smsCopyBtn('Copy items', itemsText)}
           ${placed
-            ? '<button type="button" data-sms-unplace class="text-[11px] border border-zinc-600 text-zinc-400 px-2 py-0.5 rounded-lg">Undo placed</button>'
+            ? `<input data-sms-cost type="number" step="0.01" min="0" placeholder="What you paid them $" value="${placed.sms_cost != null ? escapeAttr(String(placed.sms_cost)) : ''}" class="admin-input text-xs max-w-[11rem]">
+               <button type="button" data-sms-savecost class="border border-zinc-600 text-zinc-200 px-2 py-0.5 rounded-lg text-[11px]">Save cost</button>
+               <button type="button" data-sms-unplace class="text-[11px] border border-zinc-600 text-zinc-400 px-2 py-0.5 rounded-lg">Undo placed</button>`
             : `<input data-sms-ref type="text" placeholder="Their order # (optional)" class="admin-input text-xs max-w-[12rem]">
+               <input data-sms-cost type="number" step="0.01" min="0" placeholder="What you paid them $" class="admin-input text-xs max-w-[11rem]">
                <button type="button" data-sms-place class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-1 rounded-lg text-xs">Mark placed</button>`}
         </div>
+        <p class="text-[11px] text-zinc-500">"What you paid them" is the total show-me-source charged you (with their shipping). The profit view uses it instead of the estimate.</p>
       </div>`;
       box.querySelectorAll('[data-sms-copy]').forEach((b) =>
         b.addEventListener('click', async () => {
@@ -712,7 +716,15 @@
         if (typeof loadOrders === 'function') loadOrders();
       };
       box.querySelector('[data-sms-place]')?.addEventListener('click', () =>
-        post({ order_number: orderNumber, placed: true, sms_ref: box.querySelector('[data-sms-ref]')?.value || '' })
+        post({
+          order_number: orderNumber,
+          placed: true,
+          sms_ref: box.querySelector('[data-sms-ref]')?.value || '',
+          sms_cost: box.querySelector('[data-sms-cost]')?.value ?? '',
+        })
+      );
+      box.querySelector('[data-sms-savecost]')?.addEventListener('click', () =>
+        post({ order_number: orderNumber, placed: true, sms_cost: box.querySelector('[data-sms-cost]')?.value ?? '' })
       );
       box.querySelector('[data-sms-unplace]')?.addEventListener('click', () => post({ order_number: orderNumber, placed: false }));
     }
@@ -734,15 +746,17 @@
       const $ = (n) => '$' + Number(n || 0).toFixed(2);
       const card = (label, v, tone) =>
         `<div class="rounded-xl border border-zinc-800 p-3"><p class="text-[11px] uppercase tracking-wide text-zinc-500">${label}</p><p class="text-xl font-bold ${tone || 'text-zinc-100'}">${v}</p></div>`;
-      let html = '<div class="grid grid-cols-2 lg:grid-cols-5 gap-2 mb-3">' +
+      let html = '<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">' +
         card('Orders', t.orders || 0) +
-        card('Product sales', $(t.revenue)) +
-        card('Paid show-me-source', $(t.supplier_cost)) +
-        card('Shipping kept', $((t.shipping_collected || 0) - (t.shipping_paid || 0))) +
+        card('Money in', $(t.money_in)) +
+        card('Paid show-me-source', $(t.money_out)) +
         card('Profit', $(t.profit), (t.profit || 0) >= 0 ? 'text-emerald-300' : 'text-red-400') +
         '</div>';
-      if (!Number(d.sms_ship_cost)) {
-        html += '<p class="text-xs text-amber-300 mb-2">Set what show-me-source charges you for shipping (Supplier sync → Automations) so profit counts it.</p>';
+      const n = t.orders || 0;
+      html += `<p class="text-xs text-zinc-400 mb-2">Money in: ${t.paid_amount_orders || 0} of ${n} orders use the amount the payment receipt recorded, the rest use the order total.
+        Paid show-me-source: ${t.real_cost_orders || 0} of ${n} orders use what you typed in "Place at show-me-source", the rest are estimates.</p>`;
+      if ((t.real_cost_orders || 0) < n && !Number(d.sms_ship_cost)) {
+        html += '<p class="text-xs text-amber-300 mb-2">For orders without a typed cost, set what show-me-source charges you to ship (Supplier sync → Automations) so the estimate counts it.</p>';
       }
       if ((d.months || []).length > 1) {
         html += '<p class="text-[11px] uppercase tracking-wide text-zinc-500 mt-2 mb-1">By month</p><ul class="text-sm space-y-0.5">' +

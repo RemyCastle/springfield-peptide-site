@@ -184,3 +184,8 @@ Append-only log. Newest at bottom.
 - **Price-drop alerts**: "Tell me if the price drops" on cards when `price_alerts_on`; `/api/price-watch` → `price_watch`; the sync emails followers when it applies a lower price. (A held price applied by hand in the admin does not trigger it.)
 - All email goes through `workers/supplier-sync/src/email.js` (Resend; RESEND_API_KEY + RESTOCK_FROM).
 - A Worker main module may export only handlers/functions: exporting a string constant broke startup (caught in local test).
+
+### 2026-11-23 — Profit from real money
+- Money in per order = `paid_amount_cents` that spbc-orders recorded from the payment receipt (Venmo/Chime/PayPal mail forwarded to receipts@springfieldpbc.com), else the order total.
+- Money out = `supplier_orders.sms_cost`, typed by Remy in "Place at show-me-source" (what show-me-source charged, incl. their shipping), else the estimate (price - $25/vial, - $200/kit, + `sms_ship_cost`).
+- Profit view says how many orders used real numbers on each side.

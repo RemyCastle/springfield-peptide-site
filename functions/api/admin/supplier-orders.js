@@ -2,7 +2,7 @@
  * "Place at show-me-source" helper.
  * GET  /api/admin/supplier-orders?order=<n>  -> { placed, ready: { items, address, supplier_cost } }
  * GET  /api/admin/supplier-orders           -> { placed: { <order_number>: {...} } } (all, for badges)
- * POST /api/admin/supplier-orders  { order_number, placed: true|false, sms_ref?, note? }
+ * POST /api/admin/supplier-orders  { order_number, placed: true|false, sms_ref?, sms_cost?, note? }
  */
 import { json, requireAdmin } from '../../lib/auth.js';
 import { proxyOrdersAdmin } from '../../lib/ordersProxy.js';
@@ -70,10 +70,20 @@ export async function onRequestPost({ request, env }) {
     await env.DB.prepare('DELETE FROM supplier_orders WHERE order_number = ?').bind(orderNumber).run();
     return json({ ok: true, message: 'Marked as not placed' });
   }
+  const costRaw = body.sms_cost;
+  const cost = costRaw === '' || costRaw == null ? null : Number(costRaw);
+  if (cost != null && (!Number.isFinite(cost) || cost < 0 || cost > 100000)) {
+    return json({ error: 'validation_failed', message: 'What you paid show-me-source must be a dollar amount.' }, 400);
+  }
   await env.DB.prepare(
-    "INSERT INTO supplier_orders (order_number, sms_ref, note) VALUES (?, ?, ?) ON CONFLICT(order_number) DO UPDATE SET sms_ref = excluded.sms_ref, note = excluded.note, placed_at = datetime('now')"
+    "INSERT INTO supplier_orders (order_number, sms_ref, note, sms_cost) VALUES (?, ?, ?, ?) ON CONFLICT(order_number) DO UPDATE SET sms_ref = COALESCE(excluded.sms_ref, supplier_orders.sms_ref), note = COALESCE(excluded.note, supplier_orders.note), sms_cost = COALESCE(excluded.sms_cost, supplier_orders.sms_cost)"
   )
-    .bind(orderNumber, String(body.sms_ref || '').slice(0, 80) || null, String(body.note || '').slice(0, 500) || null)
+    .bind(
+      orderNumber,
+      String(body.sms_ref || '').slice(0, 80) || null,
+      String(body.note || '').slice(0, 500) || null,
+      cost == null ? null : Math.round(cost * 100) / 100
+    )
     .run();
   return json({ ok: true, message: 'Marked as placed at show-me-source' });
 }
