@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#006600">
+  <meta name="theme-color" content="#123D2B">
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/admin.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="SPBC admin">
-  <link rel="apple-touch-icon" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
   <title>Admin — Springfield Peptide Buyers Club</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.942fd91b.css?v=2">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/shared/tailwind.bc01e255.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -169,21 +169,79 @@
     @media (pointer: coarse) {
       .tab-btn, .btn-ghost-admin, .panel-actions button { min-height: 44px; }
     }
+
+    /* ---- 2026 look: deep green + lemon, matches the storefront ---- */
+    :root { --a-paper: #0E2A1F; --a-paper-2: #143527; --a-line: #24503C; --a-accent: #F3D94A; --a-ink: #F6F7F2; }
+    body, .ducks-font { font-family: 'Archivo', system-ui, sans-serif; }
+    .ducks-font { font-weight: 800; letter-spacing: -0.01em; text-transform: none; }
+    body.admin-shell, .admin-shell { background: var(--a-paper); }
+    html { background: var(--a-paper); scrollbar-gutter: stable; }
+    .admin-card { background: var(--a-paper-2); border: 1px solid var(--a-line); box-shadow: none; }
+    .admin-input { background: var(--a-paper); border-color: var(--a-line); border-radius: 0.6rem; }
+    .btn-primary-admin { background: var(--a-accent); border-radius: 0.6rem; }
+    .btn-ghost-admin { background: transparent; border-color: var(--a-line); color: var(--a-ink); border-radius: 0.6rem; }
+    .btn-ghost-admin:hover { background: var(--a-paper-2); border-color: var(--a-accent); }
+    .section-rule { height: 3px; background: var(--a-accent); opacity: 1; }
+    .site-header[data-site-header] { background: var(--a-paper); }
+    .site-header__brand { display: flex; align-items: center; gap: 0.6rem; }
+    .admin-mark { width: 34px; height: 34px; flex: none; }
+    .site-header__brand-gold { color: var(--a-accent) !important; }
+    .text-\[\#FDD700\] { color: var(--a-accent) !important; }
+    .bg-\[\#FDD700\] { background-color: var(--a-accent) !important; }
+    .admin-tabs {
+      position: sticky; top: 0; z-index: 30; margin: 0 -0.75rem 1.25rem; padding: 0.6rem 0.75rem;
+      background: rgba(14, 42, 31, 0.94); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--a-line);
+    }
+    .admin-tabs .tab-btn { border-radius: 999px !important; }
+    .admin-tabs .tab-btn.bg-\[\#FDD700\] { background: var(--a-accent) !important; color: #0E2A1F !important; }
+    .admin-tabs .tab-btn:not(.bg-\[\#FDD700\]) { background: transparent !important; border-color: var(--a-line) !important; }
+    tr.order-row:hover td { background: var(--a-paper-2); }
+    .btn-install-admin {
+      display: inline-flex; align-items: center; gap: 0.4rem; min-height: 40px; padding: 0 0.8rem;
+      background: var(--a-accent); color: #0E2A1F; font-weight: 700; font-size: 0.85rem; border-radius: 0.6rem; white-space: nowrap;
+    }
+    .btn-install-admin[hidden] { display: none; }
+    .install-sheet { position: fixed; inset: auto 0 0 0; z-index: 80; background: var(--a-paper-2); border-top: 3px solid var(--a-accent);
+      padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0)); box-shadow: 0 -12px 40px rgba(0,0,0,.5); }
+    .install-sheet ol { margin: 0.5rem 0 1rem 1.2rem; list-style: decimal; line-height: 1.7; }
+    .install-short { display: none; }
+    @media (max-width: 520px) { .install-long { display: none; } .install-short { display: inline; } }
+    .acct-menu { position: relative; }
+    .acct-menu > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; min-height: 40px; }
+    .acct-menu > summary::-webkit-details-marker { display: none; }
+    .acct-menu > summary::after { content: "▾"; margin-left: 0.35rem; font-size: 0.75em; }
+    .acct-menu__panel { position: absolute; right: 0; top: calc(100% + 6px); z-index: 60; display: grid; gap: 0.4rem; min-width: 12rem;
+      padding: 0.5rem; background: var(--a-paper-2); border: 1px solid var(--a-line); border-radius: 0.75rem; box-shadow: 0 12px 30px rgba(0,0,0,.45); }
+    .acct-menu__panel .btn-ghost-admin { width: 100%; text-align: left; }
+    .site-header__inner { align-items: center; }
+    @media (prefers-reduced-motion: no-preference) { #appSection > div:not(.hidden) { animation: admin-in 160ms ease-out; } }
+    @keyframes admin-in { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
 <body class="admin-shell text-white overflow-x-hidden atmosphere">
   <header class="site-header" data-site-header>
     <div class="site-header__inner" style="flex-direction:row;justify-content:space-between;max-width:64rem;">
       <a href="/" class="site-header__brand" aria-label="SPBC home">
+        <img src="/assets/brand/spbc-mark.svg" alt="" width="34" height="34" class="admin-mark">
         <span class="ducks-font site-header__brand-text">
           <span class="site-header__brand-gold">SPBC</span>
           <span class="site-header__brand-white">Admin</span>
         </span>
       </a>
+      <button id="installBtn" type="button" class="btn-install-admin" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg>
+        <span class="install-long">Add to home screen</span><span class="install-short">Install</span>
+      </button>
       <div id="headerActions" class="hidden items-center gap-2">
         <span id="adminWho" class="text-xs text-emerald-200/90 hidden sm:inline"></span>
-        <button id="changePwBtn" type="button" class="btn-ghost-admin">Change password</button>
-        <button id="logoutBtn" type="button" class="btn-ghost-admin">Log out</button>
+        <details class="acct-menu">
+          <summary class="btn-ghost-admin">Account</summary>
+          <div class="acct-menu__panel">
+            <button id="changePwBtn" type="button" class="btn-ghost-admin">Change password</button>
+            <button id="logoutBtn" type="button" class="btn-ghost-admin">Log out</button>
+          </div>
+        </details>
       </div>
     </div>
   </header>
@@ -278,7 +336,7 @@
         </button>
         <button type="button" data-tab="report" id="tabReport"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
-          Sales &amp; Profit
+          Sales and profit
         </button>
       </nav>
 
@@ -367,7 +425,7 @@
       <!-- SALES & PROFIT -->
       <div id="reportPanel" class="hidden">
         <div class="panel-head">
-          <h1 class="ducks-font text-3xl text-[#FDD700]">Sales &amp; Profit</h1>
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Sales and profit</h1>
           <div class="panel-actions">
             <select id="reportRange" class="admin-input text-sm">
               <option value="30">Last 30 days</option>
@@ -641,7 +699,9 @@
     const ordersError = document.getElementById('ordersError');
     const orderDetail = document.getElementById('orderDetail');
 
-    let activeTab = 'orders';
+    const TAB_KEY = 'spbcAdminTab';
+    const TABS = ['orders', 'place', 'products', 'sync', 'money', 'report'];
+    let activeTab = (() => { try { const t = (location.hash || '').slice(1) || localStorage.getItem(TAB_KEY); return TABS.includes(t) ? t : 'orders'; } catch (_) { return 'orders'; } })();
     let ordersPage = 1;
     const ordersLimit = 25;
     let selectedOrder = null;
@@ -708,8 +768,11 @@
     }
 
     async function switchTab(tab) {
+      if (!TABS.includes(tab)) tab = 'orders';
       activeTab = tab;
+      try { localStorage.setItem(TAB_KEY, tab); history.replaceState(null, '', '#' + tab); } catch (_) {}
       setTabStyles();
+      window.scrollTo({ top: 0 });
       if (tab === 'orders') await loadOrders();
       if (tab === 'place') await loadPlaceQueue();
       if (tab === 'money') await loadMoney();
@@ -1206,6 +1269,12 @@
             .join('')}</ul></details>`;
       }
       body.innerHTML = html;
+      // Opened from a text (?place=ORDER): jump to that order and ring it
+      try {
+        const want = new URLSearchParams(location.search).get('place');
+        const card = want && [...body.querySelectorAll('[data-place-order]')].find((el) => el.dataset.placeOrder === want);
+        if (card) { card.style.boxShadow = '0 0 0 3px #F3D94A'; card.scrollIntoView({ block: 'center' }); }
+      } catch (_) {}
     }
 
     // The supplier email note sits above the list (outside #placeBody).
@@ -1531,6 +1600,10 @@
         <label class="flex flex-wrap items-center gap-2 text-sm">show-me-source charges me $
           <input type="number" step="0.01" data-auto="sms_ship_cost" value="${escapeAttr(A.sms_ship_cost || '0')}" min="0" max="200" class="admin-input w-24 text-sm"> to ship one order
           <span class="text-xs text-zinc-500">(for the profit view)</span></label>
+        <label class="flex flex-wrap items-center gap-2 text-sm"><input type="checkbox" data-auto="place_text_on" ${chk('place_text_on')} class="accent-[#FDD700]">
+          Text me each paid order with a link to place it at show-me-source, to
+          <input type="email" data-auto="place_text_to" value="${escapeAttr(A.place_text_to || '')}" placeholder="5415551234@vtext.com" class="admin-input w-60 text-sm">
+          <span class="text-xs text-zinc-500">(your phone number at your carrier's text address: Verizon @vtext.com, T-Mobile @tmomail.net. Any email works too.)</span></label>
         <label class="flex flex-wrap items-center gap-2 text-sm"><input type="checkbox" data-auto="pay_alert_on" ${chk('pay_alert_on')} class="accent-[#FDD700]">
           Email me the moment a Venmo payment arrives, with the order it matches <span class="text-xs text-zinc-500">(to the morning-email address)</span></label>
         <label class="flex flex-wrap items-center gap-2 text-sm"><input type="checkbox" data-auto="reviews_on" ${chk('reviews_on')} class="accent-[#FDD700]">
@@ -1551,7 +1624,7 @@
           <input type="text" data-auto="announcement" value="${escapeAttr(A.announcement || '')}" maxlength="300" placeholder="Empty = no banner" class="admin-input flex-1 min-w-[14rem] text-sm"></label>
         <label class="flex flex-wrap items-center gap-2 text-sm"><input type="checkbox" data-auto="tax_on" ${chk('tax_on')} class="accent-[#FDD700]">
           Charge sales tax of <input type="number" step="0.001" data-auto="tax_rate" value="${escapeAttr(A.tax_rate || '0')}" min="0" max="15" class="admin-input w-20 text-sm">%
-          on orders shipping to <input type="text" data-auto="tax_state" value="${escapeAttr(A.tax_state || 'MO')}" maxlength="2" class="admin-input w-14 text-sm uppercase">
+          on orders shipping to <input type="text" data-auto="tax_state" value="${escapeAttr(A.tax_state || 'OR')}" maxlength="2" class="admin-input w-14 text-sm uppercase">
           <span class="text-xs text-zinc-500">(ask your accountant for the right rate)</span></label>
         <button type="button" id="autoSaveBtn" class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm">Save automations</button>
       </div>`;
@@ -1981,7 +2054,7 @@
         const who = document.getElementById('adminWho');
         if (who) who.textContent = (data.user?.username || 'Remy') + ' · master';
         showApp();
-        await switchTab('orders');
+        await switchTab(activeTab);
       } else {
         showLogin();
       }
@@ -2332,12 +2405,12 @@
     /** Archive: file away WITHOUT cancelling — status is preserved. */
     /**
      * Void: the only way back out of a 'complete' order. Reverses the sale so it
-     * stops counting as revenue in Sales & Profit. No customer email.
+     * stops counting as revenue in Sales and profit. No customer email.
      */
     async function voidOrder(orderNumber) {
       if (
         !confirm(
-          `Void ${orderNumber}?\n\nThis undoes the sale so it stops counting as revenue in Sales & Profit.\nThe customer is not emailed.`
+          `Void ${orderNumber}?\n\nThis undoes the sale so it stops counting as revenue in Sales and profit.\nThe customer is not emailed.`
         )
       ) {
         return;
@@ -2887,7 +2960,7 @@
         who.textContent = (data.user.display_name || data.user.username) + ' · master';
       }
       showApp();
-      await switchTab('orders');
+      await switchTab(activeTab);
     });
 
     document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -3038,6 +3111,6 @@
 
     checkSession();
   </script>
-  <script src="/shared/admin-tools.54de6886.js"></script>
+  <script src="/shared/admin-tools.5884c256.js"></script>
 </body>
 </html>

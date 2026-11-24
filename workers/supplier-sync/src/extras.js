@@ -16,7 +16,9 @@ export function coaUrlFrom(row, baseUrl) {
   try {
     const u = new URL(raw, `${baseUrl}/`);
     const allowed = new URL(baseUrl).host;
-    return u.host === allowed ? u.toString() : null; // only ever the supplier's own files
+    if (u.host !== allowed) return null; // only ever the supplier's own files
+    // Must be an actual report file; placeholders like /pending are not a report.
+    return /\.(pdf|jpe?g|png|webp)$/i.test(u.pathname) ? u.toString() : null;
   } catch {
     return null;
   }

@@ -564,9 +564,64 @@
   }
 
   /* ---------------- Installable admin ---------------- */
-  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  const secure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if ('serviceWorker' in navigator && secure) {
     navigator.serviceWorker.register('/admin-sw.js', { scope: '/admin' }).catch(() => null);
   }
+
+  // "Add to home screen": Android/Chrome/Edge get the real install prompt; iPhone/iPad get
+  // two-step instructions (Apple has no install prompt). Hidden once it runs as an app.
+  (function installButton() {
+    const btn = $('installBtn');
+    if (!btn) return;
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    if (standalone) return;
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let deferred = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferred = e;
+      btn.hidden = false;
+    });
+    window.addEventListener('appinstalled', () => {
+      btn.hidden = true;
+      toast('Added. Open SPBC admin from your home screen.', true);
+    });
+    function sheet(html) {
+      document.querySelector('.install-sheet')?.remove();
+      const s = document.createElement('div');
+      s.className = 'install-sheet';
+      s.setAttribute('role', 'dialog');
+      s.setAttribute('aria-label', 'Add to home screen');
+      s.innerHTML = html + '<button type="button" class="btn-primary-admin" data-close>Got it</button>';
+      s.querySelector('[data-close]').addEventListener('click', () => s.remove());
+      document.body.appendChild(s);
+    }
+    if (isIOS) btn.hidden = false;
+    else setTimeout(() => { if (!deferred) btn.hidden = false; }, 2500);
+    btn.addEventListener('click', async () => {
+      if (deferred) {
+        deferred.prompt();
+        const r = await deferred.userChoice.catch(() => null);
+        deferred = null;
+        if (r && r.outcome === 'accepted') btn.hidden = true;
+        return;
+      }
+      if (isIOS) {
+        sheet('<p class="font-bold text-lg">Add SPBC admin to your home screen</p><ol><li>Tap the <b>Share</b> button (square with an arrow) at the bottom of Safari.</li><li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li></ol><p class="text-sm text-zinc-400 mb-3">If you are in Chrome on iPhone, open this page in Safari first.</p>');
+      } else {
+        sheet('<p class="font-bold text-lg">Add SPBC admin to your home screen</p><ol><li>Open the browser menu (⋮ or ⋯).</li><li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li></ol>');
+      }
+    });
+  })();
+
+  // Account menu closes when you tap anywhere else or pick an item
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('details.acct-menu[open]').forEach((d) => {
+      if (!d.contains(e.target) || e.target.closest('.acct-menu__panel button')) d.removeAttribute('open');
+    });
+  });
 
   window.spbcAdminTools = {
     onApp() {

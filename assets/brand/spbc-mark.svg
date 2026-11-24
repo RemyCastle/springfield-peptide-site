@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="SPBC">
-  <title>SPBC</title>
-  <polygon points="60,6 106.8,33 106.8,87 60,114 13.2,87 13.2,33" fill="none" stroke="#D9B45A" stroke-width="5" stroke-linejoin="round"/>
-  <text x="60" y="70" text-anchor="middle" font-family="Fraunces, 'Cormorant Garamond', Georgia, serif" font-size="27" font-weight="600" letter-spacing="2" fill="#D9B45A">SPBC</text>
+  <polygon points="60,6 106,32.5 106,87.5 60,114 14,87.5 14,32.5" fill="#F3D94A" stroke="#F3D94A" stroke-width="8" stroke-linejoin="round"/>
+  <polygon points="45,26 75,26 84,35 84,47 71,47 71,39 49,39 49,53.5 75,53.5 84,62.5 84,85 75,94 45,94 36,85 36,73 49,73 49,81 71,81 71,66.5 45,66.5 36,57.5 36,35" fill="#123D2B"/>
+  <polygon points="60,55.5 63.9,57.75 63.9,62.25 60,64.5 56.1,62.25 56.1,57.75" fill="#F3D94A"/>
 </svg>

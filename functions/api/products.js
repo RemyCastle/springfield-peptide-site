@@ -130,7 +130,7 @@ async function loadSupplierExtras(db) {
       products: (results || []).map((r) => ({
         ...productToPublic(r),
         low_stock: r.low_inventory === 1,
-        lab_report: showLab && !!r.coa_url,
+        lab_report: showLab && /\.(pdf|jpe?g|png|webp)$/i.test(String(r.coa_url || '').split('?')[0]),
         // Single vials show-me-source will sell right now (null = unknown); the shop caps steppers to it.
         max_units: r.max_qty == null ? null : Number(r.max_qty),
       })),

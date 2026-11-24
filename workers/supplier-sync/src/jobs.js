@@ -344,12 +344,53 @@ export async function syncBreakAlert(env, db) {
  * at supplier@. Runs hands-free matching right away (when that is on) and tells Remy which
  * order it belongs to, or that none matched so he can make a Quick order.
  */
+/** Short item list for a text: "KPV 10 MG kit x2, BPC-157 10MG vial x1". */
+export function placeTextBody(order, items, link) {
+  const list = (items || [])
+    .filter((it) => it.sku !== 'SALES-TAX' && !/^SHIP/i.test(String(it.sku || '')))
+    .map((it) => {
+      const vial = /\(\s*Vial\s*\)\s*$/i.test(it.name || '') || /-VIAL$/i.test(it.sku || '');
+      const name = String(it.name || '').replace(/\s+\((?:10-Pack \/ Kit|Kit|Vial)\)\s*$/i, '').trim();
+      return `${name} ${vial ? 'vial' : 'kit'} x${Number(it.qty) || 0}`;
+    })
+    .join(', ');
+  const who = String(order.customer_name || '').split(/\s+/)[0] || 'customer';
+  return `SPBC paid ${order.order_number} (${who}): ${list || 'see admin'}. Place it: ${link}`;
+}
+
+/**
+ * Text Remy once per paid website order that is not placed at show-me-source yet, with the
+ * items and a link that opens the admin's Place orders screen on that order.
+ */
+export async function placeTexts(env, db) {
+  const s = await getSettings(db);
+  if (s.place_text_on !== '1' || !s.place_text_to || !emailReady(env) || !ordersReady(env)) return { skipped: 'off' };
+  const paid = await listOrders(env, { status: 'paid', max: 100 });
+  const placed = new Set(((await db.prepare('SELECT order_number FROM supplier_orders').all()).results || []).map((r) => r.order_number));
+  const texted = new Set(((await db.prepare('SELECT order_number FROM place_texts').all()).results || []).map((r) => r.order_number));
+  const todo = paid.filter((o) => !placed.has(o.order_number) && !texted.has(o.order_number)).slice(0, 5);
+  let sent = 0;
+  for (const o of todo) {
+    let items = [];
+    try { items = (await ordersApi(env, `/admin/orders/${encodeURIComponent(o.order_number)}`)).items || []; } catch {}
+    const link = `${siteUrl(env)}/admin?place=${encodeURIComponent(o.order_number)}#place`;
+    const body = placeTextBody(o, items, link);
+    const ok = await sendEmail(env, { to: s.place_text_to, subject: 'SPBC order to place', html: esc(body), text: body });
+    if (ok) {
+      await db.prepare('INSERT OR IGNORE INTO place_texts (order_number) VALUES (?)').bind(o.order_number).run();
+      sent++;
+    }
+  }
+  return { sent, waiting: todo.length };
+}
+
 export async function paymentAlert(env, db, row) {
   const s = await getSettings(db);
   const p = parseMoneyMail(row);
   if (!p || p.type !== 'in') return { skipped: 'not a payment' };
   let matched = null;
   if (s.auto_match_on === '1') matched = await autoMatch(env, db).catch(() => null);
+  if (matched && matched.paid) await placeTexts(env, db).catch(() => null);
   if (s.pay_alert_on !== '1' || !s.digest_to || !emailReady(env)) return { skipped: 'alert off', matched };
   let line = '';
   try {

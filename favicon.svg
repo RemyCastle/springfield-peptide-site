@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="12" fill="#0F1F17"/>
-  <polygon points="32,6 54.5,19 54.5,45 32,58 9.5,45 9.5,19" fill="none" stroke="#D9B45A" stroke-width="4" stroke-linejoin="round"/>
-  <text x="32" y="41" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-weight="700" fill="#D9B45A">S</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="SPBC">
+  <polygon points="60,6 106,32.5 106,87.5 60,114 14,87.5 14,32.5" fill="#F3D94A" stroke="#F3D94A" stroke-width="8" stroke-linejoin="round"/>
+  <polygon points="45,26 75,26 84,35 84,47 71,47 71,39 49,39 49,53.5 75,53.5 84,62.5 84,85 75,94 45,94 36,85 36,73 49,73 49,81 71,81 71,66.5 45,66.5 36,57.5 36,35" fill="#123D2B"/>
+  <polygon points="60,55.5 63.9,57.75 63.9,62.25 60,64.5 56.1,62.25 56.1,57.75" fill="#F3D94A"/>
 </svg>

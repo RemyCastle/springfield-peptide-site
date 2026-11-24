@@ -8,6 +8,7 @@ assert.equal(coaUrlFrom({ coa: 'coas/r30.pdf' }, B), 'https://show-me-source.com
 assert.equal(coaUrlFrom({ coa: '', coas: [{ url: '/coas/a.jpg' }] }, B), 'https://show-me-source.com/coas/a.jpg');
 assert.equal(coaUrlFrom({ coas: ['coas/b.png'] }, B), 'https://show-me-source.com/coas/b.png');
 assert.equal(coaUrlFrom({ coa: 'https://evil.example/x.pdf' }, B), null, 'other hosts are refused');
+assert.equal(coaUrlFrom({ coa: 'https://show-me-source.com/pending' }, B), null, 'pending placeholder is not a report');
 assert.equal(coaUrlFrom({ coa: '', coas: [] }, B), null);
 assert.equal(coaUrlFrom(null, B), null);
 

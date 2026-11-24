@@ -13,7 +13,7 @@ import { json, requireAdmin } from '../../lib/auth.js';
 import { ensureSyncSchema, getSetting, setSetting, getSettings } from '../../../workers/supplier-sync/src/schema.js';
 import { logChange } from '../../lib/adminTables.js';
 
-const SWITCHES = ['reminders_on', 'digest_on', 'price_alerts_on', 'auto_match_on', 'vacation_on', 'tax_on', 'reviews_on', 'pay_alert_on'];
+const SWITCHES = ['reminders_on', 'digest_on', 'price_alerts_on', 'auto_match_on', 'vacation_on', 'tax_on', 'reviews_on', 'pay_alert_on', 'place_text_on'];
 const NUMBERS = {
   reminder_hours: [1, 336],
   auto_cancel_days: [0, 60],
@@ -47,6 +47,11 @@ function cleanSettings(input) {
     const st = String(input.tax_state || '').trim().toUpperCase();
     if (!/^[A-Z]{2}$/.test(st)) return { error: 'Tax state must be 2 letters, like MO' };
     values.tax_state = st;
+  }
+  if ('place_text_to' in input) {
+    const e = String(input.place_text_to || '').trim();
+    if (e && !EMAIL_RE.test(e)) return { error: 'Text address must look like 5415551234@vtext.com' };
+    values.place_text_to = e;
   }
   if ('digest_to' in input) {
     const e = String(input.digest_to || '').trim();

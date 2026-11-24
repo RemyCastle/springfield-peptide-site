@@ -134,6 +134,11 @@ const TABLES = [
     status TEXT NOT NULL DEFAULT 'new',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+  // Paid orders already texted to Remy (so each one is sent once).
+  `CREATE TABLE IF NOT EXISTS place_texts (
+    order_number TEXT PRIMARY KEY,
+    sent_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
   // Checkout problems the shop reported (no names, emails or addresses).
   `CREATE TABLE IF NOT EXISTS client_reports (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -201,11 +206,13 @@ export const DEFAULT_SETTINGS = {
   vacation_message: '', // shown while paused
   announcement: '', // banner at the top of the shop ('' = none)
   tax_on: '0', // collect sales tax
-  tax_state: 'MO', // ...on orders shipping to this state
+  tax_state: 'OR', // ...on orders shipping to this state
   tax_rate: '0', // ...at this percent
   reviews_on: '0', // ask buyers for a review after shipping
   review_days: '10', // ...this many days after it shipped
   cleanup_months: '0', // delete old personal data after this many months (0 = keep)
+  place_text_on: '0', // text Remy each paid order with a link to place it at show-me-source
+  place_text_to: '', // phone's text-by-email address (e.g. 5415551234@vtext.com)
   pay_alert_on: '0', // email Remy the moment a Venmo payment reaches supplier@
 };
 

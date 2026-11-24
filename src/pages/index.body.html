@@ -54,7 +54,7 @@
         </section>
 
         <section id="good-to-know" class="spbc-section" aria-labelledby="gtkTitle">
-            <div class="max-w-3xl mx-auto">
+            <div class="spbc-main">
                 <h2 id="gtkTitle" class="price-group-heading text-center">Good to know</h2>
                 <div class="grid gap-3 sm:grid-cols-2 text-sm text-zinc-300">
                     <div class="depth-card p-4">
@@ -81,28 +81,29 @@
         <hr class="section-rule" aria-hidden="true">
 
         <section class="spbc-section">
-            <div class="spbc-main max-w-md">
-                <div class="depth-card bg-emerald-950/80 border border-emerald-600 text-emerald-300 text-center py-4 px-4 sm:px-6 mb-6 text-sm font-medium break-word reveal">
-                    ORDERS PLACED BY FRIDAY SHIP THE FOLLOWING MONDAY
+            <div class="spbc-main order-shell">
+                <div class="notice26 notice26--ship mb-3 break-word">
+                    Orders placed by Friday ship the following Monday.
                 </div>
 
-                <div class="depth-card bg-red-950/80 border border-red-600 text-red-300 text-center py-4 sm:py-5 px-4 sm:px-6 mb-8 text-sm sm:text-base font-bold tracking-wider reveal">
-                    FOR RESEARCH ONLY<br>NOT FOR HUMAN CONSUMPTION
+                <div class="notice26 notice26--ruo mb-8">
+                    For research use only. Not for human consumption.
                 </div>
 
                 <div class="mb-8 reveal">
                     <h3 class="text-[#EAB308] font-bold mb-3 text-center text-sm sm:text-base">
-                        <a href="#terms-section" class="hover:underline">TERMS OF SERVICE &amp; PURCHASE AGREEMENT</a>
+                        <a href="#terms-section" class="hover:underline">Terms of service and purchase agreement</a>
                     </h3>
                     <div id="terms-section" class="terms-scroll depth-card p-4 sm:p-6 text-xs leading-relaxed text-zinc-300">
                         By placing an order you agree to all terms below. Please read carefully.<br><br>
-                        <strong>All Sales Are Final.</strong> No refunds, returns, or exchanges after payment is confirmed.<br><br>
+                        <strong>All sales are final.</strong> No refunds, returns, or exchanges after payment is confirmed.<br><br>
+                        <strong>Pay as friends.</strong> Send payment as a personal payment between friends (Venmo: Friends; PayPal: Friends and Family). A payment sent as a purchase, goods and services, or business payment is refunded minus the processor fees, and the order stays unpaid until you pay again the right way. Those fees are not returned.<br><br>
                         <strong>Payment.</strong> Payment instructions and accepted methods are provided at checkout after you place your order. Include your order number in the payment memo. We confirm payment manually before shipping.<br><br>
                         <strong>Single vials and kits.</strong> Products with a listed vial price may be ordered as single vials. Every order needs at least 2 vials or 1 kit (any mix of products). 10-packs / kits are available at the listed kit price. Kit-only listings cannot be ordered as singles.<br><br>
                         <strong>BAC water.</strong> Bacteriostatic water is an optional catalog item when listed — add it yourself if you want it. It is not included automatically.<br><br>
-                        <strong>Shipping & Lost Packages.</strong> Standard or Priority shipping per order, price shown at checkout. US addresses only. Carrier issues are the carrier's responsibility.<br><br>
-                        <strong>Legal Disclaimer.</strong> ALL products are strictly for research and educational purposes only. NOT for human or animal consumption.<br><br>
-                        <strong>Age Requirement.</strong> You must be 21+.<br><br>
+                        <strong>Shipping and lost packages.</strong> Standard or Priority shipping per order, price shown at checkout. US addresses only. Carrier issues are the carrier's responsibility.<br><br>
+                        <strong>Legal disclaimer.</strong> ALL products are strictly for research and educational purposes only. NOT for human or animal consumption.<br><br>
+                        <strong>Age requirement.</strong> You must be 21+.<br><br>
                         By submitting this form you confirm you have read and agree to all terms.
                     </div>
                 </div>
@@ -190,13 +191,14 @@
 
                     <label class="flex items-start gap-3 text-sm cursor-pointer select-none">
                         <input type="checkbox" id="agree" class="w-6 h-6 mt-0.5 shrink-0 accent-[#EAB308]">
-                        <span class="text-[#EAB308] font-medium leading-snug">I AGREE TO ALL TERMS</span>
+                        <span class="text-[#EAB308] font-medium leading-snug">I agree to all terms</span>
                     </label>
 
+                    <div class="paywarn26" role="note"><strong>Send your payment as friends, not as a purchase.</strong> Venmo: choose <b>Friends</b>. PayPal: choose <b>Friends and Family</b>. Do not pick goods and services or a business payment. If it comes in as a purchase, we refund it minus the processor fees and you pay again the right way, so those fees are lost. Otherwise all sales are final.</div>
                     <p id="submitError" class="text-red-400 text-sm text-center hidden break-word"></p>
                     <p id="submitSuccess" class="text-emerald-400 text-sm text-center hidden"></p>
                     <button type="submit" id="submitBtn" disabled class="btn-primary w-full text-base sm:text-lg cursor-not-allowed opacity-50">
-                        PLACE ORDER &amp; PAY
+                        Place order and pay
                     </button>
                     <p class="text-xs text-zinc-500 text-center px-1">You'll get an order number and payment instructions after placing your order</p>
                 </form>
@@ -212,7 +214,7 @@
                     </div>
                     <p class="text-zinc-300 text-sm break-word">
                         Next: pay <span id="successTotal" class="text-white font-semibold"></span> on the payment page
-                        (Friends &amp; Family · memo = <strong>code only</strong>).
+                        as <strong>Friends</strong> (Venmo) or <strong>Friends and Family</strong> (PayPal), never as a purchase. Memo = <strong>order code only</strong>.
                         <span id="successShipNote">Shipping address is on file.</span>
                     </p>
                     <div class="flex flex-col gap-2 pt-2">
@@ -279,6 +281,7 @@
                 <div class="flex justify-between gap-2 hidden" id="reviewTaxRow"><span class="text-zinc-400" id="reviewTaxLabel">Sales tax</span><span id="reviewTax" class="text-white tabular-nums text-right"></span></div>
                 <div class="flex justify-between gap-2 text-base font-bold pt-1"><span class="text-zinc-200">Total</span><span id="reviewTotal" class="text-[#EAB308] tabular-nums"></span></div>
             </div>
+            <div class="paywarn26 mb-3" role="note"><strong>Send your payment as friends, not as a purchase.</strong> Venmo: choose <b>Friends</b>. PayPal: choose <b>Friends and Family</b>. Do not pick goods and services or a business payment. If it comes in as a purchase, we refund it minus the processor fees and you pay again the right way, so those fees are lost. Otherwise all sales are final.</div>
             <p id="reviewError" class="text-red-400 text-sm text-center hidden mb-3" role="alert"></p>
             <div class="flex flex-col gap-2">
                 <button type="button" id="reviewConfirmBtn" class="btn-primary w-full">Confirm &amp; place order</button>

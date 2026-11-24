@@ -50,7 +50,7 @@ export async function shopSettings(env) {
     vacation_message: '',
     announcement: '',
     tax_on: '0',
-    tax_state: 'MO',
+    tax_state: 'OR',
     tax_rate: '0',
   };
   try {
