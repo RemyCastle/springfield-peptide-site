@@ -159,3 +159,10 @@ Append-only log. Newest at bottom.
 - `schema.local-seed.sql` guard used `RAISE()` outside a trigger, so SQLite rejected the file on every DB (it never seeded anything). D1 also refuses TEMP tables/triggers.
 - Guard now forces `json_extract('{}', <message>)` when `products` has rows: fails with "bad JSON path: REFUSING TO SEED ...", creates nothing. Missing table fails with "no such table". The INSERT also has `WHERE NOT EXISTS (SELECT 1 FROM products)` as a second net.
 - Tested on local D1 only: empty -> 26 rows; filled -> refused, count unchanged; no table -> refused.
+
+### 2026-11-23 — show-me-source dropship: new prices, 2-vial / 1-kit minimum, $15 shipping, no franchisees
+- Remy: no more franchisees. Stock is dropshipped from show-me-source.com. SPBC price = supplier preferred vial + $25, supplier kit + $200. $15 shipping per order. Minimum: 2 vials (any mix of products) or 1 kit.
+- Server (`functions/lib/orderItems.js`): `MIN_ORDER_VIALS = 2`, `SHIPPING_CENTS = 1500`; `normalizeOrderItems` returns `order_minimum` when kits = 0 and vials < 2. `place-order.js` always sets shipping to 1500 and ignores client `shipping_cents`. spbc-orders already validates total = subtotal + shipping, so no worker change.
+- Storefront (`shared/store.js`): same constants, progress hint + status + submit gate for the minimum, shipping line in the order summary, review modal and totals. Terms copy updated.
+- Admin: Franchisees tab, Price list franchisee pricing, add-product franchisee costs and the Sales report franchisee picker removed. `functions/api/admin/franchisees*` moved to `_trash/`. Old franchisee orders still show their banner in order detail. spbc-orders worker and Patriotic site untouched.
+- Catalog: 31 show-me-source peptides (supplies skipped by Remy; CJC/IPA hidden while supplier is out of stock). Everything else set inactive (kept, not deleted). Backup: `C:\Users\Remy\backups\springfield\products-before-sms-20261123.sql`. Supplier bulk tiers ignored.

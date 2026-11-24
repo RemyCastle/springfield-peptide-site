@@ -1,10 +1,16 @@
 /**
  * Re-price storefront order lines from the D1 catalog.
  * Client qty/name/sku choose the line; client unit_price_cents is ignored.
- * No vial minimum. True kit_only products (HGH, no vial_price) cannot be
+ * Order minimum: 2 vials, or at least 1 kit (any mix). True kit_only products (HGH, no vial_price) cannot be
  * ordered as vials. Vial-only rows (RETA 66MG: kit_only + vial===pack, or
  * pack_price 0) are sold as singles and priced from vial_price.
  */
+
+/** An order needs this many single vials unless it has at least one kit. */
+export const MIN_ORDER_VIALS = 2;
+
+/** Flat shipping per order (show-me-source dropship). */
+export const SHIPPING_CENTS = 1500;
 
 export function dollarsToCents(d) {
   return Math.round(Number(d) * 100);
@@ -70,6 +76,7 @@ export function normalizeOrderItems(items, catalog) {
   const normalizedItems = [];
   let peptideKits = 0;
   let bacKits = 0;
+  let vialCount = 0;
 
   for (const it of items || []) {
     const itemName = String(it.name || '').trim().slice(0, 200);
@@ -113,6 +120,7 @@ export function normalizeOrderItems(items, catalog) {
         qty,
         unit_price_cents: unit,
       });
+      vialCount += qty;
       continue;
     }
 
@@ -138,5 +146,15 @@ export function normalizeOrderItems(items, catalog) {
     else peptideKits += qty;
   }
 
-  return { ok: true, items: normalizedItems, peptideKits, bacKits };
+  const kitCount = peptideKits + bacKits;
+  if (kitCount < 1 && vialCount < MIN_ORDER_VIALS) {
+    return {
+      ok: false,
+      status: 400,
+      error: 'order_minimum',
+      message: `Minimum order is ${MIN_ORDER_VIALS} vials or 1 kit`,
+    };
+  }
+
+  return { ok: true, items: normalizedItems, peptideKits, bacKits, vialCount, kitCount };
 }

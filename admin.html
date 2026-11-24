@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.86cd387f.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.8d39db61.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -263,9 +263,9 @@
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Vendor match
         </button>
-        <button type="button" data-tab="franchisees" id="tabFranchisees"
+        <button type="button" data-tab="sync" id="tabSync"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
-          Franchisees
+          Supplier sync
         </button>
         <button type="button" data-tab="report" id="tabReport"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
@@ -278,9 +278,6 @@
         <div class="panel-head">
           <h1 class="ducks-font text-3xl text-[#FDD700]">Sales &amp; Profit</h1>
           <div class="panel-actions">
-            <select id="reportScope" class="admin-input text-sm">
-              <option value="">SPBC — my books</option>
-            </select>
             <select id="reportRange" class="admin-input text-sm">
               <option value="30">Last 30 days</option>
               <option value="7">Last 7 days</option>
@@ -296,7 +293,6 @@
         </div>
         <p class="text-xs text-zinc-500 mb-4">
           Counts orders that are paid, shipped or complete — cancelled orders never count.
-          Pick a franchisee above to see <strong class="text-white">their</strong> full profit picture.
         </p>
 
         <div id="reportTotals" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5"></div>
@@ -388,7 +384,7 @@
           </div>
         </div>
 
-        <!-- Add product: lands at position 1, franchisee cost always settable (creates the link) -->
+        <!-- Add product: lands at position 1 -->
         <div id="addProductModal" class="hidden fixed inset-0 z-[120] bg-black/80 flex items-start sm:items-center justify-center p-4 overflow-auto">
           <div class="modal-panel w-full max-w-md bg-zinc-900 border border-[#FDD700]/30 rounded-2xl p-5 space-y-4">
             <h2 class="ducks-font text-2xl text-[#FDD700]">Add product</h2>
@@ -412,14 +408,6 @@
               <input id="apKitOnly" type="checkbox" class="accent-[#FDD700]"> Kit only (no single vials)
             </label>
 
-            <div class="pt-3 border-t border-zinc-700 space-y-2">
-              <p class="text-xs text-zinc-400">
-                <strong class="text-amber-400">Franchisee cost</strong> — what the franchisee pays you.
-                Prefilled with the automatic fallback; saving creates the product link so their
-                cost never silently follows a public price change.
-              </p>
-              <div id="addFranchiseeRows" class="space-y-2"></div>
-            </div>
 
             <p id="apError" class="hidden text-xs text-red-400"></p>
             <div class="flex gap-2 justify-end pt-1">
@@ -433,18 +421,6 @@
         <p class="text-xs text-zinc-500 mb-3">
           Assign a <strong class="text-amber-400">Supplier</strong> per product (admin only). Used for cost and margin reporting — never shown to customers.
         </p>
-        <div class="flex flex-wrap gap-3 items-end mb-4 p-3 sm:p-4 rounded-2xl border border-violet-500/30 bg-violet-950/20">
-          <div class="min-w-[200px] flex-1">
-            <label class="block text-[11px] text-violet-300 mb-1 font-semibold uppercase tracking-wide" for="productsFranSelect">
-              Franchisee pricing for
-            </label>
-            <select id="productsFranSelect" class="admin-input border-violet-500/40"></select>
-          </div>
-          <p class="text-[11px] text-zinc-500 max-w-md leading-relaxed">
-            <strong class="text-violet-300">Violet fields</strong> = what this franchisee pays you (override).
-            Blank = SPBC customer price. Same backend as the Franchisees tab.
-          </p>
-        </div>
         <p id="editorMsg" class="text-sm mb-4 hidden"></p>
         <div id="productList" class="flex flex-col gap-3"></div>
       </div>
@@ -474,154 +450,27 @@
         <div id="vendorsBody" class="text-sm text-zinc-400">Loading…</div>
       </div>
 
-      <!-- FRANCHISEES (master: per-item franchisee price + create/clone) -->
-      <div id="franchiseesPanel" class="hidden">
+      <!-- SUPPLIER SYNC (show-me-source prices + stock, workers/supplier-sync) -->
+      <div id="syncPanel" class="hidden">
         <div class="panel-head">
-          <h1 class="ducks-font text-3xl text-[#FDD700]">Franchisees</h1>
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Supplier sync</h1>
           <div class="panel-actions">
-            <button id="franchiseesRefreshBtn" type="button"
-                    class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
-              Refresh
+            <button id="syncReloadBtn" type="button"
+                    class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm">
+              ↻ Reload
             </button>
           </div>
         </div>
         <p class="text-xs text-zinc-500 mb-4">
-          <strong class="text-white">SPBC customer price</strong> is the live catalog (reference).
-          <strong class="text-violet-300">Franchisee price</strong> is what they pay you on dropship/emergency — independent override (blank = use SPBC price).
+          Every 2 hours this checks show-me-source and keeps your prices at
+          <strong class="text-zinc-300">their vial + $25</strong> and <strong class="text-zinc-300">their kit + $200</strong>.
+          Out-of-stock items are hidden and come back when restocked. Price jumps over 20% and new
+          products wait here for you.
         </p>
-        <p id="franchiseeMsg" class="text-sm mb-4 hidden"></p>
-
-        <div class="admin-card p-4 sm:p-5 mb-6 space-y-3">
-          <h2 class="text-sm font-bold text-violet-300 uppercase tracking-wide">New franchisee</h2>
-          <div class="grid sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-[11px] text-zinc-400 mb-1" for="newFranName">Name</label>
-              <input id="newFranName" class="admin-input" placeholder="Acme Peptides" autocomplete="off">
-            </div>
-            <div>
-              <label class="block text-[11px] text-zinc-400 mb-1" for="newFranSlug">Slug</label>
-              <input id="newFranSlug" class="admin-input" placeholder="acme" autocomplete="off">
-            </div>
-            <div>
-              <label class="block text-[11px] text-zinc-400 mb-1" for="newFranClone">Clone products + prices from</label>
-              <select id="newFranClone" class="admin-input">
-                <option value="">— none —</option>
-              </select>
-            </div>
-          </div>
-          <button id="newFranCreateBtn" type="button"
-                  class="bg-violet-600 hover:bg-violet-500 text-white font-bold px-4 py-2.5 rounded-2xl text-sm">
-            Create + setup link
-          </button>
-          <div id="newFranSetupBox" class="hidden mt-2 p-3 rounded-xl bg-zinc-950 border border-violet-500/40">
-            <p class="text-[11px] text-zinc-400 mb-1">Setup link (copy once — send to franchisee):</p>
-            <p id="newFranSetupUrl" class="text-sm text-violet-200 break-word font-mono"></p>
-          </div>
-        </div>
-
-        <div class="flex flex-wrap gap-3 items-end mb-4">
-          <div class="min-w-[200px] flex-1">
-            <label class="block text-[11px] text-zinc-400 mb-1" for="franSelect">Edit franchisee</label>
-            <select id="franSelect" class="admin-input"></select>
-          </div>
-          <button id="franSavePricesBtn" type="button"
-                  class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
-            Save prices
-          </button>
-          <button id="franSetupLinkBtn" type="button"
-                  class="px-4 py-2.5 rounded-2xl text-sm font-semibold bg-zinc-900 border border-zinc-700 hover:border-zinc-500">
-            New setup link
-          </button>
-        </div>
-        <p id="franMeta" class="text-xs text-zinc-500 mb-2"></p>
-
-        <!-- Wholesale batching schedule (per franchisee) -->
-        <div class="border border-violet-500/25 rounded-2xl p-3 mb-4">
-          <p class="text-[11px] uppercase tracking-wide text-violet-300 mb-2">Wholesale batching</p>
-          <div class="flex flex-wrap gap-3 items-end">
-            <div class="min-w-[170px]">
-              <label class="block text-[11px] text-zinc-400 mb-1" for="franMode">Fulfillment</label>
-              <select id="franMode" class="admin-input">
-                <option value="batch">Stack into weekly master order</option>
-                <option value="immediate">Dropship each order immediately</option>
-              </select>
-            </div>
-            <div class="min-w-[150px]">
-              <label class="block text-[11px] text-zinc-400 mb-1" for="franDay">Batch day</label>
-              <select id="franDay" class="admin-input">
-                <option value="0">Sunday</option>
-                <option value="1">Monday</option>
-                <option value="2">Tuesday</option>
-                <option value="3">Wednesday</option>
-                <option value="4">Thursday</option>
-                <option value="5">Friday</option>
-                <option value="6">Saturday</option>
-              </select>
-            </div>
-            <button id="franSaveScheduleBtn" type="button"
-                    class="px-4 py-2.5 rounded-2xl text-sm font-semibold bg-violet-900/40 border border-violet-500/40 hover:border-violet-400">
-              Save schedule
-            </button>
-          </div>
-          <p class="text-[11px] text-zinc-500 mt-2">
-            On the chosen day, every paid customer order from that week is combined into
-            <strong class="text-violet-300">one master wholesale order</strong>.
-            Emergency purchases are never batched.
-          </p>
-        </div>
-
-        <!-- Sync all products: explicit click only — never auto-run on load -->
-        <div id="franSyncPanel" class="border border-emerald-500/30 rounded-2xl p-4 mb-4 space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="text-sm font-bold text-emerald-300 uppercase tracking-wide">Sync all products</h2>
-            <p id="franCoverage" class="text-sm font-semibold text-white">— of — products linked</p>
-          </div>
-          <p class="text-[11px] text-zinc-500 leading-relaxed">
-            Links every live catalog product to this franchisee and sets an <strong class="text-zinc-300">explicit</strong>
-            franchisee cost (fallback formula — never NULL). Stale links (catalog name gone) break order mapping — remove them.
-            Nothing runs until you click.
-          </p>
-          <div class="grid sm:grid-cols-2 gap-3">
-            <div class="rounded-xl bg-zinc-950/60 border border-zinc-800 p-3">
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <p class="text-[11px] uppercase tracking-wide text-amber-300 font-bold">Unlinked catalog products</p>
-                <button id="franLinkAllBtn" type="button"
-                        class="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white disabled:opacity-40 disabled:cursor-not-allowed">
-                  Link all
-                </button>
-              </div>
-              <ul id="franUnlinkedList" class="text-xs text-zinc-400 space-y-1 max-h-40 overflow-y-auto"></ul>
-            </div>
-            <div class="rounded-xl bg-zinc-950/60 border border-zinc-800 p-3">
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <p class="text-[11px] uppercase tracking-wide text-red-300 font-bold">Stale links (not in catalog)</p>
-                <button id="franRemoveAllStaleBtn" type="button"
-                        class="text-xs font-bold px-3 py-1.5 rounded-xl bg-red-900/70 hover:bg-red-800 text-red-100 border border-red-500/40 disabled:opacity-40 disabled:cursor-not-allowed">
-                  Remove all stale
-                </button>
-              </div>
-              <ul id="franStaleList" class="text-xs text-zinc-400 space-y-1 max-h-40 overflow-y-auto"></ul>
-            </div>
-          </div>
-          <p id="franSyncMsg" class="text-xs hidden"></p>
-        </div>
-
-        <div class="table-scroll border border-violet-500/25 rounded-2xl">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-left text-[11px] uppercase tracking-wide text-violet-300 border-b border-zinc-800">
-                <th class="px-3 py-2.5">Product (partner / SPBC)</th>
-                <th class="px-3 py-2.5">SPBC vial</th>
-                <th class="px-3 py-2.5">Fran vial $</th>
-                <th class="px-3 py-2.5">SPBC pack</th>
-                <th class="px-3 py-2.5">Fran pack $</th>
-              </tr>
-            </thead>
-            <tbody id="franPricesTbody"></tbody>
-          </table>
-        </div>
-        <p class="text-[11px] text-zinc-600 mt-1">Prices in dollars. Leave blank to clear override (falls back to SPBC customer price).</p>
+        <p id="syncMsg" class="text-sm mb-4 hidden"></p>
+        <div id="syncBody" class="space-y-5 text-sm text-zinc-300">Loading…</div>
       </div>
+
     </section>
   </main>
 
@@ -669,17 +518,11 @@
     const loginError = document.getElementById('loginError');
     const ordersPanel = document.getElementById('ordersPanel');
     const productsPanel = document.getElementById('productsPanel');
-    const franchiseesPanel = document.getElementById('franchiseesPanel');
     const reportPanel = document.getElementById('reportPanel');
-    const franchiseeMsg = document.getElementById('franchiseeMsg');
     /** @type {{id:number,name:string,notes?:string,active:boolean}[]} */
     let suppliersCache = [];
-    /** @type {any[]} */
-    let franchiseesCache = [];
     /** @type {any[]} SPBC catalog rows for Products tab re-render */
     let productsCache = [];
-    /** @type {any[]} product_links for the franchisee selected on Products tab */
-    let productsFranLinks = [];
     const ordersTbody = document.getElementById('ordersTbody');
     const ordersMeta = document.getElementById('ordersMeta');
     const ordersError = document.getElementById('ordersError');
@@ -746,7 +589,8 @@
       productsPanel.classList.toggle('hidden', activeTab !== 'products');
       const vp = document.getElementById('vendorsPanel');
       if (vp) vp.classList.toggle('hidden', activeTab !== 'vendors');
-      franchiseesPanel.classList.toggle('hidden', activeTab !== 'franchisees');
+      const sp = document.getElementById('syncPanel');
+      if (sp) sp.classList.toggle('hidden', activeTab !== 'sync');
       if (reportPanel) reportPanel.classList.toggle('hidden', activeTab !== 'report');
     }
 
@@ -756,13 +600,154 @@
       if (tab === 'orders') await loadOrders();
       if (tab === 'products') {
         await loadSuppliersCache();
-        await loadProductsFranSelector();
         await loadVendorCostIndex();
         await loadProducts();
       }
       if (tab === 'vendors') await loadVendorMatch();
-      if (tab === 'franchisees') await loadFranchisees();
+      if (tab === 'sync') await loadSupplierSync();
       if (tab === 'report') await loadReport();
+    }
+
+    /* ---------- Supplier sync (show-me-source) ---------- */
+    function syncWhen(t) {
+      if (!t) return '';
+      const d = new Date(String(t).replace(' ', 'T') + 'Z');
+      return Number.isNaN(d.getTime()) ? escapeHtml(t) : d.toLocaleString();
+    }
+
+    function syncMoney(v) {
+      return v == null ? '—' : '$' + Number(v).toFixed(Number(v) % 1 ? 2 : 0);
+    }
+
+    function syncShowMsg(text, ok = true) {
+      const el = document.getElementById('syncMsg');
+      if (!el) return;
+      el.textContent = text;
+      el.className = `text-sm mb-4 ${ok ? 'text-emerald-400' : 'text-red-400'}`;
+      el.classList.remove('hidden');
+      if (ok) setTimeout(() => el.classList.add('hidden'), 3500);
+    }
+
+    const SYNC_WORDS = {
+      price: 'Price updated',
+      hide: 'Hidden',
+      show: 'Back on the shop',
+      hold_price: 'Price change',
+      new_product: 'New supplier product',
+      missing_spbc_product: 'Linked SPBC product not found',
+    };
+
+    async function loadSupplierSync() {
+      const body = document.getElementById('syncBody');
+      if (!body) return;
+      body.innerHTML = '<p class="text-zinc-500">Loading…</p>';
+      const res = await fetch('/api/admin/supplier-sync', { credentials: 'same-origin' });
+      if (res.status === 401) return showLogin();
+      if (!res.ok) {
+        body.innerHTML = '<p class="text-red-400">Could not load the sync log.</p>';
+        return;
+      }
+      const d = await res.json();
+      const last = d.runs[0];
+      let html = '';
+
+      // Last run
+      if (!last) {
+        html += '<div class="admin-card p-4 text-zinc-400">No sync has run yet.</div>';
+      } else {
+        const c = (last.detail && last.detail.counts) || {};
+        const parts = Object.entries(c).map(([k, n]) => `${n} ${escapeHtml((SYNC_WORDS[k] || k).toLowerCase())}`);
+        const tone = last.status === 'error' ? 'text-red-400' : 'text-emerald-300';
+        const label =
+          last.status === 'error'
+            ? 'Failed: ' + escapeHtml((last.detail && last.detail.error) || 'unknown error')
+            : last.status === 'dry_run'
+              ? 'Test mode (nothing changed). Would do: ' + (parts.join(', ') || 'nothing')
+              : 'OK. ' + (parts.join(', ') || 'No changes needed');
+        html += `<div class="admin-card p-4"><p class="text-[11px] uppercase tracking-wide text-zinc-500 mb-1">Last check · ${syncWhen(last.created_at)}</p>
+          <p class="${tone}">${label}</p></div>`;
+        if (last.status === 'dry_run' && last.detail && Array.isArray(last.detail.would_do) && last.detail.would_do.length) {
+          html += '<div class="admin-card p-4"><p class="text-[11px] uppercase tracking-wide text-zinc-500 mb-2">Test mode: what it would change</p><ul class="space-y-1">' +
+            last.detail.would_do.map((a) => `<li>${escapeHtml(SYNC_WORDS[a.kind] || a.kind)}: ${escapeHtml(a.spbc_name || a.supplier_name || '')}${a.to ? ` → ${syncMoney(a.to.vial)} vial / ${syncMoney(a.to.kit)} kit` : ''}</li>`).join('') +
+            '</ul></div>';
+        }
+      }
+
+      // Held price changes
+      html += '<div><h2 class="text-sm font-bold text-[#FDD700] uppercase tracking-wide mb-2">Waiting for you: big price changes</h2>';
+      html += d.holds.length
+        ? d.holds.map((h) => {
+            const x = h.detail || {};
+            const from = x.from || {};
+            const to = x.to || {};
+            return `<div class="admin-card p-4 flex flex-wrap items-center justify-between gap-3">
+              <div><p class="font-semibold text-white">${escapeHtml(h.spbc_name)}</p>
+              <p class="text-xs text-zinc-400">Vial ${syncMoney(from.vial)} → <strong class="text-white">${syncMoney(to.vial)}</strong> ·
+              Kit ${syncMoney(from.kit)} → <strong class="text-white">${syncMoney(to.kit)}</strong>${to.kitOnly && !from.kitOnly ? ' · now kit only' : ''}</p>
+              <p class="text-[11px] text-zinc-500">Seen ${syncWhen(h.created_at)}</p></div>
+              <div class="flex gap-2">
+                <button type="button" data-sync-act="apply_hold" data-id="${h.id}" class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-2 rounded-xl text-sm">Apply</button>
+                <button type="button" data-sync-act="ignore_hold" data-id="${h.id}" class="border border-zinc-600 text-zinc-300 px-3 py-2 rounded-xl text-sm">Keep current</button>
+              </div></div>`;
+          }).join('')
+        : '<p class="text-zinc-500">Nothing waiting.</p>';
+      html += '</div>';
+
+      // New supplier products
+      const opts = d.products.map((p) => `<option value="${escapeAttr(p.name)}">${escapeHtml(p.name)}${p.active ? '' : ' (hidden)'}</option>`).join('');
+      html += '<div><h2 class="text-sm font-bold text-[#FDD700] uppercase tracking-wide mb-2">Waiting for you: new supplier products</h2>';
+      html += d.new_products.length
+        ? d.new_products.map((n) => {
+            const x = n.detail || {};
+            const t = x.target || {};
+            return `<div class="admin-card p-4 space-y-2">
+              <p class="font-semibold text-white">${escapeHtml(x.supplier_name || 'Supplier #' + n.supplier_id)}</p>
+              <p class="text-xs text-zinc-400">Would sell at ${syncMoney(t.vial)} vial / ${syncMoney(t.kit)} kit.
+              To sell it, add it on the Price list first, then link it here.</p>
+              <div class="flex flex-wrap gap-2 items-center">
+                <select data-sync-map="${n.id}" class="admin-input text-sm max-w-xs">${opts}</select>
+                <button type="button" data-sync-act="map_new" data-id="${n.id}" class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-2 rounded-xl text-sm">Link</button>
+                <button type="button" data-sync-act="skip_new" data-id="${n.id}" class="border border-zinc-600 text-zinc-300 px-3 py-2 rounded-xl text-sm">Don't sell</button>
+              </div></div>`;
+          }).join('')
+        : '<p class="text-zinc-500">Nothing waiting.</p>';
+      html += '</div>';
+
+      // Recent automatic changes
+      html += '<div><h2 class="text-sm font-bold text-zinc-300 uppercase tracking-wide mb-2">Recent changes</h2>';
+      html += d.recent.length
+        ? '<div class="admin-card divide-y divide-zinc-800">' +
+          d.recent.map((r) => `<div class="px-4 py-2 flex flex-wrap justify-between gap-2">
+            <span>${escapeHtml(SYNC_WORDS[r.kind] || r.kind)} · ${escapeHtml(r.spbc_name || (r.detail && r.detail.supplier_name) || '')}
+            ${r.kind === 'price' || r.kind === 'hold_price' ? `→ ${syncMoney(r.vial)} / ${syncMoney(r.kit)}` : ''}
+            <span class="text-zinc-500">(${escapeHtml(r.status)})</span></span>
+            <span class="text-xs text-zinc-500">${syncWhen(r.created_at)}</span></div>`).join('') +
+          '</div>'
+        : '<p class="text-zinc-500">None yet.</p>';
+      html += '</div>';
+
+      body.innerHTML = html;
+      body.querySelectorAll('[data-sync-act]').forEach((btn) => {
+        btn.addEventListener('click', () => supplierSyncAction(btn.dataset.syncAct, btn.dataset.id));
+      });
+    }
+
+    async function supplierSyncAction(action, id) {
+      const payload = { action, id };
+      if (action === 'map_new') {
+        const sel = document.querySelector(`[data-sync-map="${id}"]`);
+        payload.spbc_name = sel ? sel.value : '';
+      }
+      const res = await fetch('/api/admin/supplier-sync', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.status === 401) return showLogin();
+      const d = await res.json().catch(() => ({}));
+      syncShowMsg(d.message || (res.ok ? 'Done' : 'Failed'), res.ok);
+      await loadSupplierSync();
     }
 
     /* ---------- Vendor match (SPBC product → vendor's product) ---------- */
@@ -957,7 +942,6 @@
 
     /* ---------- Sales & profit report ---------- */
 
-    let reportScopeLoaded = false;
 
     function reportRangeQuery() {
       const days = parseInt(document.getElementById('reportRange')?.value ?? '30', 10);
@@ -966,27 +950,6 @@
       if (slug) qs.set('partner_slug', slug);
       if (days) qs.set('from', new Date(Date.now() - days * 86400000).toISOString());
       return qs.toString() ? '?' + qs.toString() : '';
-    }
-
-    /** Fill the scope picker with franchisees once, so their P&L is one click away. */
-    async function ensureReportScopeOptions() {
-      if (reportScopeLoaded) return;
-      const sel = document.getElementById('reportScope');
-      if (!sel) return;
-      try {
-        const res = await fetch('/api/admin/franchisees', { credentials: 'same-origin' });
-        if (!res.ok) return;
-        const data = await res.json();
-        for (const p of data.partners || []) {
-          const o = document.createElement('option');
-          o.value = p.slug;
-          o.textContent = `${p.name} — their books`;
-          sel.appendChild(o);
-        }
-        reportScopeLoaded = true;
-      } catch {
-        /* picker just stays SPBC-only */
-      }
     }
 
     function reportStatCard(label, value, sub, tone) {
@@ -1002,7 +965,6 @@
     }
 
     async function loadReport() {
-      await ensureReportScopeOptions();
       const wrap = document.getElementById('reportProducts');
       const totals = document.getElementById('reportTotals');
       const channels = document.getElementById('reportChannels');
@@ -1107,493 +1069,6 @@
           ? '<th class="px-3 py-2 text-right">Cost</th><th class="px-3 py-2 text-right">Profit</th><th class="px-3 py-2 text-right">Margin</th>'
           : '') +
         '</tr></thead><tbody>' + rows + '</tbody></table>';
-    }
-
-    function showFranMsg(text, ok = true) {
-      franchiseeMsg.textContent = text;
-      franchiseeMsg.className = `text-sm mb-4 ${ok ? 'text-emerald-400' : 'text-red-400'}`;
-      franchiseeMsg.classList.remove('hidden');
-      if (ok) setTimeout(() => franchiseeMsg.classList.add('hidden'), 3500);
-    }
-
-    function centsToDollarInput(cents) {
-      if (cents == null || cents === '') return '';
-      const n = Number(cents);
-      if (!Number.isFinite(n)) return '';
-      return (n / 100).toFixed(2);
-    }
-
-    function dollarInputToCents(raw) {
-      const s = String(raw ?? '').trim();
-      if (s === '') return null; // clear override
-      const n = Number(s);
-      if (!Number.isFinite(n) || n < 0) return undefined; // invalid
-      return Math.round(n * 100);
-    }
-
-    function fillFranSelects(keepSlug) {
-      const sel = document.getElementById('franSelect');
-      const cloneSel = document.getElementById('newFranClone');
-      const prev = keepSlug || sel.value;
-      sel.innerHTML = franchiseesCache
-        .map((p) => {
-          const label = `${p.name} (${p.slug})${p.active ? '' : ' · inactive'}`;
-          return `<option value="${escapeAttr(p.slug)}">${escapeHtml(label)}</option>`;
-        })
-        .join('');
-      cloneSel.innerHTML =
-        '<option value="">— none —</option>' +
-        franchiseesCache
-          .filter((p) => p.active)
-          .map(
-            (p) =>
-              `<option value="${escapeAttr(p.slug)}">${escapeHtml(p.name)} (${escapeHtml(p.slug)})</option>`
-          )
-          .join('');
-      if (prev && franchiseesCache.some((p) => p.slug === prev)) {
-        sel.value = prev;
-      }
-    }
-
-    function renderFranPrices() {
-      const slug = document.getElementById('franSelect').value;
-      const partner = franchiseesCache.find((p) => p.slug === slug);
-      const tbody = document.getElementById('franPricesTbody');
-      const meta = document.getElementById('franMeta');
-      if (!partner) {
-        tbody.innerHTML = '';
-        meta.textContent = 'No franchisees yet.';
-        renderFranSync();
-        return;
-      }
-      const links = partner.product_links || [];
-      const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const mode = partner.fulfillment_mode || 'batch';
-      const day = partner.batch_weekday ?? 4;
-      const schedBit =
-        mode === 'batch'
-          ? ` · batches ${DAY_NAMES[day]}`
-          : ' · dropships immediately';
-      meta.textContent = `${partner.name} · ${links.length} mapped product(s)${schedBit}${partner.active ? '' : ' · INACTIVE'}`;
-      const modeEl = document.getElementById('franMode');
-      const dayEl = document.getElementById('franDay');
-      if (modeEl) modeEl.value = mode;
-      if (dayEl) {
-        dayEl.value = String(day);
-        dayEl.disabled = mode !== 'batch';
-      }
-      if (!links.length) {
-        tbody.innerHTML =
-          '<tr><td colspan="5" class="px-3 py-4 text-zinc-500">No product links. Clone from an existing franchisee or map products in the worker partners UI.</td></tr>';
-      } else {
-        tbody.innerHTML = links
-          .map((l) => {
-            const key = escapeAttr(l.partner_name);
-            const title = `${escapeHtml(l.partner_name)} <span class="text-zinc-500">→ ${escapeHtml(l.spbc_name)}</span>`;
-            const spbcV = l.spbc_vial_cents != null ? formatCents(l.spbc_vial_cents) : (l.spbc_vial_price != null ? '$' + moneyVal(l.spbc_vial_price) : '—');
-            const spbcP = l.spbc_pack_cents != null ? formatCents(l.spbc_pack_cents) : (l.spbc_pack_price != null ? '$' + moneyVal(l.spbc_pack_price) : '—');
-            return `<tr class="border-b border-zinc-900" data-partner-name="${key}">
-            <td class="px-3 py-2.5 align-top">${title}</td>
-            <td class="px-3 py-2.5 text-zinc-400 whitespace-nowrap">${spbcV}</td>
-            <td class="px-3 py-2"><input type="number" step="0.01" min="0" inputmode="decimal"
-              class="admin-input py-1.5 px-2 text-sm max-w-[7rem] fran-vial"
-              placeholder="base" value="${escapeAttr(centsToDollarInput(l.franchisee_vial_cents))}"></td>
-            <td class="px-3 py-2.5 text-zinc-400 whitespace-nowrap">${spbcP}</td>
-            <td class="px-3 py-2"><input type="number" step="0.01" min="0" inputmode="decimal"
-              class="admin-input py-1.5 px-2 text-sm max-w-[7rem] fran-pack"
-              placeholder="base" value="${escapeAttr(centsToDollarInput(l.franchisee_pack_cents))}"></td>
-          </tr>`;
-          })
-          .join('');
-      }
-      renderFranSync();
-    }
-
-    /** Catalog product names (active) for franchisee coverage sync. */
-    function activeCatalogProducts() {
-      return (productsCache || []).filter((p) => p && p.active !== 0 && p.active !== false && p.name);
-    }
-
-    function franSyncState() {
-      const slug = document.getElementById('franSelect')?.value;
-      const partner = franchiseesCache.find((p) => p.slug === slug);
-      const catalog = activeCatalogProducts();
-      const catalogNames = new Set(catalog.map((p) => p.name));
-      const links = (partner && partner.product_links) || [];
-      const linkedSpbc = new Set(links.map((l) => l.spbc_name).filter(Boolean));
-      const unlinked = catalog.filter((p) => !linkedSpbc.has(p.name));
-      const stale = links.filter((l) => l.spbc_name && !catalogNames.has(l.spbc_name));
-      const linkedCount = catalog.filter((p) => linkedSpbc.has(p.name)).length;
-      return { slug, partner, catalog, unlinked, stale, linkedCount, total: catalog.length };
-    }
-
-    function renderFranSync() {
-      const cov = document.getElementById('franCoverage');
-      const unEl = document.getElementById('franUnlinkedList');
-      const stEl = document.getElementById('franStaleList');
-      const linkBtn = document.getElementById('franLinkAllBtn');
-      const staleBtn = document.getElementById('franRemoveAllStaleBtn');
-      if (!cov || !unEl || !stEl) return;
-      const state = franSyncState();
-      if (!state.partner) {
-        cov.textContent = '— of — products linked';
-        unEl.innerHTML = '<li class="text-zinc-600">Select a franchisee.</li>';
-        stEl.innerHTML = '';
-        if (linkBtn) linkBtn.disabled = true;
-        if (staleBtn) staleBtn.disabled = true;
-        return;
-      }
-      if (!state.total) {
-        cov.textContent = '0 of 0 products linked (load products if empty)';
-      } else {
-        cov.textContent = `${state.linkedCount} of ${state.total} products linked`;
-        cov.className =
-          'text-sm font-semibold ' +
-          (state.linkedCount === state.total && state.stale.length === 0
-            ? 'text-emerald-400'
-            : 'text-white');
-      }
-      unEl.innerHTML = state.unlinked.length
-        ? state.unlinked.map((p) => `<li class="text-amber-200/90">${escapeHtml(p.name)}</li>`).join('')
-        : '<li class="text-emerald-500/80">None — full coverage</li>';
-      stEl.innerHTML = state.stale.length
-        ? state.stale
-            .map(
-              (l) =>
-                `<li class="flex items-center justify-between gap-2 text-red-200/90">
-                  <span>${escapeHtml(l.spbc_name)} <span class="text-zinc-600">(${escapeHtml(l.partner_name)})</span></span>
-                  <button type="button" data-remove-stale="${escapeAttr(l.partner_name)}"
-                    class="text-[10px] font-bold uppercase px-2 py-1 rounded-lg bg-red-950 border border-red-500/40 hover:bg-red-900">Remove</button>
-                </li>`
-            )
-            .join('')
-        : '<li class="text-emerald-500/80">None — no stale links</li>';
-      if (linkBtn) linkBtn.disabled = !state.unlinked.length;
-      if (staleBtn) staleBtn.disabled = !state.stale.length;
-      stEl.querySelectorAll('[data-remove-stale]').forEach((btn) => {
-        btn.addEventListener('click', () => removeFranLink(btn.getAttribute('data-remove-stale')));
-      });
-    }
-
-    function showFranSyncMsg(text, ok = true) {
-      const el = document.getElementById('franSyncMsg');
-      if (!el) return;
-      el.textContent = text;
-      el.className = `text-xs ${ok ? 'text-emerald-400' : 'text-red-400'}`;
-      el.classList.remove('hidden');
-    }
-
-    /**
-     * Fallback franchisee cost in cents: floor(customer_cents / 1.2 / 50) * 50.
-     * Always write an explicit value — never leave NULL overrides.
-     */
-    function fallbackFranchiseeCents(customerDollars) {
-      const cents = Math.round((Number(customerDollars) || 0) * 100);
-      if (cents <= 0) return 0;
-      return Math.floor(cents / 1.2 / 50) * 50;
-    }
-
-    async function ensureProductsCacheForSync() {
-      if (productsCache && productsCache.length) return;
-      try {
-        const res = await fetch('/api/admin/products', { credentials: 'same-origin' });
-        if (res.status === 401) {
-          showLogin();
-          return;
-        }
-        if (!res.ok) return;
-        const data = await res.json();
-        productsCache = data.products || [];
-      } catch (_) { /* leave empty */ }
-    }
-
-    async function linkAllUnlinked() {
-      const state = franSyncState();
-      if (!state.slug || !state.unlinked.length) return;
-      if (
-        !window.confirm(
-          `Link ${state.unlinked.length} product(s) to ${state.partner.name} and set explicit franchisee costs (fallback formula)?`
-        )
-      ) {
-        return;
-      }
-      let ok = 0;
-      let fail = 0;
-      showFranSyncMsg(`Linking 0 / ${state.unlinked.length}…`);
-      for (const p of state.unlinked) {
-        try {
-          const vialCents = fallbackFranchiseeCents(p.vial_price);
-          const packCents = fallbackFranchiseeCents(p.pack_price);
-          const put = await fetch(`/api/admin/franchisees/${encodeURIComponent(state.slug)}/links`, {
-            method: 'PUT',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ partner_name: p.name, spbc_name: p.name }),
-          });
-          if (put.status === 401) {
-            showLogin();
-            return;
-          }
-          if (!put.ok) {
-            fail += 1;
-            continue;
-          }
-          const patch = await fetch(`/api/admin/franchisees/${encodeURIComponent(state.slug)}/prices`, {
-            method: 'PATCH',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              partner_name: p.name,
-              franchisee_vial_cents: vialCents,
-              franchisee_pack_cents: packCents,
-            }),
-          });
-          if (!patch.ok) {
-            fail += 1;
-          } else {
-            ok += 1;
-          }
-        } catch (_) {
-          fail += 1;
-        }
-        showFranSyncMsg(`Linking ${ok + fail} / ${state.unlinked.length}…`);
-      }
-      showFranSyncMsg(
-        fail ? `Linked ${ok}, failed ${fail}` : `Linked ${ok} product(s) with explicit costs`,
-        !fail
-      );
-      await loadFranchisees();
-      document.getElementById('franSelect').value = state.slug;
-      renderFranPrices();
-    }
-
-    async function removeFranLink(partnerName) {
-      const slug = document.getElementById('franSelect')?.value;
-      if (!slug || !partnerName) return;
-      if (!window.confirm(`Remove product link "${partnerName}"?`)) return;
-      const res = await fetch(`/api/admin/franchisees/${encodeURIComponent(slug)}/links`, {
-        method: 'DELETE',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ partner_name: partnerName }),
-      });
-      if (res.status === 401) {
-        showLogin();
-        return;
-      }
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        showFranSyncMsg(d.message || d.error || `Remove failed (${res.status})`, false);
-        return;
-      }
-      showFranSyncMsg(`Removed stale link: ${partnerName}`);
-      await loadFranchisees();
-      document.getElementById('franSelect').value = slug;
-      renderFranPrices();
-    }
-
-    async function removeAllStale() {
-      const state = franSyncState();
-      if (!state.slug || !state.stale.length) return;
-      if (!window.confirm(`Remove all ${state.stale.length} stale link(s)?`)) return;
-      let ok = 0;
-      let fail = 0;
-      for (const l of state.stale) {
-        const res = await fetch(`/api/admin/franchisees/${encodeURIComponent(state.slug)}/links`, {
-          method: 'DELETE',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ partner_name: l.partner_name }),
-        });
-        if (res.status === 401) {
-          showLogin();
-          return;
-        }
-        if (res.ok) ok += 1;
-        else fail += 1;
-      }
-      showFranSyncMsg(
-        fail ? `Removed ${ok}, failed ${fail}` : `Removed ${ok} stale link(s)`,
-        !fail
-      );
-      await loadFranchisees();
-      document.getElementById('franSelect').value = state.slug;
-      renderFranPrices();
-    }
-
-    async function loadFranchisees() {
-      try {
-        await ensureProductsCacheForSync();
-        const res = await fetch('/api/admin/franchisees', { credentials: 'same-origin' });
-        if (res.status === 401) {
-          showLogin();
-          return;
-        }
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          showFranMsg(err.message || err.error || 'Failed to load franchisees', false);
-          return;
-        }
-        const data = await res.json();
-        franchiseesCache = data.partners || [];
-        fillFranSelects();
-        renderFranPrices();
-      } catch (e) {
-        showFranMsg(e instanceof Error ? e.message : 'Load failed', false);
-      }
-    }
-
-    async function saveFranPrices() {
-      const slug = document.getElementById('franSelect').value;
-      if (!slug) return;
-      const rows = document.querySelectorAll('#franPricesTbody tr[data-partner-name]');
-      let saved = 0;
-      let failed = 0;
-      for (const row of rows) {
-        const partner_name = row.getAttribute('data-partner-name');
-        const vialRaw = row.querySelector('.fran-vial')?.value;
-        const packRaw = row.querySelector('.fran-pack')?.value;
-        const vial = dollarInputToCents(vialRaw);
-        const pack = dollarInputToCents(packRaw);
-        if (vial === undefined || pack === undefined) {
-          failed += 1;
-          continue;
-        }
-        // Always send both so blank clears override
-        const res = await fetch(
-          `/api/admin/franchisees/${encodeURIComponent(slug)}/prices`,
-          {
-            method: 'PATCH',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              partner_name,
-              franchisee_vial_cents: vial,
-              franchisee_pack_cents: pack,
-            }),
-          }
-        );
-        if (res.status === 401) {
-          showLogin();
-          return;
-        }
-        if (!res.ok) {
-          failed += 1;
-        } else {
-          saved += 1;
-        }
-      }
-      if (failed) {
-        showFranMsg(`Saved ${saved}, failed ${failed}`, false);
-      } else {
-        showFranMsg(`Saved ${saved} item price(s)`);
-      }
-      await loadFranchisees();
-      document.getElementById('franSelect').value = slug;
-      fillFranSelects(slug);
-      renderFranPrices();
-    }
-
-    /** Save this franchisee's batching schedule (mode + weekly batch day). */
-    async function saveFranSchedule() {
-      const slug = document.getElementById('franSelect').value;
-      if (!slug) {
-        showFranMsg('Select a franchisee first', false);
-        return;
-      }
-      const mode = document.getElementById('franMode').value;
-      const day = Number(document.getElementById('franDay').value);
-      const res = await fetch(
-        `/api/admin/franchisees/${encodeURIComponent(slug)}/schedule`,
-        {
-          method: 'PATCH',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fulfillment_mode: mode, batch_weekday: day }),
-        }
-      );
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        showFranMsg(data.message || data.error || 'Schedule save failed', false);
-        return;
-      }
-      const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      showFranMsg(
-        mode === 'batch'
-          ? `Saved — orders stack into one master order every ${DAY_NAMES[day]}`
-          : 'Saved — each paid order dropships immediately'
-      );
-      await loadFranchisees();
-      document.getElementById('franSelect').value = slug;
-      fillFranSelects(slug);
-      renderFranPrices();
-    }
-
-    async function createFranchisee() {
-      const name = document.getElementById('newFranName').value.trim();
-      const slug = document.getElementById('newFranSlug').value.trim().toLowerCase();
-      const clone_from = document.getElementById('newFranClone').value || null;
-      if (!name || !slug) {
-        showFranMsg('Name and slug required', false);
-        return;
-      }
-      const res = await fetch('/api/admin/franchisees', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, slug, clone_from }),
-      });
-      if (res.status === 401) {
-        showLogin();
-        return;
-      }
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        showFranMsg(data.message || data.error || 'Create failed', false);
-        return;
-      }
-      document.getElementById('newFranName').value = '';
-      document.getElementById('newFranSlug').value = '';
-      const box = document.getElementById('newFranSetupBox');
-      const urlEl = document.getElementById('newFranSetupUrl');
-      if (data.setup_url) {
-        urlEl.textContent = data.setup_url;
-        box.classList.remove('hidden');
-      } else {
-        box.classList.add('hidden');
-      }
-      showFranMsg(
-        `Created ${data.partner?.slug || slug}` +
-          (data.links_cloned != null ? ` · cloned ${data.links_cloned} products` : '')
-      );
-      await loadFranchisees();
-      if (data.partner?.slug) {
-        document.getElementById('franSelect').value = data.partner.slug;
-        renderFranPrices();
-      }
-    }
-
-    async function rotateFranSetupLink() {
-      const slug = document.getElementById('franSelect').value;
-      if (!slug) return;
-      const res = await fetch(
-        `/api/admin/franchisees/${encodeURIComponent(slug)}/setup-token`,
-        { method: 'POST', credentials: 'same-origin' }
-      );
-      if (res.status === 401) {
-        showLogin();
-        return;
-      }
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        showFranMsg(data.message || data.error || 'Setup link failed', false);
-        return;
-      }
-      const box = document.getElementById('newFranSetupBox');
-      const urlEl = document.getElementById('newFranSetupUrl');
-      urlEl.textContent = data.setup_url || '';
-      box.classList.remove('hidden');
-      showFranMsg('New setup link generated');
     }
 
     async function loadSuppliersCache() {
@@ -2342,118 +1817,6 @@
     }
 
     // ---------- Products ----------
-    async function loadProductsFranSelector() {
-      const sel = document.getElementById('productsFranSelect');
-      if (!sel) return;
-      try {
-        const res = await fetch('/api/admin/franchisees', { credentials: 'same-origin' });
-        if (res.status === 401) {
-          showLogin();
-          return;
-        }
-        if (!res.ok) {
-          sel.innerHTML = '<option value="">(failed to load franchisees)</option>';
-          productsFranLinks = [];
-          return;
-        }
-        const data = await res.json();
-        franchiseesCache = data.partners || [];
-        fillProductsFranSelect();
-        syncProductsFranLinks();
-        await loadFranCatalogNames();
-      } catch {
-        sel.innerHTML = '<option value="">(failed to load franchisees)</option>';
-        productsFranLinks = [];
-      }
-    }
-
-    function fillProductsFranSelect() {
-      const sel = document.getElementById('productsFranSelect');
-      if (!sel) return;
-      const prev = sel.value;
-      if (!franchiseesCache.length) {
-        sel.innerHTML = '<option value="">No franchisees yet</option>';
-        return;
-      }
-      sel.innerHTML = franchiseesCache
-        .map((p) => {
-          const label = `${p.name} (${p.slug})${p.active ? '' : ' · inactive'}`;
-          return `<option value="${escapeAttr(p.slug)}">${escapeHtml(label)}</option>`;
-        })
-        .join('');
-      if (prev && franchiseesCache.some((p) => p.slug === prev)) {
-        sel.value = prev;
-      }
-      // default: first franchisee (only one is common)
-    }
-
-    function syncProductsFranLinks() {
-      const slug = document.getElementById('productsFranSelect')?.value || '';
-      const partner = franchiseesCache.find((p) => p.slug === slug);
-      productsFranLinks = partner?.product_links || [];
-    }
-
-    /**
-     * THEIR product names, lower-cased. Empty until the catalog loads, and every check
-     * below treats empty as "unknown" rather than "orphan" — mislabelling every link as
-     * dead would be worse than not labelling at all.
-     */
-    let franCatalogNames = new Set();
-
-    /** Does their storefront actually read this link? */
-    function franLinkIsLive(link) {
-      if (!franCatalogNames.size) return true;
-      return franCatalogNames.has(String(link?.partner_name || '').trim().toLowerCase());
-    }
-
-    async function loadFranCatalogNames() {
-      const slug = document.getElementById('productsFranSelect')?.value || '';
-      if (!slug) {
-        franCatalogNames = new Set();
-        return;
-      }
-      try {
-        const res = await fetch(
-          `/api/admin/franchisees/${encodeURIComponent(slug)}/catalog`,
-          { credentials: 'same-origin' }
-        );
-        if (!res.ok) {
-          franCatalogNames = new Set();
-          return;
-        }
-        const data = await res.json();
-        franCatalogNames = new Set(
-          (data.names || []).map((n) => String(n).trim().toLowerCase())
-        );
-      } catch {
-        franCatalogNames = new Set();
-      }
-    }
-
-    /**
-     * ALL of the franchisee's links that point at this SPBC product.
-     *
-     * Their product name is often NOT ours ("RETATRUTIDE 30MG" → "RETA 30MG"), and
-     * franchisee prices are keyed on THEIR name. Matching only by name is what created
-     * duplicate links: saving from here minted a second link named after the SPBC
-     * product while their real link stayed unpriced. Match on product id first (survives
-     * renames), then name, and return every hit so the operator can choose which of
-     * their products the price routes to.
-     */
-    function franLinksForProduct(product) {
-      const name = String(product?.name || '');
-      const id = product?.id;
-      return productsFranLinks.filter((l) => {
-        if (id != null && l.spbc_product_id != null) return Number(l.spbc_product_id) === Number(id);
-        return l.spbc_name === name;
-      });
-    }
-
-    function franLinkForProductName(productName) {
-      const name = String(productName || '');
-      return productsFranLinks.find((l) => l.spbc_name === name) || null;
-    }
-
     async function loadProducts() {
       productList.innerHTML = '<p class="text-zinc-500 text-sm">Loading…</p>';
       if (!suppliersCache.length) await loadSuppliersCache();
@@ -2480,7 +1843,7 @@
       products.forEach((p) => productList.appendChild(productCard(p)));
     }
 
-    /* ---- Vendor cost shown beside franchisee pricing ---- */
+    /* ---- Vendor cost shown on each product card ---- */
     // spbc product name (normalised) -> [{vendor, price, kit_price, stock, matched}]
     let vendorCostIndex = null;
 
@@ -2544,140 +1907,12 @@
           </div>`;
         })
         .join('');
-      // Margin against what this franchisee pays us, when a link exists
-      const link = franLinkForProductName(p.name);
-      let marginLine = '';
-      if (link && link.franchisee_vial_cents != null) {
-        const fran = Number(link.franchisee_vial_cents) / 100;
-        const m = fran - Number(cheapest.price);
-        const pct = fran > 0 ? (m / fran) * 100 : 0;
-        marginLine = `<p class="text-[11px] mt-2 ${m >= 0 ? 'text-emerald-300' : 'text-red-400'}">
-          Margin at fran price: $${m.toFixed(2)} (${pct.toFixed(0)}%)</p>`;
-      }
       return `
         <div class="border border-emerald-500/40 rounded-xl p-3 bg-emerald-950/20">
           <p class="text-[11px] font-semibold text-emerald-300 uppercase tracking-wide mb-1">
             Vendor cost <span class="text-zinc-500 font-normal normal-case">(what you pay)</span>
           </p>
-          ${rows}${marginLine}
-        </div>`;
-    }
-
-    function productsFranPricingHtml(p) {
-      const slug = document.getElementById('productsFranSelect')?.value || '';
-      if (!slug) {
-        return `
-          <div class="border border-violet-500/30 rounded-xl p-3 bg-violet-950/15">
-            <p class="text-[11px] font-semibold text-violet-300 uppercase tracking-wide mb-1">Franchisee price</p>
-            <p class="text-xs text-zinc-500">Select a franchisee above.</p>
-          </div>`;
-      }
-      const candidatesRaw = franLinksForProduct(p);
-      /**
-       * Default to the link their storefront actually reads.
-       *
-       * Their server maps partner_name -> link and looks it up by THEIR product name, so
-       * a link named after OUR product is invisible to them even when it holds the price.
-       * Rank by whether partner_name is in THEIR catalog — 22 of 43 links were not, and
-       * every franchisee price set from here had been landing on one of those.
-       */
-      const candidates = candidatesRaw.slice().sort((a, b) => {
-        const aLive = franLinkIsLive(a) ? 0 : 1;
-        const bLive = franLinkIsLive(b) ? 0 : 1;
-        return aLive - bLive;
-      });
-      const link = candidates[0] || null;
-
-      /**
-       * Route the price to one of THEIR products. Their name for this product is often
-       * different from ours, and franchisee prices are keyed on their name — so the
-       * operator picks the target instead of the UI assuming the names match.
-       */
-      const routeOptions = candidates
-        .map((l) => {
-          const noPrice =
-            l.franchisee_vial_cents == null && l.franchisee_pack_cents == null
-              ? ' · no price set'
-              : '';
-          // Naming an orphan outright: a price saved here changes nothing on their site.
-          const dead = franCatalogNames.size && !franLinkIsLive(l) ? ' · NOT IN THEIR CATALOG' : '';
-          return `<option value="${escapeAttr(l.partner_name)}">${escapeHtml(
-            l.partner_name
-          )}${noPrice}${dead}</option>`;
-        })
-        .join('');
-      const newOption = `<option value="__new__">+ New link named "${escapeHtml(p.name)}"</option>`;
-
-      if (!candidates.length) {
-        return `
-          <div class="border border-violet-500/30 rounded-xl p-3 space-y-2 bg-violet-950/15"
-               data-fran-block data-partner-name="" data-spbc-name="${escapeAttr(p.name)}">
-            <p class="text-[11px] font-semibold text-violet-300 uppercase tracking-wide">Franchisee price</p>
-            <p class="text-xs text-zinc-500">
-              No link for this product yet. Saving creates one named
-              <strong class="text-violet-200">${escapeHtml(p.name)}</strong>.
-            </p>
-            <select data-fran-route class="hidden"><option value="__new__" selected>new</option></select>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs text-violet-200/80 mb-1">Fran vial $</label>
-                <input data-fran-field="vial" type="number" step="0.01" min="0" inputmode="decimal"
-                       placeholder="base"
-                       class="w-full bg-black border border-violet-500/50 rounded-xl px-3 py-2 text-sm text-violet-100">
-              </div>
-              <div>
-                <label class="block text-xs text-violet-200/80 mb-1">Fran pack $</label>
-                <input data-fran-field="pack" type="number" step="0.01" min="0" inputmode="decimal"
-                       placeholder="base"
-                       class="w-full bg-black border border-violet-500/50 rounded-xl px-3 py-2 text-sm text-violet-100">
-              </div>
-            </div>
-            <button type="button" data-action="save-fran-price"
-                    class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-2 rounded-xl text-sm">
-              Create link &amp; save price
-            </button>
-          </div>`;
-      }
-
-      return `
-        <div class="border border-violet-500/40 rounded-xl p-3 space-y-2 bg-violet-950/25"
-             data-fran-block
-             data-partner-name="${escapeAttr(link.partner_name)}"
-             data-spbc-name="${escapeAttr(link.spbc_name)}">
-          <p class="text-[11px] font-semibold text-violet-300 uppercase tracking-wide">
-            Franchisee price <span class="text-zinc-500 font-normal normal-case">(blank = SPBC price)</span>
-          </p>
-          ${
-            candidates.length > 1
-              ? `<p class="text-[11px] text-amber-300">${candidates.length} of their products point at this item — price the right one.</p>`
-              : ''
-          }
-          <label class="block text-xs text-violet-200/80">Route price to their product
-            <select data-fran-route
-                    class="mt-1 w-full bg-black border border-violet-500/50 rounded-xl px-3 py-2 text-sm text-violet-100">
-              ${routeOptions}${newOption}
-            </select>
-          </label>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs text-violet-200/80 mb-1">Fran vial $</label>
-              <input data-fran-field="vial" type="number" step="0.01" min="0" inputmode="decimal"
-                     placeholder="base"
-                     value="${escapeAttr(centsToDollarInput(link.franchisee_vial_cents))}"
-                     class="w-full bg-black border border-violet-500/50 rounded-xl px-3 py-2 text-sm text-violet-100">
-            </div>
-            <div>
-              <label class="block text-xs text-violet-200/80 mb-1">Fran pack $</label>
-              <input data-fran-field="pack" type="number" step="0.01" min="0" inputmode="decimal"
-                     placeholder="base"
-                     value="${escapeAttr(centsToDollarInput(link.franchisee_pack_cents))}"
-                     class="w-full bg-black border border-violet-500/50 rounded-xl px-3 py-2 text-sm text-violet-100">
-            </div>
-          </div>
-          <button type="button" data-action="save-fran-price"
-                  class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-2 rounded-xl text-sm">
-            Save franchisee price
-          </button>
+          ${rows}
         </div>`;
     }
 
@@ -2707,7 +1942,6 @@
                    class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">
           </div>
         </div>
-        ${productsFranPricingHtml(p)}
         ${vendorCostHtml(p)}
         <div>
           <label class="block text-xs text-zinc-500 mb-1">
@@ -2763,142 +1997,7 @@
 
       card.querySelector('[data-action="save"]').addEventListener('click', () => saveProduct(card));
       card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteProduct(card));
-      const franSave = card.querySelector('[data-action="save-fran-price"]');
-      if (franSave) {
-        franSave.addEventListener('click', () => saveProductFranPrice(card));
-      }
-      /**
-       * Re-read the routed link's own prices. Without this the inputs keep showing the
-       * previously selected link's values, and saving would copy those onto a different
-       * product — silently changing a price the operator never typed.
-       */
-      const franRoute = card.querySelector('[data-fran-route]');
-      if (franRoute) {
-        franRoute.addEventListener('change', () => {
-          const block = card.querySelector('[data-fran-block]');
-          const vialEl = block?.querySelector('[data-fran-field="vial"]');
-          const packEl = block?.querySelector('[data-fran-field="pack"]');
-          if (!block || !vialEl || !packEl) return;
-          if (franRoute.value === '__new__') {
-            vialEl.value = '';
-            packEl.value = '';
-            return;
-          }
-          const target = productsFranLinks.find((l) => l.partner_name === franRoute.value);
-          vialEl.value = centsToDollarInput(target ? target.franchisee_vial_cents : null);
-          packEl.value = centsToDollarInput(target ? target.franchisee_pack_cents : null);
-          block.setAttribute('data-partner-name', franRoute.value);
-        });
-      }
       return card;
-    }
-
-    async function saveProductFranPrice(card) {
-      const slug = document.getElementById('productsFranSelect')?.value;
-      const block = card.querySelector('[data-fran-block]');
-      if (!slug || !block) {
-        showMsg('Select a franchisee first', false);
-        return;
-      }
-      /**
-       * Price the product the operator ROUTED to, not whatever matches our own name.
-       * Assuming the names matched is what created duplicate links: it minted a second
-       * link named after the SPBC product while the franchisee's real link stayed
-       * unpriced, so their storefront never saw the change.
-       */
-      const route = block.querySelector('[data-fran-route]');
-      const routed = route ? route.value : '';
-      const isNew = routed === '__new__' || (!routed && !block.getAttribute('data-partner-name'));
-      const partner_name = isNew
-        ? card.querySelector('[data-field="name"]').value.trim()
-        : routed || block.getAttribute('data-partner-name');
-      if (!partner_name) {
-        showMsg('Product needs a name before franchisee pricing', false);
-        return;
-      }
-      // Creating a parallel link when they already have one for this product is the bug,
-      // not a feature — make the operator confirm it.
-      if (isNew) {
-        const existingNames = franLinksForProduct({
-          id: Number(card.dataset.id),
-          name: card.querySelector('[data-field="name"]').value.trim(),
-        }).map((l) => l.partner_name);
-        if (
-          existingNames.length &&
-          !confirm(
-            `They already sell this as: ${existingNames.join(', ')}.\n\n` +
-              `Create an ADDITIONAL link named "${partner_name}"? ` +
-              `Their storefront reads the existing one — a duplicate will not show up there.`
-          )
-        ) {
-          return;
-        }
-      }
-      // Saving onto a name their catalog does not contain is a silent no-op on their side.
-      if (
-        !isNew &&
-        franCatalogNames.size &&
-        !franCatalogNames.has(partner_name.trim().toLowerCase()) &&
-        !confirm(
-          `"${partner_name}" is not a product in their catalog.\n\n` +
-            `Their storefront looks prices up by their own product name, so saving here ` +
-            `will NOT change what they pay. Save anyway?`
-        )
-      ) {
-        return;
-      }
-      const vial = dollarInputToCents(block.querySelector('[data-fran-field="vial"]')?.value);
-      const pack = dollarInputToCents(block.querySelector('[data-fran-field="pack"]')?.value);
-      if (vial === undefined || pack === undefined) {
-        showMsg('Invalid franchisee price (use dollars, e.g. 12.50)', false);
-        return;
-      }
-      try {
-        await saveFranchiseePrice(
-          slug,
-          partner_name,
-          block.querySelector('[data-fran-field="vial"]')?.value ?? '',
-          block.querySelector('[data-fran-field="pack"]')?.value ?? '',
-          card.querySelector('[data-field="name"]').value.trim(),
-          card.dataset.id
-        );
-      } catch (e) {
-        if (/\b401\b/.test(String(e.message))) return showLogin();
-        showMsg(e.message || 'Franchisee price save failed', false);
-        return;
-      }
-      // Save in place — no reload, no re-render. Update the local link cache so the
-      // shown value and the "no override" badge stay accurate until the next load.
-      const existing = productsFranLinks.find((l) => l.partner_name === partner_name);
-      if (existing) {
-        if (vial !== undefined) existing.franchisee_vial_cents = vial;
-        if (pack !== undefined) existing.franchisee_pack_cents = pack;
-      } else {
-        productsFranLinks.push({
-          spbc_name: partner_name,
-          partner_name,
-          franchisee_vial_cents: vial ?? null,
-          franchisee_pack_cents: pack ?? null,
-        });
-      }
-      block.setAttribute('data-partner-name', partner_name);
-      const warn = block.querySelector('[data-fran-warn]');
-      if (warn && vial != null && pack != null) warn.classList.add('hidden');
-      flashSaved(card, 'save-fran-price');
-    }
-
-    async function onProductsFranSelectChange() {
-      syncProductsFranLinks();
-      // Re-rendering every card is necessary here (each needs its franchisee block), but
-      // it throws you back to the top of a 35-product list, which reads as a page reload.
-      const y = window.scrollY;
-      renderProducts(productsCache);
-      window.scrollTo({ top: y, behavior: 'instant' });
-      // Then again once we know which of their products are real, so routing defaults and
-      // the orphan labels are correct. Render twice rather than block the first paint.
-      await loadFranCatalogNames();
-      renderProducts(productsCache);
-      window.scrollTo({ top: y, behavior: 'instant' });
     }
 
     function readCard(card) {
@@ -2942,7 +2041,7 @@
       }
       // Save in place — no list reload. Reloading re-rendered every card, which threw
       // away scroll position and any other card mid-edit. Keep the cache in sync so
-      // later renders (tab switch, franchisee selector) show the saved values.
+      // later renders (tab switch) show the saved values.
       const saved = await res.json().catch(() => ({}));
       const fresh = saved.product || null;
       const idx = productsCache.findIndex((p) => String(p.id) === String(id));
@@ -2954,9 +2053,7 @@
 
     /** Inline "Saved" confirmation on a card, so no re-render is needed. */
     function flashSaved(card, label) {
-      // Prefer explicit action. Default to "save" — do NOT use a combined selector:
-      // when a franchisee is selected, [data-action="save-fran-price"] appears first
-      // in the card DOM and would steal the flash from the main Save button.
+      // Prefer explicit action. Default to "save".
       const action = label || 'save';
       const target = card.querySelector(`[data-action="${action}"]`);
       if (!target) {
@@ -3005,24 +2102,11 @@
     document.getElementById('tabProducts').addEventListener('click', () => switchTab('products'));
     document.getElementById('tabSuppliers')?.addEventListener('click', () => switchTab('suppliers'));
     document.getElementById('tabVendors')?.addEventListener('click', () => switchTab('vendors'));
-    document.getElementById('tabFranchisees').addEventListener('click', () => switchTab('franchisees'));
+    document.getElementById('tabSync')?.addEventListener('click', () => switchTab('sync'));
+    document.getElementById('syncReloadBtn')?.addEventListener('click', () => loadSupplierSync());
     document.getElementById('tabReport')?.addEventListener('click', () => switchTab('report'));
     document.getElementById('reportRefreshBtn')?.addEventListener('click', () => loadReport());
     document.getElementById('reportRange')?.addEventListener('change', () => loadReport());
-    document.getElementById('reportScope')?.addEventListener('change', () => loadReport());
-    document.getElementById('franchiseesRefreshBtn').addEventListener('click', () => loadFranchisees());
-    document.getElementById('franSelect').addEventListener('change', () => renderFranPrices());
-    document.getElementById('franSavePricesBtn').addEventListener('click', () => saveFranPrices());
-    document.getElementById('franLinkAllBtn')?.addEventListener('click', () => linkAllUnlinked());
-    document.getElementById('franRemoveAllStaleBtn')?.addEventListener('click', () => removeAllStale());
-    document.getElementById('franMode')?.addEventListener('change', (e) => {
-      const dayEl = document.getElementById('franDay');
-      if (dayEl) dayEl.disabled = e.target.value !== 'batch';
-    });
-    document.getElementById('franSaveScheduleBtn')?.addEventListener('click', () => saveFranSchedule());
-    document.getElementById('franSetupLinkBtn').addEventListener('click', () => rotateFranSetupLink());
-    document.getElementById('newFranCreateBtn').addEventListener('click', () => createFranchisee());
-    document.getElementById('productsFranSelect').addEventListener('change', () => onProductsFranSelectChange());
 
     // Suppliers tab was retired (vendor shops replaced it). The suppliers API and
     // the Supplier dropdown on Price list still work, so existing product→supplier
@@ -3177,106 +2261,8 @@
       setTimeout(closePwModal, 1600);
     });
 
-    /** Worker fallback cost when no franchisee override is set: floor(cents/1.2/50)*50. */
-    function fallbackFranchiseeDollars(customerDollars) {
-      const cents = Math.round((Number(customerDollars) || 0) * 100);
-      if (cents <= 0) return '';
-      return (Math.floor(cents / 1.2 / 50) * 50 / 100).toFixed(2);
-    }
-
-    /** Active franchisees (slug + name), cached per session. */
-    async function activeFranchisees() {
-      try {
-        const res = await fetch('/api/admin/franchisees', { credentials: 'same-origin' });
-        if (!res.ok) return [];
-        const data = await res.json().catch(() => ({}));
-        const list = data.partners || data.franchisees || [];
-        return list
-          .filter((p) => p.active === 1 || p.active === true)
-          .map((p) => ({ slug: p.slug, name: p.name || p.slug }));
-      } catch {
-        return [];
-      }
-    }
-
-    /**
-     * Set a franchisee's cost for a product. Creates the product_link first — the
-     * worker's franchisee PATCH fails with link_not_found when no link exists, which
-     * is how a product ends up with NULL overrides silently tracking the public price.
-     */
-    async function saveFranchiseePrice(
-      slug,
-      productName,
-      vialDollars,
-      packDollars,
-      spbcName,
-      spbcProductId
-    ) {
-      /**
-       * `spbc_name` must stay OUR catalog name. Sending the franchisee's name here
-       * overwrote it on every save — "RETA 30MG" became "RETATRUTIDE 30MG" — severing
-       * the link from the catalog product it prices. Verified against production: the
-       * PUT returned spbc_product_id: null and the row's spbc_name was clobbered.
-       *
-       * Callers that ARE creating a link for our own product pass nothing and keep the
-       * old behaviour, where the two names are legitimately identical.
-       */
-      const catalogName = spbcName || productName;
-      const linkBody = { partner_name: productName, spbc_name: catalogName };
-      if (spbcProductId != null && Number.isFinite(Number(spbcProductId))) {
-        linkBody.spbc_product_id = Number(spbcProductId);
-      }
-      const put = await fetch(`/api/admin/franchisees/${encodeURIComponent(slug)}/links`, {
-        method: 'PUT',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(linkBody),
-      });
-      if (!put.ok) {
-        const d = await put.json().catch(() => ({}));
-        throw new Error(d.message || d.error || `link failed (${put.status})`);
-      }
-      const payload = { partner_name: productName };
-      if (vialDollars !== '' && vialDollars != null) {
-        payload.franchisee_vial_cents = Math.round(Number(vialDollars) * 100);
-      }
-      if (packDollars !== '' && packDollars != null) {
-        payload.franchisee_pack_cents = Math.round(Number(packDollars) * 100);
-      }
-      if (payload.franchisee_vial_cents == null && payload.franchisee_pack_cents == null) {
-        return;
-      }
-      const patch = await fetch(`/api/admin/franchisees/${encodeURIComponent(slug)}/prices`, {
-        method: 'PATCH',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!patch.ok) {
-        const d = await patch.json().catch(() => ({}));
-        throw new Error(d.message || d.error || `price failed (${patch.status})`);
-      }
-    }
-
-    document.getElementById('addBtn').addEventListener('click', async () => {
-      const partners = await activeFranchisees();
+    document.getElementById('addBtn').addEventListener('click', () => {
       const dlg = document.getElementById('addProductModal');
-      const fr = document.getElementById('addFranchiseeRows');
-      fr.innerHTML = partners.length
-        ? partners
-            .map(
-              (p) => `
-        <div class="grid grid-cols-[1fr_auto_auto] gap-2 items-center" data-slug="${p.slug}">
-          <span class="text-xs text-zinc-300">${p.name}</span>
-          <input data-fr="vial" type="number" step="0.01" min="0" placeholder="vial $"
-                 class="w-24 bg-black border border-zinc-700 rounded-xl px-2 py-1 text-sm">
-          <input data-fr="pack" type="number" step="0.01" min="0" placeholder="kit $"
-                 class="w-24 bg-black border border-zinc-700 rounded-xl px-2 py-1 text-sm">
-        </div>`
-            )
-            .join('')
-        : '<p class="text-xs text-zinc-500">No active franchisees.</p>';
-
       document.getElementById('apName').value = '';
       document.getElementById('apVial').value = '';
       document.getElementById('apPack').value = '';
@@ -3284,23 +2270,6 @@
       document.getElementById('apError').classList.add('hidden');
       dlg.classList.remove('hidden');
       document.getElementById('apName').focus();
-      syncFranchiseeDefaults();
-    });
-
-    /** Keep franchisee cost inputs prefilled with the fallback the worker would use. */
-    function syncFranchiseeDefaults() {
-      const vial = document.getElementById('apVial').value;
-      const pack = document.getElementById('apPack').value;
-      document.querySelectorAll('#addFranchiseeRows [data-slug]').forEach((row) => {
-        const v = row.querySelector('[data-fr="vial"]');
-        const p = row.querySelector('[data-fr="pack"]');
-        if (!v.dataset.touched) v.value = fallbackFranchiseeDollars(vial);
-        if (!p.dataset.touched) p.value = fallbackFranchiseeDollars(pack);
-      });
-    }
-
-    ['apVial', 'apPack'].forEach((id) => {
-      document.getElementById(id).addEventListener('input', syncFranchiseeDefaults);
     });
 
     // Match the product cards: kit-only disables the vial price.
@@ -3308,10 +2277,6 @@
       const vial = document.getElementById('apVial');
       vial.disabled = e.target.checked;
       if (e.target.checked) vial.value = '';
-      syncFranchiseeDefaults();
-    });
-    document.getElementById('addFranchiseeRows').addEventListener('input', (e) => {
-      if (e.target.matches('[data-fr]')) e.target.dataset.touched = '1';
     });
 
     document.getElementById('apCancel').addEventListener('click', () => {
@@ -3354,27 +2319,8 @@
         return fail(d.error || 'Could not add product');
       }
 
-      const problems = [];
-      for (const row of document.querySelectorAll('#addFranchiseeRows [data-slug]')) {
-        const slug = row.dataset.slug;
-        try {
-          await saveFranchiseePrice(
-            slug,
-            name,
-            row.querySelector('[data-fr="vial"]').value,
-            row.querySelector('[data-fr="pack"]').value
-          );
-        } catch (e) {
-          problems.push(`${slug}: ${e.message}`);
-        }
-      }
-
       document.getElementById('addProductModal').classList.add('hidden');
-      if (problems.length) {
-        showMsg(`Product added, but franchisee pricing failed — ${problems.join('; ')}`, false);
-      } else {
-        showMsg('Product added at position 1 with franchisee pricing set');
-      }
+      showMsg('Product added at position 1');
       await loadProducts();
     });
 

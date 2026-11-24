@@ -6,12 +6,24 @@ import {
   isVialOnlyListing,
   lineKind,
   normalizeOrderItems,
+  MIN_ORDER_VIALS,
+  SHIPPING_CENTS,
 } from '../functions/lib/orderItems.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const storeSrc = fs.readFileSync(path.join(root, 'shared/store.js'), 'utf8');
 assert.match(storeSrc, /const PUBLIC_KITS_ONLY = false/);
 assert.doesNotMatch(storeSrc, /MIN_SINGLE_VIALS/);
+assert.match(storeSrc, /const MIN_ORDER_VIALS = 2;/);
+assert.match(storeSrc, /const SHIPPING_FLAT = 15;/);
+assert.equal(MIN_ORDER_VIALS, 2);
+assert.equal(SHIPPING_CENTS, 1500);
+const placeOrderSrc = fs.readFileSync(path.join(root, 'functions/api/place-order.js'), 'utf8');
+assert.match(placeOrderSrc, /const shipping = SHIPPING_CENTS;/, 'server sets shipping, not the client');
+const adminSrc = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
+assert.doesNotMatch(adminSrc, /api\/admin\/franchisees/, 'admin has no franchisee calls');
+assert.doesNotMatch(adminSrc, /tabFranchisees/);
+assert.equal(fs.existsSync(path.join(root, 'functions/api/admin/franchisees.js')), false);
 assert.doesNotMatch(storeSrc, /singleVials < MIN_SINGLE/);
 assert.doesNotMatch(storeSrc, /Single-vial orders need/);
 assert.doesNotMatch(storeSrc, /vial minimum met/);
@@ -94,12 +106,29 @@ const oneVial = normalizeOrderItems(
   [{ name: 'TIRZ 10MG (Vial)', sku: 'TIRZ-10MG-VIAL', qty: 1 }],
   catalog
 );
-assert.equal(oneVial.ok, true, '1 vial must be legal');
-assert.equal(oneVial.items.length, 1);
-assert.equal(oneVial.items[0].unit_price_cents, 4100);
-assert.equal(oneVial.items[0].sku, 'TIRZ-10MG-VIAL');
-assert.equal(oneVial.peptideKits, 0);
-assert.equal(oneVial.bacKits, 0);
+assert.equal(oneVial.ok, false, '1 vial alone is under the minimum');
+assert.equal(oneVial.error, 'order_minimum');
+
+const twoVials = normalizeOrderItems(
+  [{ name: 'TIRZ 10MG (Vial)', sku: 'TIRZ-10MG-VIAL', qty: 2 }],
+  catalog
+);
+assert.equal(twoVials.ok, true, '2 vials meet the minimum');
+assert.equal(twoVials.items.length, 1);
+assert.equal(twoVials.items[0].unit_price_cents, 4100);
+assert.equal(twoVials.items[0].sku, 'TIRZ-10MG-VIAL');
+assert.equal(twoVials.vialCount, 2);
+assert.equal(twoVials.peptideKits, 0);
+assert.equal(twoVials.bacKits, 0);
+
+const mixedVials = normalizeOrderItems(
+  [
+    { name: 'TIRZ 10MG (Vial)', qty: 1 },
+    { name: 'SEMAX 10MG (Vial)', qty: 1 },
+  ],
+  catalog
+);
+assert.equal(mixedVials.ok, true, '1 + 1 vials of different products meet the minimum');
 
 const kitOnlyAsVial = normalizeOrderItems(
   [{ name: 'HGH 10IU (Vial)', sku: 'HGH-10IU-VIAL', qty: 1 }],
@@ -138,10 +167,10 @@ assert.equal(kitPlusBac.items[1].name, 'BAC WATER 2.5ML (10-Pack / Kit)');
 assert.equal(kitPlusBac.items[1].unit_price_cents, 1200);
 
 const reta66 = normalizeOrderItems(
-  [{ name: 'RETA 66MG (Vial)', sku: 'RETA-66MG-VIAL', qty: 1 }],
+  [{ name: 'RETA 66MG (Vial)', sku: 'RETA-66MG-VIAL', qty: 2 }],
   catalog
 );
-assert.equal(reta66.ok, true, 'RETA 66MG 1 vial must be legal');
+assert.equal(reta66.ok, true, 'RETA 66MG vials must be legal');
 assert.equal(reta66.items[0].unit_price_cents, 7000);
 assert.equal(reta66.items[0].name, 'RETA 66MG (Vial)');
 
@@ -158,4 +187,4 @@ const packZeroAsKit = normalizeOrderItems(
 );
 assert.equal(packZeroAsKit.ok, false);
 
-console.log('ok: 1 vial checks out; RETA 66 is vial-only; HGH stays kit-only; BAC is optional, not auto-added; stacks and coaching are gone');
+console.log('ok: 2-vial or 1-kit minimum; $15 server shipping; no franchisee admin; RETA 66 is vial-only; HGH stays kit-only; BAC is optional, not auto-added; stacks and coaching are gone');

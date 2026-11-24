@@ -7,10 +7,10 @@
  *   ORDERS_WEBHOOK_URL    — optional, default https://spbc-orders.spbc.workers.dev/webhooks/order
  *   ORDERS_PUBLIC_URL     — optional, default https://spbc-orders.spbc.workers.dev
  *
- * No vial minimum. True kit_only products (HGH) cannot be ordered as vials.
+ * Minimum 2 vials or 1 kit per order; flat $15 shipping (orderItems.js). True kit_only products (HGH) cannot be ordered as vials.
  * Vial-only rows (RETA 66MG) are priced from vial_price.
  */
-import { normalizeOrderItems } from '../lib/orderItems.js';
+import { normalizeOrderItems, SHIPPING_CENTS } from '../lib/orderItems.js';
 
 async function loadActiveProducts(env) {
   if (!env.DB) return null;
@@ -112,7 +112,7 @@ export async function onRequestPost({ request, env }) {
     );
   }
   // Re-price from D1. Client qty/name/sku choose the line; client unit_price_cents is ignored.
-  // One vial is legal. kit_only products cannot be ordered as vials.
+  // Minimum 2 vials or 1 kit (normalizeOrderItems). kit_only products cannot be ordered as vials.
   const priced = normalizeOrderItems(items, catalog);
   if (!priced.ok) {
     return json(
@@ -130,7 +130,8 @@ export async function onRequestPost({ request, env }) {
     (s, it) => s + it.qty * it.unit_price_cents,
     0
   );
-  const shipping = Math.max(0, parseInt(body.shipping_cents, 10) || 0);
+  // Flat shipping set here. Client shipping_cents is ignored.
+  const shipping = SHIPPING_CENTS;
   // Server total wins. Client total_cents is not trusted.
   const total = subtotal + shipping;
 

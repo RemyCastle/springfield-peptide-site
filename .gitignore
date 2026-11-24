@@ -25,3 +25,4 @@ node_modules/
 
 # Moved-aside build output and other non-deleted leftovers
 _trash/
+.wrangler/

@@ -2,13 +2,18 @@ const CART_KEY = "spbc_cart_draft";
         const CONTACT_KEY = "spbc_contact_draft";
         const VIAL_OPTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // single vials: any qty 1–10
         const PACK_OPTS = [0, 1, 2, 3, 5];
-        // No volume discounts on SPBC — no vial minimum.
+        // No volume discounts on SPBC.
+        // Order minimum: MIN_ORDER_VIALS single vials, or at least one kit (any mix).
+        // Must match functions/lib/orderItems.js.
+        const MIN_ORDER_VIALS = 2;
+        // Flat shipping per order (show-me-source dropship). Server sets the real charge.
+        const SHIPPING_FLAT = 15;
 
         /**
          * Public storefront sells single vials (when vial_price is set) and 10-packs / kits.
          * True kit_only products (e.g. HGH, no vial_price) stay kit-only — no vial stepper.
          * Vial-only rows (RETA 66MG: kit_only + vial_price === pack_price, or pack_price 0)
-         * show a Vial stepper, not a 10-pack. One vial is a legal checkout.
+         * show a Vial stepper, not a 10-pack. Minimum order: 2 vials or 1 kit.
          */
         const PUBLIC_KITS_ONLY = false;
 
@@ -67,6 +72,16 @@ const CART_KEY = "spbc_cart_draft";
             'BAC WATER 2.5ML': 'Supplies',
             'BAC WATER 3ML': 'Supplies',
             'BAC WATER 10 ML': 'Supplies',
+            // show-me-source catalog (2026-11-23)
+            'TIRZ 100MG': 'GLP-1 / metabolic',
+            'WOLVERINE 20MG': 'Repair & recovery',
+            'GHK-CU 75MG': 'Skin & cosmetic',
+            'SS-31 30MG': 'Longevity & mitochondrial',
+            'EPITHALON': 'Longevity & mitochondrial',
+            'SELANK 10MG': 'Other research',
+            'THYMOSIN A1 10MG': 'Other research',
+            'THYMALIN 10MG': 'Other research',
+            'VIP 10MG': 'Other research',
         };
 
         function categoryForProduct(name) {
@@ -748,7 +763,11 @@ const CART_KEY = "spbc_cart_draft";
             const kitRate = 0;
             const kitDiscount = 0;
             const kitDiscountPct = 0;
-            const total = vialSubtotal + packSubtotal + nonDiscountSubtotal;
+            const subtotal = vialSubtotal + packSubtotal + nonDiscountSubtotal;
+            const hasAny = singleVials > 0 || kitCount > 0;
+            const shipping = hasAny ? SHIPPING_FLAT : 0;
+            const total = subtotal + shipping;
+            const minimumMet = kitCount >= 1 || singleVials >= MIN_ORDER_VIALS;
 
             const items = rawLines.map((r) => {
                 return {
@@ -769,6 +788,9 @@ const CART_KEY = "spbc_cart_draft";
                 kitDiscount,
                 kitRate,
                 kitDiscountPct,
+                subtotal,
+                shipping,
+                minimumMet,
                 total,
                 lines,
                 items,
@@ -776,7 +798,7 @@ const CART_KEY = "spbc_cart_draft";
         }
 
         function discountProgressMeta(t) {
-            // No volume discounts and no vial minimum. Progress is just "has items".
+            // No volume discounts. Progress tracks the 2-vial / 1-kit minimum.
             if (PUBLIC_KITS_ONLY) {
                 if (t.kitCount > 0) {
                     return { pct: 100, hint: 'Ready to order' };
@@ -784,7 +806,14 @@ const CART_KEY = "spbc_cart_draft";
                 return { pct: 0, hint: 'Add a kit to start your order' };
             }
             if (t.singleVials === 0 && t.kitCount === 0) {
-                return { pct: 0, hint: 'Add a vial or kit to start your order' };
+                return { pct: 0, hint: `Add ${MIN_ORDER_VIALS} vials or 1 kit to start your order` };
+            }
+            if (!t.minimumMet) {
+                const need = MIN_ORDER_VIALS - t.singleVials;
+                return {
+                    pct: Math.round((t.singleVials / MIN_ORDER_VIALS) * 100),
+                    hint: `Add ${need} more vial${need === 1 ? '' : 's'} or any kit (${MIN_ORDER_VIALS}-vial minimum)`,
+                };
             }
             return { pct: 100, hint: 'Ready to order' };
         }
@@ -892,6 +921,7 @@ const CART_KEY = "spbc_cart_draft";
                 if (t.packSubtotal > 0) {
                     orderText += `\n10-pack / kit subtotal: $${money(t.packSubtotal)}`;
                 }
+                orderText += `\nShipping: $${money(t.shipping)}`;
                 orderText += `\n\nESTIMATED TOTAL: $${money(t.total)}`;
                 document.getElementById('message').value = orderText.trim();
             }
@@ -907,8 +937,11 @@ const CART_KEY = "spbc_cart_draft";
                     : 'Kits only — add a kit to start your order';
                 tone = t.kitCount > 0 ? 'text-zinc-400' : 'text-zinc-500';
             } else if (t.singleVials === 0 && t.packSubtotal === 0) {
-                status = 'Add a vial or kit to start your order';
+                status = `Add ${MIN_ORDER_VIALS} vials or 1 kit to start your order`;
                 tone = 'text-zinc-500';
+            } else if (!t.minimumMet) {
+                status = `${t.singleVials} vial · minimum is ${MIN_ORDER_VIALS} vials or 1 kit`;
+                tone = 'text-amber-300';
             } else if (t.singleVials > 0) {
                 status = `${t.singleVials} single vial${t.singleVials === 1 ? '' : 's'}`;
                 tone = 'text-zinc-400';
@@ -939,6 +972,9 @@ const CART_KEY = "spbc_cart_draft";
         function canSubmitOrder() {
             const t = tallyOrder();
             if (!t.lines.length) return { ok: false, reason: 'Select at least one item.' };
+            if (!t.minimumMet) {
+                return { ok: false, reason: `Minimum order is ${MIN_ORDER_VIALS} vials or 1 kit.` };
+            }
             const ship = validateShippingFields();
             if (!ship.ok) return { ok: false, reason: ship.reason, focus: ship.focus };
             return { ok: true, reason: '', shipping: ship.shipping };
@@ -1110,8 +1146,8 @@ const CART_KEY = "spbc_cart_draft";
                     body: JSON.stringify({
                         customer: { name, email },
                         items,
-                        shipping_cents: 0,
-                        total_cents: subtotalFinal,
+                        shipping_cents: dollarsToCents(SHIPPING_FLAT),
+                        total_cents: subtotalFinal + dollarsToCents(SHIPPING_FLAT),
                         currency: 'USD',
                         notes: notes || undefined,
                         shipping,
@@ -1132,7 +1168,7 @@ const CART_KEY = "spbc_cart_draft";
                 box.classList.remove('hidden');
                 document.getElementById('successOrderNumber').textContent = data.order_number;
                 document.getElementById('successTotal').textContent =
-                    '$' + (Number(data.total_cents || subtotalFinal) / 100).toFixed(2);
+                    '$' + (Number(data.total_cents || subtotalFinal + dollarsToCents(SHIPPING_FLAT)) / 100).toFixed(2);
                 document.getElementById('successPayLink').href =
                     data.pay_url || `https://spbc-orders.spbc.workers.dev/pay/${encodeURIComponent(data.order_number)}`;
                 const shipLink = document.getElementById('successShipLink');

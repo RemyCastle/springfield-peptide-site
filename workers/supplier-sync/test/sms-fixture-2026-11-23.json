@@ -1,0 +1,401 @@
+{
+ "tier": "preferred",
+ "feed": {
+  "1": {
+   "id": 1,
+   "name": "R 30 MG",
+   "single_price": 24,
+   "bulk_price": 14.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "2": {
+   "id": 2,
+   "name": "GHK-CU 50 MG",
+   "single_price": 13,
+   "bulk_price": 5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "3": {
+   "id": 3,
+   "name": "KPV 10 MG",
+   "single_price": 12,
+   "bulk_price": 5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "4": {
+   "id": 4,
+   "name": "5-AMINO-1MQ 50 MG",
+   "single_price": 15,
+   "bulk_price": 7.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "5": {
+   "id": 5,
+   "name": "NAD 1000 MG",
+   "single_price": 13,
+   "bulk_price": 9.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "6": {
+   "id": 6,
+   "name": "T 30 MG",
+   "single_price": 15,
+   "bulk_price": 9,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "7": {
+   "id": 7,
+   "name": "BPC-157 10 MG",
+   "single_price": 11,
+   "bulk_price": 7.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "8": {
+   "id": 8,
+   "name": "MOTS-C 40 MG",
+   "single_price": 24,
+   "bulk_price": 17.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "9": {
+   "id": 9,
+   "name": "KLOW 80 MG",
+   "single_price": 23,
+   "bulk_price": 17.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "10": {
+   "id": 10,
+   "name": "CJC/IPA 10 MG No DAC",
+   "single_price": 14,
+   "bulk_price": 11.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "11": {
+   "id": 11,
+   "name": "R 60 MG",
+   "single_price": 30,
+   "bulk_price": 22.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "13": {
+   "id": 13,
+   "name": "T60",
+   "single_price": 25,
+   "bulk_price": 15.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "14": {
+   "id": 14,
+   "name": "Semax 10 mg",
+   "single_price": 14,
+   "bulk_price": 7.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "15": {
+   "id": 15,
+   "name": "GHK-CU 75MG",
+   "single_price": 11,
+   "bulk_price": 6.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "16": {
+   "id": 16,
+   "name": "SS31 50 MG",
+   "single_price": 30,
+   "bulk_price": 22.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "17": {
+   "id": 17,
+   "name": "PT-141 10 MG",
+   "single_price": 14,
+   "bulk_price": 7.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "18": {
+   "id": 18,
+   "name": "PE-22-28 10 MG",
+   "single_price": 14,
+   "bulk_price": 7.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "19": {
+   "id": 19,
+   "name": "Sterile Vial Spike",
+   "single_price": 5,
+   "bulk_price": 5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "20": {
+   "id": 20,
+   "name": "Sterile 10ml vial",
+   "single_price": 3,
+   "bulk_price": 3,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "21": {
+   "id": 21,
+   "name": "Ipamorelin 10 MG",
+   "single_price": 12.5,
+   "bulk_price": 7.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "22": {
+   "id": 22,
+   "name": "Tesa 20 mg",
+   "single_price": 25,
+   "bulk_price": 21.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "23": {
+   "id": 23,
+   "name": "Selank 10 MG",
+   "single_price": 14,
+   "bulk_price": 7.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "24": {
+   "id": 24,
+   "name": "WOLVERINE 20 MG",
+   "single_price": 25,
+   "bulk_price": 15,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "25": {
+   "id": 25,
+   "name": "Thymosin Alpha-1 10 MG",
+   "single_price": 20,
+   "bulk_price": 13.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "26": {
+   "id": 26,
+   "name": "Thymalin 10 MG",
+   "single_price": 14,
+   "bulk_price": 7.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "27": {
+   "id": 27,
+   "name": "VIP 10 MG",
+   "single_price": 18,
+   "bulk_price": 13.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "28": {
+   "id": 28,
+   "name": "CAGRI 10 MG",
+   "single_price": 17,
+   "bulk_price": 15,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "30": {
+   "id": 30,
+   "name": "30mL Bac Water",
+   "single_price": 10,
+   "bulk_price": 10,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "32": {
+   "id": 32,
+   "name": "5mL 0.9% Saline Solution",
+   "single_price": 1.25,
+   "bulk_price": 1,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "33": {
+   "id": 33,
+   "name": "SS31 30MG",
+   "single_price": 30,
+   "bulk_price": 13.5,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "34": {
+   "id": 34,
+   "name": "R 10MG",
+   "single_price": 15,
+   "bulk_price": 8,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "35": {
+   "id": 35,
+   "name": "CARGI 5MG",
+   "single_price": 16,
+   "bulk_price": 11,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "36": {
+   "id": 36,
+   "name": "Mots-C 10 mg",
+   "single_price": 7,
+   "bulk_price": 7,
+   "pricing_mode": "block10",
+   "kits_only": true,
+   "in_stock": true
+  },
+  "38": {
+   "id": 38,
+   "name": "T 100 MG",
+   "single_price": 35,
+   "bulk_price": 22,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "39": {
+   "id": 39,
+   "name": "10mL ampoule",
+   "single_price": 3,
+   "bulk_price": 2,
+   "pricing_mode": "block10",
+   "kits_only": false
+  },
+  "40": {
+   "id": 40,
+   "name": "EPITHALON",
+   "single_price": 20,
+   "bulk_price": 15,
+   "pricing_mode": "block10",
+   "kits_only": false
+  }
+ },
+ "stock": {
+  "1": {
+   "in_stock": true
+  },
+  "2": {
+   "in_stock": true
+  },
+  "3": {
+   "in_stock": true
+  },
+  "4": {
+   "in_stock": true
+  },
+  "5": {
+   "in_stock": true
+  },
+  "6": {
+   "in_stock": true
+  },
+  "7": {
+   "in_stock": true
+  },
+  "8": {
+   "in_stock": true
+  },
+  "9": {
+   "in_stock": true
+  },
+  "10": {
+   "in_stock": false
+  },
+  "11": {
+   "in_stock": true
+  },
+  "13": {
+   "in_stock": true
+  },
+  "14": {
+   "in_stock": true
+  },
+  "15": {
+   "in_stock": true
+  },
+  "16": {
+   "in_stock": true
+  },
+  "17": {
+   "in_stock": true
+  },
+  "18": {
+   "in_stock": true
+  },
+  "19": {
+   "in_stock": true
+  },
+  "20": {
+   "in_stock": true
+  },
+  "21": {
+   "in_stock": true
+  },
+  "22": {
+   "in_stock": true
+  },
+  "23": {
+   "in_stock": true
+  },
+  "24": {
+   "in_stock": true
+  },
+  "25": {
+   "in_stock": true
+  },
+  "26": {
+   "in_stock": true
+  },
+  "27": {
+   "in_stock": true
+  },
+  "28": {
+   "in_stock": true
+  },
+  "30": {
+   "in_stock": true
+  },
+  "32": {
+   "in_stock": true
+  },
+  "33": {
+   "in_stock": true
+  },
+  "34": {
+   "in_stock": true
+  },
+  "35": {
+   "in_stock": true
+  },
+  "38": {
+   "in_stock": true
+  },
+  "39": {
+   "in_stock": true
+  },
+  "40": {
+   "in_stock": true
+  }
+ }
+}

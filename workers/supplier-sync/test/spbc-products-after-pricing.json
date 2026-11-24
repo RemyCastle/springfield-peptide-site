@@ -1,0 +1,410 @@
+[
+ {
+  "id": 1,
+  "name": "RETA 30MG",
+  "vial_price": 49,
+  "pack_price": 345,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 2,
+  "name": "RETA 60 MG",
+  "vial_price": 55,
+  "pack_price": 425,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 3,
+  "name": "GHK-CU 50MG",
+  "vial_price": 38,
+  "pack_price": 250,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 4,
+  "name": "KPV 10 MG",
+  "vial_price": 37,
+  "pack_price": 250,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 6,
+  "name": "NAD+ 1000MG",
+  "vial_price": 38,
+  "pack_price": 295,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 7,
+  "name": "TIRZ 30MG",
+  "vial_price": 40,
+  "pack_price": 290,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 8,
+  "name": "MOTS-C 40MG",
+  "vial_price": 49,
+  "pack_price": 375,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 9,
+  "name": "KLOW 80MG",
+  "vial_price": 48,
+  "pack_price": 375,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 10,
+  "name": "CJC/IPA NO DAC 10MG",
+  "vial_price": 39,
+  "pack_price": 315,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 11,
+  "name": "BAC WATER 3ML",
+  "vial_price": 5,
+  "pack_price": 50,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 12,
+  "name": "BPC-157 10MG",
+  "vial_price": 36,
+  "pack_price": 275,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 13,
+  "name": "TB-500 10MG",
+  "vial_price": 45.5,
+  "pack_price": 355,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 14,
+  "name": "BAC WATER 10 ML",
+  "vial_price": null,
+  "pack_price": 75,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 15,
+  "name": "MOTS-C 10MG",
+  "vial_price": null,
+  "pack_price": 270,
+  "kit_only": 1,
+  "active": 1
+ },
+ {
+  "id": 16,
+  "name": "MT1",
+  "vial_price": null,
+  "pack_price": 355,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 17,
+  "name": "MT2",
+  "vial_price": 40,
+  "pack_price": 300,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 18,
+  "name": "RETA 10MG",
+  "vial_price": 40,
+  "pack_price": 280,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 19,
+  "name": "IPA 10MG",
+  "vial_price": 37.5,
+  "pack_price": 275,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 20,
+  "name": "GLUTATHIONE 1200MG",
+  "vial_price": null,
+  "pack_price": 350,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 21,
+  "name": "SS-31 10MG",
+  "vial_price": 43,
+  "pack_price": 330,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 22,
+  "name": "5-AMINO-1MQ 50MG",
+  "vial_price": 40,
+  "pack_price": 275,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 23,
+  "name": "SEMA 10MG",
+  "vial_price": null,
+  "pack_price": 375,
+  "kit_only": 1,
+  "active": 0
+ },
+ {
+  "id": 24,
+  "name": "DSIP 10MG",
+  "vial_price": 44,
+  "pack_price": 340,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 25,
+  "name": "NAD+ 500MG",
+  "vial_price": null,
+  "pack_price": 375,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 26,
+  "name": "PT-141 10 MG",
+  "vial_price": 39,
+  "pack_price": 275,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 27,
+  "name": "CAGRI  5MG",
+  "vial_price": 41,
+  "pack_price": 310,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 28,
+  "name": "SEMA 5MG",
+  "vial_price": null,
+  "pack_price": 345,
+  "kit_only": 1,
+  "active": 0
+ },
+ {
+  "id": 32,
+  "name": "TIRZ 10MG",
+  "vial_price": null,
+  "pack_price": 350,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 37,
+  "name": "CAGRI 10MG",
+  "vial_price": 42,
+  "pack_price": 350,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 39,
+  "name": "Tesamorelin",
+  "vial_price": null,
+  "pack_price": 440,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 40,
+  "name": "TIRZ 60MG",
+  "vial_price": 50,
+  "pack_price": 355,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 41,
+  "name": "GHK-cu 100MG",
+  "vial_price": 46,
+  "pack_price": 315,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 42,
+  "name": "HGH 1000IU",
+  "vial_price": null,
+  "pack_price": 1165,
+  "kit_only": 1,
+  "active": 0
+ },
+ {
+  "id": 43,
+  "name": "HGH 100iu",
+  "vial_price": null,
+  "pack_price": 300,
+  "kit_only": 1,
+  "active": 0
+ },
+ {
+  "id": 44,
+  "name": "HGH 360IU",
+  "vial_price": null,
+  "pack_price": 565,
+  "kit_only": 1,
+  "active": 0
+ },
+ {
+  "id": 45,
+  "name": "BAC WATER 2.5ML",
+  "vial_price": null,
+  "pack_price": 50,
+  "kit_only": 1,
+  "active": 0
+ },
+ {
+  "id": 46,
+  "name": "RETA 66MG",
+  "vial_price": 62.5,
+  "pack_price": 0,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 47,
+  "name": "SEMAX 10MG",
+  "vial_price": 39,
+  "pack_price": 275,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 48,
+  "name": "SS-31 50MG",
+  "vial_price": 55,
+  "pack_price": 425,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 49,
+  "name": "PE-22-28 10MG",
+  "vial_price": 39,
+  "pack_price": 275,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 50,
+  "name": "Tesamorelin 10MG",
+  "vial_price": 56,
+  "pack_price": 425,
+  "kit_only": 0,
+  "active": 0
+ },
+ {
+  "id": 51,
+  "name": "Tesamorelin 20MG",
+  "vial_price": 50,
+  "pack_price": 415,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 52,
+  "name": "SELANK 10MG",
+  "vial_price": 39,
+  "pack_price": 275,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 53,
+  "name": "WOLVERINE 20MG",
+  "vial_price": 50,
+  "pack_price": 350,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 54,
+  "name": "THYMOSIN A1 10MG",
+  "vial_price": 45,
+  "pack_price": 335,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 55,
+  "name": "THYMALIN 10MG",
+  "vial_price": 39,
+  "pack_price": 275,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 56,
+  "name": "VIP 10MG",
+  "vial_price": 43,
+  "pack_price": 335,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 57,
+  "name": "TIRZ 100MG",
+  "vial_price": 60,
+  "pack_price": 420,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 58,
+  "name": "GHK-CU 75MG",
+  "vial_price": 36,
+  "pack_price": 265,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 59,
+  "name": "SS-31 30MG",
+  "vial_price": 55,
+  "pack_price": 335,
+  "kit_only": 0,
+  "active": 1
+ },
+ {
+  "id": 60,
+  "name": "EPITHALON",
+  "vial_price": 45,
+  "pack_price": 350,
+  "kit_only": 0,
+  "active": 1
+ }
+]
