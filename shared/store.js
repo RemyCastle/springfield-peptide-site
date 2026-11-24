@@ -678,7 +678,7 @@ const CART_KEY = "spbc_cart_draft";
             if (showPack && packOpts.length > 1) {
                 body += `
                     <div class="price-row">
-                        <span class="price-label">${trueKitOnly ? 'Kit' : '10-Pack / Kit'}</span>
+                        <span class="price-label">${trueKitOnly ? 'Kit' : 'Kit (10)'}</span>
                         <div class="price-controls">
                             <span class="price-amount tabular-nums">$${formatPrice(p.pack_price)}</span>
                             ${buildStepper('pack', packOpts, savedPack, name + ' kit qty')}
@@ -1083,7 +1083,7 @@ const CART_KEY = "spbc_cart_draft";
                     });
                 }
                 if (kitQty > 0) {
-                    const label = card.hasAttribute('data-kit') && !card.hasAttribute('data-pack') ? 'Kit' : '10-Pack / Kit';
+                    const label = card.hasAttribute('data-kit') && !card.hasAttribute('data-pack') ? 'Kit' : 'Kit (10)';
                     const line = kitQty * packPrice;
                     if (isBac) {
                         nonDiscountSubtotal += line;

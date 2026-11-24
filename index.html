@@ -47,10 +47,10 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=optional" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=optional" rel="stylesheet">
   <link rel="stylesheet" href="/shared/tailwind.bc01e255.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
-  <link rel="stylesheet" href="/shared/spbc-2026.ef4fd243.css">
+  <link rel="stylesheet" href="/shared/spbc-2026.d81923cc.css">
 
 </head>
 <body class="atmosphere spbc26 text-white min-h-screen" data-page="index">
@@ -70,7 +70,7 @@
           <a href="/#prices" class="nav-link" data-nav="index">Price list</a>
           <a href="/calculator.html" class="nav-link" data-nav="calculator">Calculator</a>
           <a href="/lab-reports.html" class="nav-link" data-nav="lab-reports">Lab reports</a>
-          <a href="/track.html" class="nav-link" data-nav="track">Track order</a>
+          <a href="/track.html" class="nav-link" data-nav="track">Track<span class="nav-long">&nbsp;order</span></a>
           <a href="/contact.html" class="nav-link" data-nav="contact">Contact</a>
         </nav>
         <a href="/#orderForm" class="mast__cart site-header__cart" data-header-cart hidden>
@@ -91,15 +91,18 @@
             <a href="#prices" class="btn-primary">See the price list</a>
             <a href="/calculator.html" class="btn-secondary">Dosage calculator</a>
           </div>
-          
-          <ul class="hero26__facts" aria-label="How SPBC works">
-            <li>Research use only · 21+</li>
-            <li>2 vials or 1 kit minimum</li>
-            <li>Tracking on every order</li>
-            <li>Venmo · Chime · PayPal</li>
-          </ul>
-          
         </div>
+        
+        <aside class="hero26__panel" aria-labelledby="howTitle">
+          <h2 id="howTitle">How ordering works</h2>
+          <ol>
+            <li><span class="hero26__num">1</span><div><strong>Pick your items</strong><p>At least 2 vials or 1 kit, in any mix.</p></div></li>
+            <li><span class="hero26__num">2</span><div><strong>Pay as friends</strong><p>Venmo, Chime or PayPal, sent as a personal payment.</p></div></li>
+            <li><span class="hero26__num">3</span><div><strong>Get tracking</strong><p>Standard 5–8 days or Priority 2–3 days, tracked by email.</p></div></li>
+          </ol>
+          <p class="hero26__note">For laboratory research use only. You must be 21 or older.</p>
+        </aside>
+        
       </div>
     </section>
 
@@ -114,11 +117,6 @@
                     <p>Prices per vial and per 10-vial kit. Shipping is added at checkout.</p>
                 </div>
                 <div id="shopBanners" class="space-y-2 mb-4"></div>
-                <ol class="steps26" aria-label="How ordering works">
-                    <li><strong>1 · Pick</strong><p>Add vials or kits. Minimum is 2 vials or 1 kit, any mix.</p></li>
-                    <li><strong>2 · Pay</strong><p>Place the order, then pay by Venmo, Chime or PayPal. Venmo fills in your order number.</p></li>
-                    <li><strong>3 · Track</strong><p>You get tracking by email when it ships. Look it up any time on Track order.</p></li>
-                </ol>
                 <div class="depth-card px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5 reveal prices-rules-card">
                     <p class="text-[#EAB308] font-semibold">Ordering rules</p>
                     <p class="text-zinc-300"><strong class="text-white">Single vials and kits</strong> — buy 1 vial or a 10-pack / kit. Some listings are kit-only.</p>
@@ -197,7 +195,7 @@
                 </div>
 
                 <div class="mb-8 reveal">
-                    <h3 class="text-[#EAB308] font-bold mb-3 text-center text-sm sm:text-base">
+                    <h3 class="terms26-title">
                         <a href="#terms-section" class="hover:underline">Terms of service and purchase agreement</a>
                     </h3>
                     <div id="terms-section" class="terms-scroll depth-card p-4 sm:p-6 text-xs leading-relaxed text-zinc-300">
@@ -424,9 +422,9 @@
   </div>
 
   
-  <script src="/shared/store.a37335b9.js"></script>
+  <script src="/shared/store.139258a2.js"></script>
   
-  <script src="/shared/age-gate.b762eeba.js" defer></script>
+  <script src="/shared/age-gate.396174aa.js" defer></script>
   <script src="/shared/site-atmosphere.1934ad4a.js" defer></script>
   <script src="/shared/site-header.4268b51d.js" defer></script>
 

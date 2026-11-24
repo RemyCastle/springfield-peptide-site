@@ -8,14 +8,17 @@
             <a href="{{cta_primary_href}}" class="btn-primary">{{cta_primary_text}}</a>
             <a href="{{cta_secondary_href}}" class="btn-secondary">{{cta_secondary_text}}</a>
           </div>
-          {{#if hero_facts}}
-          <ul class="hero26__facts" aria-label="How SPBC works">
-            <li>Research use only · 21+</li>
-            <li>2 vials or 1 kit minimum</li>
-            <li>Tracking on every order</li>
-            <li>Venmo · Chime · PayPal</li>
-          </ul>
-          {{/if}}
         </div>
+        {{#if hero_facts}}
+        <aside class="hero26__panel" aria-labelledby="howTitle">
+          <h2 id="howTitle">How ordering works</h2>
+          <ol>
+            <li><span class="hero26__num">1</span><div><strong>Pick your items</strong><p>At least 2 vials or 1 kit, in any mix.</p></div></li>
+            <li><span class="hero26__num">2</span><div><strong>Pay as friends</strong><p>Venmo, Chime or PayPal, sent as a personal payment.</p></div></li>
+            <li><span class="hero26__num">3</span><div><strong>Get tracking</strong><p>Standard 5–8 days or Priority 2–3 days, tracked by email.</p></div></li>
+          </ol>
+          <p class="hero26__note">For laboratory research use only. You must be 21 or older.</p>
+        </aside>
+        {{/if}}
       </div>
     </section>

@@ -98,7 +98,7 @@
         '<div class="age-gate__brand ducks-font" aria-hidden="true">' +
           '<span class="age-gate__brand-gold">SP</span><span class="age-gate__brand-white">BC</span>' +
         '</div>' +
-        '<h1 id="ageGateTitle" class="age-gate__title">21+ · RESEARCH USE ONLY</h1>' +
+        '<h1 id="ageGateTitle" class="age-gate__title">21+ · Research use only</h1>' +
         '<p id="ageGateBody" class="age-gate__body">' +
           'You must be 21 years of age or older to enter. All products sold here are research chemicals ' +
           'intended solely for laboratory research use. They are NOT for human or veterinary consumption ' +
