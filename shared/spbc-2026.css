@@ -20,10 +20,10 @@
   --color-ink-3: #5F6E65;
   --color-rule: #DEDCD2;
   --color-rule-strong: #C4C4B8;
-  --color-brand: #154530;
-  --color-accent: #F3D94A;
-  --color-accent-strong: #F7E36F;
-  --color-accent-ink: #13301F;
+  --color-brand: #135232;
+  --color-accent: #FDDC0E;
+  --color-accent-strong: #FFE647;
+  --color-accent-ink: #0B2716;
   --color-accent-text: var(--color-brand);
   --color-accent-wash: rgba(21, 69, 48, 0.12);
   --color-ok: #1E7A4A;
@@ -32,10 +32,10 @@
   --color-danger: #B42318;
   --color-danger-bg: #FDECEA;
   --color-focus: #1E5C40;
-  --color-scrim: rgba(18, 57, 42, 0.96);
+  --color-scrim: #113623;
   --shadow-card: 0 1px 2px rgba(20, 37, 28, 0.06), 0 2px 8px rgba(20, 37, 28, 0.05);
 
-  --font-display: 'Archivo', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Saira', 'Archivo', 'Segoe UI', system-ui, sans-serif;
   --font-body: 'Archivo', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'Archivo', 'Segoe UI', system-ui, sans-serif;
 
@@ -91,10 +91,10 @@
 
 /* ── Tokens: dark zones (same names, so components just work) ── */
 .mast, .page-hero.hero26, footer.foot26, .sticky-order-bar, body.spbc26 #ageGate {
-  --color-paper: #12392A;
-  --color-paper-2: #184631;
-  --color-paper-3: #1E5239;
-  --color-ink: #F6F7F2;
+  --color-paper: #113623;
+  --color-paper-2: #164A30;
+  --color-paper-3: #1C5539;
+  --color-ink: #FBFAF2;
   --color-ink-2: #D3DDD6;
   --color-ink-3: #A9BAB0;
   --color-rule: rgba(246, 247, 242, 0.14);
@@ -110,7 +110,7 @@
 .mast { view-transition-name: spbc-mast; }
 
 /* ── Base ────────────────────────────────────────────────── */
-html { scrollbar-gutter: stable; background: #12392A; }
+html { scrollbar-gutter: stable; background: #113623; }
 html, body { overflow-x: clip; }
 body.atmosphere {
   background: var(--color-paper) !important;
@@ -445,3 +445,40 @@ body.spbc26 .progress-fill, body.spbc26 .progress-bar { background: var(--color-
 .sticky-order-bar #stickyClearBtn { color: var(--color-ink-2) !important; border-color: var(--color-rule-strong) !important; border-radius: 999px !important; }
 .sticky-order-bar .progress-track { background: rgba(246, 247, 242, 0.14) !important; }
 .sticky-order-bar .progress-fill, .sticky-order-bar .progress-bar { background: var(--color-accent) !important; }
+
+/* ── Logo round: header lockup, hero logo, footer, type to match ── */
+.mast { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.mast__mark { width: auto !important; height: 2.5rem !important; }
+.mast__name { gap: 3px; }
+.mast__word { display: block; height: 1.15rem; width: auto; }
+body.atmosphere .mast__name span { font-family: 'Saira', var(--font-body); font-weight: 700; font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-accent); }
+@media (max-width: 1080px) { body.atmosphere .mast__name span { display: block; } }
+@media (max-width: 860px) { .mast__mark { height: 2.2rem !important; } .mast__word { height: 1rem; } }
+@media (max-width: 400px) { body.atmosphere .mast__name span { display: none; } }
+
+/* Headings take the logo's squared, heavy letters (upright) */
+.hero26 .page-hero-title, .cat-head h2, body.spbc26 main.spbc-main h2.ducks-font, body.spbc26 #gtkTitle, .price-group-heading, .terms26-title {
+  font-family: var(--font-display) !important; font-weight: 800 !important; letter-spacing: -0.01em !important;
+}
+.price-card-title { font-family: var(--font-display) !important; font-weight: 700 !important; letter-spacing: 0.01em !important; }
+
+/* Home hero: text left, logo right, how-it-works strip across the bottom */
+@media (min-width: 960px) { body[data-page="index"] .hero26 .page-hero-inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.hero26__logo { display: block; justify-self: center; width: 100%; max-width: 34rem; }
+.hero26__logo img { display: block; width: 100%; height: auto; }
+body[data-page="index"] .hero26__panel { grid-column: 1 / -1; padding: var(--space-lg) var(--space-xl); }
+body[data-page="index"] .hero26__panel h2 { margin-bottom: var(--space-md); }
+@media (min-width: 760px) { body[data-page="index"] .hero26__panel ol { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-xl); } }
+@media (max-width: 959px) { .hero26__logo { order: -1; max-width: 26rem; justify-self: start; } }
+
+/* Footer lockup */
+.foot26__brand img { width: auto !important; height: 2.6rem !important; }
+/* 21+ gate shows the logo */
+body.spbc26 .age-gate__brand { margin-bottom: var(--space-lg); }
+@media (max-width: 520px) {
+  .mast__mark { height: 1.9rem !important; }
+  .mast__word { height: 0.85rem; }
+  .mast__inner { gap: var(--space-sm); }
+  .mast__cart { min-height: 36px; padding: 0 var(--space-sm); }
+  .hero26__logo { display: none; } /* the header already carries the logo on phones */
+}

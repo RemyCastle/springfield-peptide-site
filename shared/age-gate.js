@@ -96,7 +96,7 @@
     gate.innerHTML =
       '<div class="age-gate__inner">' +
         '<div class="age-gate__brand ducks-font" aria-hidden="true">' +
-          '<span class="age-gate__brand-gold">SP</span><span class="age-gate__brand-white">BC</span>' +
+          '<img src="/assets/brand/spbc-logo-720.webp" alt="Springfield Peptide Buyers Club" width="360" height="176" style="display:block;width:100%;max-width:22rem;height:auto">' +
         '</div>' +
         '<h1 id="ageGateTitle" class="age-gate__title">21+ · Research use only</h1>' +
         '<p id="ageGateBody" class="age-gate__body">' +
