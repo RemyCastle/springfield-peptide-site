@@ -15,6 +15,7 @@ import { ensureSyncSchema } from './schema.js';
 import { updateProductMeta, sendRestockEmails } from './extras.js';
 import { paymentReminders, dailyDigest, priceDropAlerts } from './jobs.js';
 import { handleEmail } from './mailbox.js';
+import { partnerPriceList } from './partner.js';
 
 export { ensureSyncSchema };
 
@@ -189,6 +190,50 @@ export async function runScheduled(cron, env) {
   return { sync, reminders };
 }
 
+/** Constant-time-ish string compare for bearer tokens. */
+function sameToken(a, b) {
+  const x = String(a || ''), y = String(b || '');
+  if (!x || !y || x.length !== y.length) return false;
+  let d = 0;
+  for (let i = 0; i < x.length; i++) d |= x.charCodeAt(i) ^ y.charCodeAt(i);
+  return d === 0;
+}
+
+/**
+ * GET /partner-prices  (Authorization: Bearer PARTNER_PRICES_TOKEN)
+ * Partner wholesale prices only: product name + partner price. No supplier data.
+ * Cached 30 minutes so admin page loads do not hit the supplier every time.
+ */
+async function partnerPrices(request, env, ctx) {
+  const json = (body, status = 200) =>
+    new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+  const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!sameToken(auth, env.PARTNER_PRICES_TOKEN)) return json({ error: 'unauthorized' }, 401);
+
+  const cache = caches.default;
+  const cacheKey = new Request('https://partner-prices.cache/v1');
+  const hit = await cache.match(cacheKey);
+  if (hit) return json(await hit.json());
+
+  let supplier;
+  try {
+    supplier = await fetchSupplier(env);
+  } catch (err) {
+    return json({ error: 'prices_unavailable' }, 503);
+  }
+  await ensureSyncSchema(env.DB);
+  const map = (await env.DB.prepare('SELECT supplier_id, spbc_name, skip, low_inventory FROM supplier_map').all()).results;
+  const products = partnerPriceList(
+    { feed: supplier.feed, stock: supplier.stock, map },
+    { vialMarkup: Number(env.PARTNER_VIAL_MARKUP ?? 15), kitMarkup: Number(env.PARTNER_KIT_MARKUP ?? 100) }
+  );
+  const body = { ok: true, updated_at: new Date().toISOString(), products };
+  ctx.waitUntil(
+    cache.put(cacheKey, new Response(JSON.stringify(body), { headers: { 'Cache-Control': 'max-age=1800' } }))
+  );
+  return json(body);
+}
+
 const DIGEST_CRON = '0 13 * * *'; // not exported: a Worker's main module may only export handlers
 
 export default {
@@ -199,7 +244,9 @@ export default {
   async email(message, env) {
     await handleEmail(message, env);
   },
-  async fetch() {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    if (url.pathname === '/partner-prices') return partnerPrices(request, env, ctx);
     return new Response('spbc-supplier-sync: runs on a schedule. See the SPBC admin, Supplier sync tab.', {
       headers: { 'Content-Type': 'text/plain' },
     });
