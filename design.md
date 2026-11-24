@@ -1,3 +1,24 @@
+# SPBC Design System — 2026 storefront (redesign branch)
+
+Supersedes the token table and typography sections below (kept for history). The
+non-negotiables list below still holds in full.
+
+- **Layer:** `shared/spbc-2026.css`, loaded last on every public page. It restyles the existing
+  markup and re-points the legacy tokens (`--bg`, `--accent-gold`, ...) at the new palette.
+  `site-header.css` is no longer loaded on public pages (header is `.mast` in `src/partials/header.html`).
+- **Structure:** Catalogue. Short photographic hero on the home page only, then the price list
+  is the page. Other pages get the compact text hero.
+- **Palette (OKLCH):** paper `oklch(17% 0.022 158)`, surfaces 20.5% / 24%, ink 95%, muted 80% / 66%,
+  rule 32%, accent brass `oklch(78% 0.115 85)` with ink `oklch(19% 0.03 155)` on it, ok green 74%/152, danger 66%/28.
+  Brass marks action and emphasis only (CTA, active nav, category labels, focus).
+- **Type:** Fraunces 500/600 for display (always upright), IBM Plex Sans for body, IBM Plex Mono for
+  labels, prices and spec values. `.ducks-font` now maps to Fraunces.
+- **Logo:** hexagon monogram, `assets/brand/spbc-mark.svg`; favicon `favicon.svg`.
+- **Corners and depth:** 6 / 10 / 14 px radii, hairline rules, no glass blur, no glow, no card tilt.
+- **Motion:** colour and border transitions only (160 ms); reduced motion collapses everything.
+
+---
+
 # SPBC Design System — locked
 
 Single source of truth for every public page. **If a page needs a style, it goes here — never in a page-local `<style>` block.**

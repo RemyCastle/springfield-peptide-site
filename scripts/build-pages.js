@@ -57,6 +57,7 @@ function assetTokens() {
     tailwind_css: resolveHashed('tailwind', 'css'),
     site_header_css: resolveHashed('site-header', 'css'),
     site_atmosphere_css: resolveHashed('site-atmosphere', 'css'),
+    spbc26_css: resolveHashed('spbc-2026', 'css'),
     site_header_js: resolveHashed('site-header', 'js'),
     site_atmosphere_js: resolveHashed('site-atmosphere', 'js'),
     age_gate_js: resolveHashed('age-gate', 'js'),

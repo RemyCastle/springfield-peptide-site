@@ -20,6 +20,7 @@ const pairs = [
   ['track.js', 'track'],
   ['admin-tools.js', 'admin-tools'],
   ['customer.js', 'customer'],
+  ['spbc-2026.css', 'spbc-2026'],
 ];
 
 const mapping = {};
@@ -72,6 +73,7 @@ const rewrites = [
   [/\/shared\/track\.[a-f0-9]{8}\.js/g, `/shared/${mapping['track.js']}`],
   [/\/shared\/admin-tools\.[a-f0-9]{8}\.js/g, `/shared/${mapping['admin-tools.js']}`],
   [/\/shared\/customer\.[a-f0-9]{8}\.js/g, `/shared/${mapping['customer.js']}`],
+  [/\/shared\/spbc-2026\.[a-f0-9]{8}\.css/g, `/shared/${mapping['spbc-2026.css']}`],
   [/\/shared\/titration\.[a-f0-9]{8}\.js/g, `/shared/${mapping['titration.js']}`],
 ];
 
