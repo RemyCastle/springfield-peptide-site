@@ -10,7 +10,29 @@
  *   skip_new     never sell this supplier product
  */
 import { json, requireAdmin } from '../../lib/auth.js';
-import { ensureSyncSchema, getSetting, setSetting } from '../../../workers/supplier-sync/src/schema.js';
+import { ensureSyncSchema, getSetting, setSetting, getSettings } from '../../../workers/supplier-sync/src/schema.js';
+
+const SWITCHES = ['reminders_on', 'digest_on', 'price_alerts_on'];
+const NUMBERS = { reminder_hours: [1, 336], auto_cancel_days: [0, 60], free_ship_after: [0, 50], sms_ship_cost: [0, 200] };
+const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
+
+/** Only known switches, checked values. */
+function cleanSettings(input) {
+  const values = {};
+  for (const k of SWITCHES) if (k in input) values[k] = input[k] === true || input[k] === '1' ? '1' : '0';
+  for (const [k, [lo, hi]] of Object.entries(NUMBERS)) {
+    if (!(k in input)) continue;
+    const n = Number(input[k]);
+    if (!Number.isFinite(n) || n < lo || n > hi) return { error: `${k} must be between ${lo} and ${hi}` };
+    values[k] = String(k === 'sms_ship_cost' ? Math.round(n * 100) / 100 : Math.round(n));
+  }
+  if ('digest_to' in input) {
+    const e = String(input.digest_to || '').trim();
+    if (e && !EMAIL_RE.test(e)) return { error: 'Digest email is not a valid address' };
+    values.digest_to = e;
+  }
+  return { values };
+}
 
 export async function onRequestGet({ request, env }) {
   const denied = await requireAdmin(request, env);
@@ -28,6 +50,8 @@ export async function onRequestGet({ request, env }) {
     ),
     products: await all('SELECT name, active FROM products ORDER BY sort_order, name'),
     settings: { show_lab_reports: (await getSetting(db, 'show_lab_reports', '0')) === '1' },
+    automation: await getSettings(db),
+    price_watchers: (await all('SELECT COUNT(*) AS n FROM price_watch'))[0].n,
     lab_reports_found: (await all("SELECT COUNT(*) AS n FROM supplier_map WHERE skip = 0 AND coa_url IS NOT NULL"))[0].n,
     restock_waiting: await all(
       'SELECT spbc_name, COUNT(*) AS n FROM restock_requests WHERE notified_at IS NULL GROUP BY spbc_name ORDER BY n DESC'
@@ -41,6 +65,12 @@ export async function onRequestPost({ request, env }) {
   const db = env.DB;
   await ensureSyncSchema(db);
   const body = await request.json().catch(() => ({}));
+  if (body.action === 'set_settings') {
+    const clean = cleanSettings(body.settings || {});
+    if (clean.error) return json({ error: 'validation_failed', message: clean.error }, 400);
+    for (const [k, v] of Object.entries(clean.values)) await setSetting(db, k, v);
+    return json({ ok: true, message: 'Saved', settings: await getSettings(db) });
+  }
   if (body.action === 'set_lab_reports') {
     await setSetting(db, 'show_lab_reports', body.on ? '1' : '0');
     return json({ ok: true, message: body.on ? 'Lab reports are now shown on the shop' : 'Lab reports are hidden' });

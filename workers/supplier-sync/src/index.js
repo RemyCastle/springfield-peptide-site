@@ -13,6 +13,7 @@
 import { planSync, feedProblem } from './plan.js';
 import { ensureSyncSchema } from './schema.js';
 import { updateProductMeta, sendRestockEmails } from './extras.js';
+import { paymentReminders, dailyDigest, priceDropAlerts } from './jobs.js';
 
 export { ensureSyncSchema };
 
@@ -161,17 +162,37 @@ export async function runSync(env, { dryRun } = {}) {
     baseUrl: base(env),
   });
   const restock = await sendRestockEmails(db, env);
+  const priceAlerts = await priceDropAlerts(env, db, actions.filter((a) => a.kind === 'price'));
   await logEvent(db, {
     kind: 'run',
     status,
-    detail: { tier: supplier.tier, feed_products: Object.keys(supplier.feed).length, counts, meta_updated: metaUpdated, restock },
+    detail: { tier: supplier.tier, feed_products: Object.keys(supplier.feed).length, counts, meta_updated: metaUpdated, restock, price_alerts: priceAlerts },
   });
   return { ok: true, dry, counts, actions, restock };
 }
 
+/** Every 2 hours: price/stock sync + payment reminders. Daily (13:00 UTC): digest. */
+export async function runScheduled(cron, env) {
+  const db = env.DB;
+  await ensureSyncSchema(db);
+  if (cron === DIGEST_CRON) {
+    const digest = await dailyDigest(env, db).catch((e) => ({ error: String(e.message || e) }));
+    await logEvent(db, { kind: 'digest', status: digest.error ? 'error' : 'done', detail: digest });
+    return { digest };
+  }
+  const sync = await runSync(env);
+  const reminders = await paymentReminders(env, db).catch((e) => ({ error: String(e.message || e) }));
+  if (!reminders.skipped) {
+    await logEvent(db, { kind: 'reminders', status: reminders.error ? 'error' : 'done', detail: reminders });
+  }
+  return { sync, reminders };
+}
+
+const DIGEST_CRON = '0 13 * * *'; // not exported: a Worker's main module may only export handlers
+
 export default {
-  async scheduled(_event, env, ctx) {
-    ctx.waitUntil(runSync(env));
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runScheduled(event.cron, env));
   },
   async fetch() {
     return new Response('spbc-supplier-sync: runs on a schedule. See the SPBC admin, Supplier sync tab.', {

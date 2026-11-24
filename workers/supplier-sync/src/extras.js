@@ -1,6 +1,7 @@
 /**
  * Per-run extras for the sync: low-stock flags, lab report links, back-in-stock emails.
  */
+import { sendEmail, emailReady, esc, siteUrl, wrap } from './email.js';
 
 /** Pick the first lab report (COA) link from a supplier product row, as an absolute URL. */
 export function coaUrlFrom(row, baseUrl) {
@@ -43,23 +44,12 @@ export async function updateProductMeta(db, { stock, details, feed, baseUrl }) {
   return stmts.length;
 }
 
-function restockEmailHtml(name, siteUrl) {
-  const safe = String(name).replace(/[<>&"]/g, '');
-  return `<div style="font-family:Arial,sans-serif;font-size:15px;color:#111">
-  <p><strong>${safe}</strong> is back in stock at Springfield Peptide Buyers Club.</p>
-  <p><a href="${siteUrl}/#prices" style="color:#b8860b">Order it here</a></p>
-  <p style="font-size:12px;color:#666">You asked us to tell you when it came back. We won't email you about it again.</p>
-</div>`;
-}
-
 /**
- * Email everyone waiting on a product that is now for sale. Needs RESEND_API_KEY and
- * RESTOCK_FROM (a sender on a domain verified in Resend). Without them nothing is sent
- * and the sign-ups stay waiting (the admin shows them).
+ * Email everyone waiting on a product that is now for sale (one email each).
+ * Without an email sender set up nothing is sent and the sign-ups keep waiting.
  */
 export async function sendRestockEmails(db, env, { limit = 50 } = {}) {
-  if (!env.RESEND_API_KEY || !env.RESTOCK_FROM) return { sent: 0, skipped: 'email not configured' };
-  const siteUrl = String(env.SITE_URL || 'https://springfieldpbc.com').replace(/\/$/, '');
+  if (!emailReady(env)) return { sent: 0, skipped: 'email not configured' };
   const { results } = await db
     .prepare(
       `SELECT r.id, r.spbc_name, r.email FROM restock_requests r
@@ -70,17 +60,14 @@ export async function sendRestockEmails(db, env, { limit = 50 } = {}) {
     .all();
   let sent = 0;
   for (const r of results) {
-    const res = await fetch(env.RESEND_API_URL || 'https://api.resend.com/emails', { // URL override: local tests only
-      method: 'POST',
-      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: env.RESTOCK_FROM,
-        to: [r.email],
-        subject: `${r.spbc_name} is back in stock`,
-        html: restockEmailHtml(r.spbc_name, siteUrl),
-      }),
+    const ok = await sendEmail(env, {
+      to: r.email,
+      subject: `${r.spbc_name} is back in stock`,
+      html: wrap(`<p><strong>${esc(r.spbc_name)}</strong> is back in stock at Springfield Peptide Buyers Club.</p>
+<p><a href="${siteUrl(env)}/#prices" style="color:#b8860b">Order it here</a></p>
+<p style="font-size:12px;color:#666">You asked us to tell you when it came back. We won't email you about it again.</p>`),
     });
-    if (res.ok) {
+    if (ok) {
       await db.prepare("UPDATE restock_requests SET notified_at = datetime('now') WHERE id = ?").bind(r.id).run();
       sent += 1;
     }

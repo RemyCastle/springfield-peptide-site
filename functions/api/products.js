@@ -78,6 +78,9 @@ async function loadSupplierExtras(db) {
       .prepare("SELECT value FROM site_settings WHERE key = 'show_lab_reports'")
       .first();
     const showLab = !!labOn && labOn.value === '1';
+    const alertsOn = await db
+      .prepare("SELECT value FROM site_settings WHERE key = 'price_alerts_on'")
+      .first();
     const { results } = await db
       .prepare(
         `SELECT p.id, p.name, p.vial_price, p.pack_price, p.kit_only, p.sort_order, p.active,
@@ -102,6 +105,7 @@ async function loadSupplierExtras(db) {
         lab_report: showLab && !!r.coa_url,
       })),
       out_of_stock: (out.results || []).map((r) => ({ name: r.name })),
+      price_alerts: !!alertsOn && alertsOn.value === '1',
     };
   } catch {
     return null; // sync tables not created yet

@@ -42,6 +42,21 @@ const TABLES = [
     value TEXT,
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+  // Payment reminder / auto-cancel bookkeeping (one reminder per order).
+  `CREATE TABLE IF NOT EXISTS order_reminders (
+    order_number TEXT PRIMARY KEY,
+    reminded_at TEXT,
+    cancelled_at TEXT
+  )`,
+  // "Tell me if the price drops" follows.
+  `CREATE TABLE IF NOT EXISTS price_watch (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    spbc_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_notified_at TEXT,
+    UNIQUE (spbc_name, email)
+  )`,
   // Which SPBC orders Remy has placed at show-me-source.
   `CREATE TABLE IF NOT EXISTS supplier_orders (
     order_number TEXT PRIMARY KEY,
@@ -78,6 +93,33 @@ export async function ensureSyncSchema(db) {
     );
   }
   ready = true;
+}
+
+/**
+ * Automation switches. Everything that emails customers or changes money starts OFF;
+ * Remy turns each on in the admin (Supplier sync tab, Automations card).
+ */
+export const DEFAULT_SETTINGS = {
+  show_lab_reports: '0',
+  reminders_on: '0', // email customers who have not paid
+  reminder_hours: '24', // ...this many hours after ordering
+  auto_cancel_days: '0', // cancel unpaid orders after this many days (0 = never)
+  digest_on: '0', // morning email to Remy
+  digest_to: '', // Remy's email for the digest
+  free_ship_after: '0', // free shipping once a customer has this many paid orders (0 = off)
+  price_alerts_on: '0', // "Tell me if the price drops" on the shop
+  sms_ship_cost: '0', // what show-me-source charges you to ship one order (profit view)
+};
+
+export async function getSettings(db) {
+  const out = { ...DEFAULT_SETTINGS };
+  try {
+    const { results } = await db.prepare('SELECT key, value FROM site_settings').all();
+    for (const r of results) if (r.key in out) out[r.key] = r.value ?? '';
+  } catch {
+    /* table not created yet: defaults */
+  }
+  return out;
 }
 
 export async function getSetting(db, key, fallback = null) {

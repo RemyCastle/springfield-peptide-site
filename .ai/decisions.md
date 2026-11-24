@@ -174,3 +174,13 @@ Append-only log. Newest at bottom.
 - **Low stock / back in stock**: the sync copies `low_inventory` into `supplier_map`; `/api/products` adds `low_stock`, `lab_report` and a separate `out_of_stock` list (kept out of `products`, which spbc-orders also reads). Shop shows a "Low stock" badge and a "Sold out, back soon" section with "Email me when it's back" (`restock_requests`). The sync emails waiting people via Resend once the product is for sale; needs RESEND_API_KEY + RESTOCK_FROM on the sync Worker, otherwise sign-ups wait (admin shows counts).
 - **Order again**: on the lookup page; refills `spbc_cart_draft`. Not in the shipped email yet (that email is sent by spbc-orders).
 - Tables are created on first use (`workers/supplier-sync/src/schema.js`).
+
+### 2026-11-23 — Five automations (all off until Remy switches them on)
+- Admin → Supplier sync → **Automations** card writes `site_settings` (whitelisted keys, checked ranges). Defaults in `workers/supplier-sync/src/schema.js` DEFAULT_SETTINGS.
+- **Payment reminders / auto-cancel** (sync Worker, every 2h): one email per unpaid order after `reminder_hours`; optional cancel after `auto_cancel_days` (only after a reminder when reminders are on) via spbc-orders PATCH. Bookkeeping in `order_reminders`. Needs ORDERS_ADMIN_TOKEN secret + ORDERS_PUBLIC_URL var on the Worker, plus email.
+- **Morning digest** (cron `0 13 * * *`): paid orders not marked placed at show-me-source, held prices, new products, failed sync → `digest_to`.
+- **Profit view** (Sales & Profit → "Work it out", `/api/admin/profit`): supplier cost = price − $25 vial / − $200 kit; shipping kept = collected − `sms_ship_cost` per order. Dedupes orders by number.
+- **Repeat-buyer free shipping**: `place-order` sets shipping 0 when the email has ≥ `free_ship_after` paid/shipped/complete SPBC orders (lookup errors = normal shipping). Response `perk: 'free_shipping'`; confirmation shows a thank-you.
+- **Price-drop alerts**: "Tell me if the price drops" on cards when `price_alerts_on`; `/api/price-watch` → `price_watch`; the sync emails followers when it applies a lower price. (A held price applied by hand in the admin does not trigger it.)
+- All email goes through `workers/supplier-sync/src/email.js` (Resend; RESEND_API_KEY + RESTOCK_FROM).
+- A Worker main module may export only handlers/functions: exporting a string constant broke startup (caught in local test).

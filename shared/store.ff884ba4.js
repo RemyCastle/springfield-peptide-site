@@ -557,6 +557,56 @@ const CART_KEY = "spbc_cart_draft";
             });
         }
 
+        /** Set from /api/products: show "Price drop alert" on each card. */
+        let priceAlertsOn = false;
+
+        function savedContactEmail() {
+            try { return (JSON.parse(localStorage.getItem(CONTACT_KEY) || '{}').email) || ''; } catch (_) { return ''; }
+        }
+
+        function priceAlertHtml(name) {
+            return `<div class="mt-2">
+                <button type="button" class="text-[11px] text-zinc-400 hover:text-[#EAB308] underline" data-price-alert-open>Tell me if the price drops</button>
+                <form class="hidden mt-1 flex gap-2" data-price-alert="${escapeHtml(name)}" novalidate>
+                    <input type="email" required placeholder="Your email" value="${escapeHtml(savedContactEmail())}" aria-label="Email for ${escapeHtml(name)} price alerts"
+                           class="min-w-0 flex-1 bg-black border border-zinc-700 rounded-lg px-2 py-1 text-xs text-white">
+                    <button type="submit" class="shrink-0 px-2 py-1 rounded-lg text-xs font-bold bg-[#FDD700] text-black">Follow</button>
+                </form>
+                <p class="text-[11px] hidden" data-price-alert-msg></p>
+            </div>`;
+        }
+
+        function wirePriceAlert(article) {
+            const open = article.querySelector('[data-price-alert-open]');
+            const form = article.querySelector('form[data-price-alert]');
+            if (!open || !form) return;
+            const msg = article.querySelector('[data-price-alert-msg]');
+            open.addEventListener('click', () => {
+                form.classList.remove('hidden');
+                open.classList.add('hidden');
+            });
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                msg.classList.remove('hidden');
+                msg.className = 'text-[11px] text-zinc-400';
+                msg.textContent = 'Saving…';
+                try {
+                    const res = await fetch('/api/price-watch', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ product: form.getAttribute('data-price-alert'), email: form.querySelector('input').value.trim() }),
+                    });
+                    const d = await res.json().catch(() => ({}));
+                    msg.textContent = d.message || (res.ok ? "We'll email you if the price drops." : 'Could not save.');
+                    msg.className = `text-[11px] ${res.ok ? 'text-emerald-300' : 'text-red-400'}`;
+                    if (res.ok) form.classList.add('hidden');
+                } catch (_) {
+                    msg.textContent = 'Could not save.';
+                    msg.className = 'text-[11px] text-red-400';
+                }
+            });
+        }
+
         function buildPriceCard(p, draft) {
             const name = p.name;
             const trueKitOnly = isTrueKitOnly(p);
@@ -615,8 +665,10 @@ const CART_KEY = "spbc_cart_draft";
                     </div>`;
             }
             body += `</div>`;
+            if (priceAlertsOn) body += priceAlertHtml(name);
             article.innerHTML = body;
             wireStepper(article);
+            if (priceAlertsOn) wirePriceAlert(article);
             return article;
         }
 
@@ -634,9 +686,7 @@ const CART_KEY = "spbc_cart_draft";
                 box.innerHTML = '';
                 return;
             }
-            const savedEmail = (() => {
-                try { return (JSON.parse(localStorage.getItem(CONTACT_KEY) || '{}').email) || ''; } catch (_) { return ''; }
-            })();
+            const savedEmail = savedContactEmail();
             box.innerHTML = `<h3 class="price-group-heading">Sold out, back soon</h3>
                 <div class="grid gap-3 sm:grid-cols-2">` +
                 list.map((p) => `
@@ -729,6 +779,7 @@ const CART_KEY = "spbc_cart_draft";
                 const res = await fetch('/api/products', { credentials: 'same-origin' });
                 if (!res.ok) throw new Error('bad status');
                 const data = await res.json();
+                priceAlertsOn = !!data.price_alerts;
                 renderProducts(data.products || []);
                 renderSoldOut(data.out_of_stock || []);
             } catch (e) {
@@ -1235,7 +1286,8 @@ const CART_KEY = "spbc_cart_draft";
                 box.classList.remove('hidden');
                 document.getElementById('successOrderNumber').textContent = data.order_number;
                 document.getElementById('successTotal').textContent =
-                    '$' + (Number(data.total_cents || subtotalFinal + dollarsToCents(SHIPPING_FLAT)) / 100).toFixed(2);
+                    '$' + (Number(data.total_cents || subtotalFinal + dollarsToCents(SHIPPING_FLAT)) / 100).toFixed(2) +
+                    (data.perk === 'free_shipping' ? ' (free shipping, thanks for coming back!)' : '');
                 document.getElementById('successPayLink').href =
                     data.pay_url || `https://spbc-orders.spbc.workers.dev/pay/${encodeURIComponent(data.order_number)}`;
                 const trackLink = document.getElementById('successTrackLink');

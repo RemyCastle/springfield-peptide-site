@@ -11,6 +11,7 @@
  * Vial-only rows (RETA 66MG) are priced from vial_price.
  */
 import { normalizeOrderItems, SHIPPING_CENTS } from '../lib/orderItems.js';
+import { proxyOrdersAdmin } from '../lib/ordersProxy.js';
 
 async function loadActiveProducts(env) {
   if (!env.DB) return null;
@@ -131,7 +132,9 @@ export async function onRequestPost({ request, env }) {
     0
   );
   // Flat shipping set here. Client shipping_cents is ignored.
-  const shipping = SHIPPING_CENTS;
+  // Repeat-buyer perk (admin switch): free shipping after N paid orders.
+  const freeShip = await qualifiesForFreeShipping(env, email);
+  const shipping = freeShip ? 0 : SHIPPING_CENTS;
   // Server total wins. Client total_cents is not trusted.
   const total = subtotal + shipping;
 
@@ -258,6 +261,7 @@ export async function onRequestPost({ request, env }) {
 
   return json({
     ok: true,
+    perk: freeShip ? 'free_shipping' : null,
     duplicate: Boolean(data.duplicate),
     order_number: orderNumber,
     status: data.status || 'pending_payment',
@@ -279,4 +283,29 @@ export async function onRequestOptions() {
       'Access-Control-Allow-Headers': 'Content-Type',
     },
   });
+}
+
+/**
+ * Free shipping once this email has `free_ship_after` paid/shipped/complete SPBC orders.
+ * Off when the setting is 0 or missing. Any error means normal shipping (never blocks checkout).
+ */
+async function qualifiesForFreeShipping(env, email) {
+  try {
+    const row = await env.DB.prepare("SELECT value FROM site_settings WHERE key = 'free_ship_after'").first();
+    const need = parseInt(row && row.value, 10) || 0;
+    if (need <= 0) return false;
+    const qs = new URLSearchParams({ q: email, exclude_partner_retail: '1', limit: '100' });
+    const res = await proxyOrdersAdmin(env, `/admin/orders?${qs}`);
+    if (!res.ok) return false;
+    const mine = String(email).trim().toLowerCase();
+    const paid = (res.data.orders || []).filter(
+      (o) =>
+        !o.partner_slug &&
+        String(o.customer_email || '').trim().toLowerCase() === mine &&
+        ['paid', 'shipped', 'complete'].includes(o.status)
+    ).length;
+    return paid >= need;
+  } catch {
+    return false;
+  }
 }

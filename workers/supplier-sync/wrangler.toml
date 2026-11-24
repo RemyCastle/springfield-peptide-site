@@ -2,21 +2,25 @@
 # Deploy from this folder: npx wrangler deploy   (iCloud Cloudflare account, same as springfieldpeps)
 # Secrets, set by Remy only:  npx wrangler secret put SMS_SITE_KEY
 #                             npx wrangler secret put SMS_PRICING_CODE
-# Optional, for "back in stock" emails: npx wrangler secret put RESEND_API_KEY
-#   and set RESTOCK_FROM below to a sender on a domain verified in Resend.
+# Optional, for all emails (restock, price drop, payment reminder, digest):
+#   npx wrangler secret put RESEND_API_KEY   and set RESTOCK_FROM below.
+# Optional, for payment reminders + digest (same values as the springfieldpeps Pages settings):
+#   npx wrangler secret put ORDERS_ADMIN_TOKEN   and set ORDERS_PUBLIC_URL below.
 name = "spbc-supplier-sync"
 main = "src/index.js"
 compatibility_date = "2024-11-12"
 workers_dev = false
 
 [triggers]
-crons = ["17 */2 * * *"] # every 2 hours, at :17
+crons = ["17 */2 * * *", "0 13 * * *"] # sync + reminders every 2h; digest daily 13:00 UTC (7am Central)
 
 [vars]
 # "1" = test mode: log what would change, change nothing. Set to "0" after Remy reviews a few runs.
 DRY_RUN = "1"
-# e.g. "SPBC <orders@springfieldpbc.com>". Empty = no restock emails (sign-ups wait in the admin).
+# e.g. "SPBC <orders@springfieldpbc.com>". Empty = no emails at all (sign-ups wait in the admin).
 RESTOCK_FROM = ""
+# The spbc-orders URL (now on the Outlook account). Empty = no payment reminders / digest order list.
+ORDERS_PUBLIC_URL = ""
 
 [[d1_databases]]
 binding = "DB"
