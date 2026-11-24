@@ -64,7 +64,7 @@ export async function paymentReminders(env, db, now = Date.now()) {
         subject: `Your SPBC order ${o.order_number} is waiting for payment`,
         html: wrap(`<p>Hi ${esc(o.customer_name || 'there')},</p>
 <p>Your order <strong>${esc(o.order_number)}</strong> (${money(o.total_cents)}) is reserved but we haven't received payment yet.</p>
-<p><a href="${payUrl(env, o.order_number)}" style="color:#b8860b">Pay for your order</a></p>
+<p><a href="${payUrl(env, o.order_number)}" style="color:#154530">Pay for your order</a></p>
 ${cancelDays ? `<p>Unpaid orders are cancelled after ${cancelDays} days.</p>` : ''}
 <p>Already paid? Reply to this email with your payment details and we'll match it.</p>`),
       });
@@ -121,7 +121,7 @@ ${holds ? `<p>${holds} big price change${holds === 1 ? '' : 's'} waiting for you
 ${newer ? `<p>${newer} new show-me-source product${newer === 1 ? '' : 's'} waiting for you.</p>` : ''}
 ${problemText ? `<p style="color:#b00">Checkout problems on the shop in the last day: ${esc(problemText)}.</p>` : ''}
 ${lastRun.status === 'error' ? '<p style="color:#b00">The last supplier check failed. Open Supplier sync in the admin.</p>' : ''}
-<p><a href="${admin}" style="color:#b8860b">Open the admin</a></p>`);
+<p><a href="${admin}" style="color:#154530">Open the admin</a></p>`);
   const ok = await sendEmail(env, {
     to: s.digest_to,
     subject: toPlace.length ? `SPBC: ${toPlace.length} order${toPlace.length === 1 ? '' : 's'} to place today` : 'SPBC: nothing to place today',
@@ -152,7 +152,7 @@ export async function priceDropAlerts(env, db, priceActions) {
         to: w.email,
         subject: `Price drop: ${a.spbc_name}`,
         html: wrap(`<p><strong>${esc(a.spbc_name)}</strong> just got cheaper: ${parts.join(', ')}.</p>
-<p><a href="${siteUrl(env)}/#prices" style="color:#b8860b">See the price list</a></p>
+<p><a href="${siteUrl(env)}/#prices" style="color:#154530">See the price list</a></p>
 ${foot.html}`),
         headers: { 'List-Unsubscribe': `<${foot.url}>` },
       });
@@ -332,7 +332,7 @@ export async function syncBreakAlert(env, db) {
     subject: 'SPBC: the show-me-source price check stopped working',
     html: wrap(`<p>The automatic show-me-source check failed twice in a row, so prices and stock on the shop are not being updated.</p>
 <p>Last error: <strong>${esc(why || 'unknown')}</strong></p>
-<p>Common causes: show-me-source changed their site key or pricing code, or their site is down. Open <a href="${siteUrl(env)}/admin" style="color:#b8860b">Supplier sync in the admin</a>.</p>
+<p>Common causes: show-me-source changed their site key or pricing code, or their site is down. Open <a href="${siteUrl(env)}/admin" style="color:#154530">Supplier sync in the admin</a>.</p>
 <p>You get this once; the next good check resets it.</p>`),
   });
   if (ok) await setSetting(db, 'sync_alerted', '1');
@@ -412,7 +412,7 @@ export async function paymentAlert(env, db, row) {
     to: s.digest_to,
     subject: `SPBC payment: $${Number(p.amount).toFixed(2)} from ${p.name}`,
     html: wrap(`<p><strong>${esc(p.name)}</strong> paid <strong>$${Number(p.amount).toFixed(2)}</strong> on Venmo${p.note ? ` (note: “${esc(p.note)}”)` : ''}.</p>
-<p>${line}</p><p><a href="${siteUrl(env)}/admin" style="color:#b8860b">Open the admin</a></p>`),
+<p>${line}</p><p><a href="${siteUrl(env)}/admin" style="color:#154530">Open the admin</a></p>`),
   });
   return { sent: ok, matched };
 }

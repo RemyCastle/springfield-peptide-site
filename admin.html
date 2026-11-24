@@ -170,40 +170,101 @@
       .tab-btn, .btn-ghost-admin, .panel-actions button { min-height: 44px; }
     }
 
-    /* ---- 2026 look: deep green + lemon, matches the storefront ---- */
-    :root { --a-paper: #0E2A1F; --a-paper-2: #143527; --a-line: #24503C; --a-accent: #F3D94A; --a-ink: #F6F7F2; }
+    /* ---- SPBC palette (same as the shop): dark green header, light work area, lemon for main actions ---- */
+    :root {
+      --a-paper: #F5F4EE; --a-paper-2: #FFFFFF; --a-paper-3: #EDEBE2; --a-line: #DEDCD2; --a-line-2: #C4C4B8;
+      --a-ink: #14251C; --a-ink-2: #3A4C42; --a-ink-3: #5F6E65;
+      --a-brand: #154530; --a-accent: #F3D94A; --a-accent-2: #F7E36F; --a-accent-ink: #13301F;
+      --a-dark: #12392A; --a-dark-2: #184631; --a-dark-ink: #F6F7F2; --a-dark-ink-3: #A9BAB0;
+      --a-ok: #1E7A4A; --a-ok-bg: #E8F4EC; --a-ok-line: #A9D4B8;
+      --a-warn: #8A5A00; --a-warn-bg: #FFF6DB; --a-warn-line: #E9CF8A;
+      --a-bad: #B42318; --a-bad-bg: #FDECEA; --a-bad-line: #F1B5AE;
+      --a-info: #1D5F8A; --a-info-bg: #E6F0F7; --a-info-line: #A9C8DE;
+      --a-violet: #6B3FA0;
+    }
     body, .ducks-font { font-family: 'Archivo', system-ui, sans-serif; }
     .ducks-font { font-weight: 800; letter-spacing: -0.01em; text-transform: none; }
-    body.admin-shell, .admin-shell { background: var(--a-paper); }
-    html { background: var(--a-paper); scrollbar-gutter: stable; }
-    .admin-card { background: var(--a-paper-2); border: 1px solid var(--a-line); box-shadow: none; }
-    .admin-input { background: var(--a-paper); border-color: var(--a-line); border-radius: 0.6rem; }
-    .btn-primary-admin { background: var(--a-accent); border-radius: 0.6rem; }
-    .btn-ghost-admin { background: transparent; border-color: var(--a-line); color: var(--a-ink); border-radius: 0.6rem; }
-    .btn-ghost-admin:hover { background: var(--a-paper-2); border-color: var(--a-accent); }
-    .section-rule { height: 3px; background: var(--a-accent); opacity: 1; }
-    .site-header[data-site-header] { background: var(--a-paper); }
-    .site-header__brand { display: flex; align-items: center; gap: 0.6rem; }
+    html, body.admin-shell, .admin-shell { background: var(--a-paper) !important; color: var(--a-ink); scrollbar-gutter: stable; }
+    body.atmosphere::before { display: none !important; }
+    input, select, textarea, button { color-scheme: light; }
+
+    /* Header (dark, like the shop) */
+    .site-header[data-site-header] { background: var(--a-dark) !important; border-bottom: 1px solid rgba(246,247,242,.14); }
+    .site-header[data-site-header] * { --tw-text-opacity: 1; }
+    .site-header__brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; }
     .admin-mark { width: 34px; height: 34px; flex: none; }
     .site-header__brand-gold { color: var(--a-accent) !important; }
-    .text-\[\#FDD700\] { color: var(--a-accent) !important; }
-    .bg-\[\#FDD700\] { background-color: var(--a-accent) !important; }
-    .admin-tabs {
+    .site-header__brand-white, #adminWho { color: var(--a-dark-ink) !important; }
+    .site-header .btn-ghost-admin { background: transparent; border: 1px solid rgba(246,247,242,.3); color: var(--a-dark-ink); border-radius: 999px; }
+    .site-header .btn-ghost-admin:hover { border-color: var(--a-accent); }
+    .section-rule { display: none; }
+
+    /* Cards, inputs, buttons */
+    .admin-card { background: var(--a-paper-2) !important; border: 1px solid var(--a-line) !important; box-shadow: 0 1px 2px rgba(20,37,28,.06), 0 2px 8px rgba(20,37,28,.05) !important; color: var(--a-ink); }
+    .admin-input { background: var(--a-paper-2) !important; border: 1px solid var(--a-line-2) !important; color: var(--a-ink) !important; border-radius: 0.6rem; }
+    .admin-input:focus { border-color: var(--a-brand) !important; box-shadow: 0 0 0 3px rgba(21,69,48,.12) !important; }
+    .admin-input::placeholder { color: #8A968F; }
+    .btn-primary-admin { background: var(--a-accent) !important; color: var(--a-accent-ink) !important; border-radius: 999px; }
+    .btn-primary-admin:hover { background: var(--a-accent-2) !important; }
+    .btn-ghost-admin { background: var(--a-paper-2); border: 1px solid var(--a-line-2); color: var(--a-ink); border-radius: 999px; }
+    .btn-ghost-admin:hover { background: var(--a-paper-3); border-color: var(--a-ink-3); }
+    input[type="checkbox"], input[type="radio"] { accent-color: var(--a-brand); }
+    tr.order-row:hover td { background: var(--a-paper-3) !important; }
+    .table-scroll { background: var(--a-paper-2); }
+    .modal-panel { background: var(--a-paper-2) !important; color: var(--a-ink); }
+
+    /* Old dark-theme colour classes, mapped onto the palette */
+    body.admin-shell .text-white, body.admin-shell .text-zinc-100, body.admin-shell .text-zinc-200, body.admin-shell .hover\:text-white:hover { color: var(--a-ink) !important; }
+    body.admin-shell .text-zinc-300 { color: var(--a-ink-2) !important; }
+    body.admin-shell .text-zinc-400, body.admin-shell .text-zinc-500, body.admin-shell .text-zinc-600, body.admin-shell .text-zinc-700 { color: var(--a-ink-3) !important; }
+    body.admin-shell .text-black { color: var(--a-accent-ink) !important; }
+    body.admin-shell .text-\[\#FDD700\], body.admin-shell .hover\:text-\[\#FDD700\]:hover { color: var(--a-brand) !important; }
+    body.admin-shell .text-emerald-200, body.admin-shell .text-emerald-300, body.admin-shell .text-emerald-400, body.admin-shell .text-green-300, body.admin-shell .text-emerald-300\/80, body.admin-shell .text-emerald-200\/90, body.admin-shell .text-emerald-200\/90 { color: var(--a-ok) !important; }
+    body.admin-shell .text-red-300, body.admin-shell .text-red-400, body.admin-shell .text-red-500 { color: var(--a-bad) !important; }
+    body.admin-shell .text-amber-100, body.admin-shell .text-amber-300, body.admin-shell .text-amber-400, body.admin-shell .text-amber-400\/90, body.admin-shell .text-amber-500\/90 { color: var(--a-warn) !important; }
+    body.admin-shell .text-sky-200, body.admin-shell .text-sky-300 { color: var(--a-info) !important; }
+    body.admin-shell .text-\[\#a855f7\], body.admin-shell .text-\[\#e9d5ff\] { color: var(--a-violet) !important; }
+    body.admin-shell .bg-black, body.admin-shell .bg-zinc-900 { background-color: var(--a-paper-2) !important; }
+    body.admin-shell .bg-zinc-800, body.admin-shell .hover\:bg-zinc-700:hover, body.admin-shell .hover\:bg-zinc-800:hover, body.admin-shell .hover\:bg-zinc-800\/60:hover { background-color: var(--a-paper-3) !important; }
+    body.admin-shell .bg-black\/80, body.admin-shell .bg-black\/70 { background-color: rgba(10, 30, 22, 0.55) !important; }
+    body.admin-shell .bg-\[\#FDD700\], body.admin-shell .bg-amber-400 { background-color: var(--a-accent) !important; color: var(--a-accent-ink) !important; }
+    body.admin-shell .bg-\[\#FDD700\]\/10, body.admin-shell .bg-amber-950, body.admin-shell .bg-amber-950\/20 { background-color: var(--a-warn-bg) !important; }
+    body.admin-shell .hover\:bg-white:hover { background-color: var(--a-accent-2) !important; }
+    body.admin-shell .bg-red-950 { background-color: var(--a-bad-bg) !important; }
+    body.admin-shell .bg-emerald-950, body.admin-shell .bg-emerald-950\/30, body.admin-shell .bg-green-950 { background-color: var(--a-ok-bg) !important; }
+    body.admin-shell .bg-sky-950, body.admin-shell .hover\:bg-sky-900:hover { background-color: var(--a-info-bg) !important; }
+    body.admin-shell .bg-emerald-600, body.admin-shell .bg-emerald-700, body.admin-shell .hover\:bg-emerald-500:hover { background-color: var(--a-brand) !important; color: #fff !important; }
+    body.admin-shell .bg-red-700, body.admin-shell .hover\:bg-red-900:hover { background-color: var(--a-bad) !important; color: #fff !important; }
+    body.admin-shell [class*="border-zinc-"], body.admin-shell .divide-zinc-800 > * + * { border-color: var(--a-line) !important; }
+    body.admin-shell .hover\:border-zinc-500:hover { border-color: var(--a-ink-3) !important; }
+    body.admin-shell [class*="border-red-"] { border-color: var(--a-bad-line) !important; }
+    body.admin-shell [class*="border-emerald-"], body.admin-shell .border-green-800 { border-color: var(--a-ok-line) !important; }
+    body.admin-shell [class*="border-amber-"] { border-color: var(--a-warn-line) !important; }
+    body.admin-shell [class*="border-sky-"] { border-color: var(--a-info-line) !important; }
+    body.admin-shell [class*="border-\[\#FDD700\]"], body.admin-shell .hover\:border-\[\#FDD700\]:hover { border-color: var(--a-brand) !important; }
+    body.admin-shell [class*="ring-emerald-"] { --tw-ring-color: var(--a-ok-line) !important; }
+    body.admin-shell [class*="accent-\[\#FDD700\]"] { accent-color: var(--a-brand) !important; }
+    body.admin-shell [style*="color:#fca5a5"] { color: var(--a-bad) !important; }
+    body.admin-shell [style*="background:#FDD700"] { background: var(--a-accent) !important; color: var(--a-accent-ink) !important; }
+
+    body.admin-shell h1.text-\[\#FDD700\], body.admin-shell h2.text-\[\#FDD700\] { color: var(--a-ink) !important; letter-spacing: -0.02em; }
+    /* Tabs: same style as the shop's filter buttons */
+    body.admin-shell .admin-tabs {
       position: sticky; top: 0; z-index: 30; margin: 0 -0.75rem 1.25rem; padding: 0.6rem 0.75rem;
-      background: rgba(14, 42, 31, 0.94); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      background: rgba(245, 244, 238, 0.95); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--a-line);
     }
-    .admin-tabs .tab-btn { border-radius: 999px !important; }
-    .admin-tabs .tab-btn.bg-\[\#FDD700\] { background: var(--a-accent) !important; color: #0E2A1F !important; }
-    .admin-tabs .tab-btn:not(.bg-\[\#FDD700\]) { background: transparent !important; border-color: var(--a-line) !important; }
-    tr.order-row:hover td { background: var(--a-paper-2); }
+    body.admin-shell .admin-tabs .tab-btn { border-radius: 999px !important; border: 1px solid var(--a-line-2) !important; background: var(--a-paper-2) !important; color: var(--a-ink-2) !important; }
+    body.admin-shell .admin-tabs .tab-btn.bg-\[\#FDD700\] { background: var(--a-brand) !important; border-color: var(--a-brand) !important; color: #fff !important; }
+
+    /* Install button + sheet, account menu */
     .btn-install-admin {
-      display: inline-flex; align-items: center; gap: 0.4rem; min-height: 40px; padding: 0 0.8rem;
-      background: var(--a-accent); color: #0E2A1F; font-weight: 700; font-size: 0.85rem; border-radius: 0.6rem; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 0.4rem; min-height: 40px; padding: 0 0.9rem;
+      background: var(--a-accent); color: var(--a-accent-ink); font-weight: 700; font-size: 0.85rem; border-radius: 999px; white-space: nowrap;
     }
     .btn-install-admin[hidden] { display: none; }
-    .install-sheet { position: fixed; inset: auto 0 0 0; z-index: 80; background: var(--a-paper-2); border-top: 3px solid var(--a-accent);
-      padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0)); box-shadow: 0 -12px 40px rgba(0,0,0,.5); }
+    .install-sheet { position: fixed; inset: auto 0 0 0; z-index: 80; background: var(--a-paper-2); color: var(--a-ink); border-top: 3px solid var(--a-accent);
+      padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0)); box-shadow: 0 -12px 40px rgba(0,0,0,.2); }
     .install-sheet ol { margin: 0.5rem 0 1rem 1.2rem; list-style: decimal; line-height: 1.7; }
     .install-short { display: none; }
     @media (max-width: 520px) { .install-long { display: none; } .install-short { display: inline; } }
@@ -212,14 +273,14 @@
     .acct-menu > summary::-webkit-details-marker { display: none; }
     .acct-menu > summary::after { content: "▾"; margin-left: 0.35rem; font-size: 0.75em; }
     .acct-menu__panel { position: absolute; right: 0; top: calc(100% + 6px); z-index: 60; display: grid; gap: 0.4rem; min-width: 12rem;
-      padding: 0.5rem; background: var(--a-paper-2); border: 1px solid var(--a-line); border-radius: 0.75rem; box-shadow: 0 12px 30px rgba(0,0,0,.45); }
-    .acct-menu__panel .btn-ghost-admin { width: 100%; text-align: left; }
+      padding: 0.5rem; background: var(--a-paper-2); border: 1px solid var(--a-line); border-radius: 0.75rem; box-shadow: 0 12px 30px rgba(0,0,0,.18); }
+    .acct-menu__panel .btn-ghost-admin { width: 100%; text-align: left; background: var(--a-paper-2); border-color: var(--a-line-2); color: var(--a-ink); }
     .site-header__inner { align-items: center; }
     @media (prefers-reduced-motion: no-preference) { #appSection > div:not(.hidden) { animation: admin-in 160ms ease-out; } }
     @keyframes admin-in { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
-<body class="admin-shell text-white overflow-x-hidden atmosphere">
+<body class="admin-shell overflow-x-hidden atmosphere">
   <header class="site-header" data-site-header>
     <div class="site-header__inner" style="flex-direction:row;justify-content:space-between;max-width:64rem;">
       <a href="/" class="site-header__brand" aria-label="SPBC home">

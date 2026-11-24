@@ -429,3 +429,19 @@ body.spbc26 .order-shell .text-center, body.spbc26 .order-shell h2 { text-align:
 body.spbc26 .tabular-gold, body.spbc26 .text-gold { color: var(--color-brand) !important; }
 :is(.mast, .page-hero.hero26, footer.foot26, .sticky-order-bar) :is(.tabular-gold, .text-gold) { color: var(--color-accent) !important; }
 body.spbc26 main.spbc-main p.text-center { text-align: left !important; }
+
+/* Last old-theme leftovers: cart bar, quantity menus, copy button, progress bar */
+body.spbc26 .qty-select { background: var(--color-paper-2) !important; border-color: var(--color-rule-strong) !important; color: var(--color-ink) !important; color-scheme: light; }
+.sticky-order-inner { border-color: var(--color-rule) !important; box-shadow: none !important; }
+.sticky-expand-hint { color: var(--color-ink-3) !important; }
+#stickyClearBtn, .btn-clear-cart { background: transparent !important; color: var(--color-ink-3) !important; border-color: var(--color-rule-strong) !important; }
+body.spbc26 .copy-btn { border-color: var(--color-rule-strong) !important; color: var(--color-brand) !important; background: var(--color-paper-2) !important; }
+body.spbc26 .progress-track { background: var(--color-paper-3) !important; }
+body.spbc26 .progress-fill, body.spbc26 .progress-bar { background: var(--color-brand) !important; }
+/* Cart bar: same dark green as the header, sentence case */
+.sticky-order-bar .sticky-order-inner { background: var(--color-paper-2) !important; border: 1px solid var(--color-rule) !important; }
+.sticky-order-bar [class*="uppercase"], .sticky-order-bar .btn-clear-cart { text-transform: none !important; letter-spacing: 0 !important; }
+.sticky-order-bar .sticky-order-inner p[class*="uppercase"] { font-size: var(--text-sm) !important; color: var(--color-accent) !important; }
+.sticky-order-bar #stickyClearBtn { color: var(--color-ink-2) !important; border-color: var(--color-rule-strong) !important; border-radius: 999px !important; }
+.sticky-order-bar .progress-track { background: rgba(246, 247, 242, 0.14) !important; }
+.sticky-order-bar .progress-fill, .sticky-order-bar .progress-bar { background: var(--color-accent) !important; }

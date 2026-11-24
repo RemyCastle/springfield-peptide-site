@@ -80,7 +80,7 @@ export async function sendRestockEmails(db, env, { limit = 50 } = {}) {
       to: r.email,
       subject: `${r.spbc_name} is back in stock`,
       html: wrap(`<p><strong>${esc(r.spbc_name)}</strong> is back in stock at Springfield Peptide Buyers Club.</p>
-<p><a href="${siteUrl(env)}/#prices" style="color:#b8860b">Order it here</a></p>
+<p><a href="${siteUrl(env)}/#prices" style="color:#154530">Order it here</a></p>
 <p style="font-size:12px;color:#666">You asked us to tell you when it came back. We won't email you about it again.</p>`),
     });
     if (ok) {

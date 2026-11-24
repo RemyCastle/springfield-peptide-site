@@ -47,7 +47,7 @@ export async function onRequestPost({ request, env }) {
       to: email,
       subject: 'Your SPBC orders',
       html: wrap(`<p>Here is your link to see your SPBC orders. It works for 30 minutes.</p>
-<p><a href="${link}" style="display:inline-block;background:#FDD700;color:#000;font-weight:bold;padding:10px 18px;border-radius:10px;text-decoration:none">See my orders</a></p>
+<p><a href="${link}" style="display:inline-block;background:#F3D94A;color:#13301F;font-weight:bold;padding:10px 18px;border-radius:10px;text-decoration:none">See my orders</a></p>
 <p style="font-size:12px;color:#666">You (or someone typing your email) asked for this on springfieldpbc.com. If it wasn't you, ignore it.</p>`),
     }).catch(() => false);
     return json(SENT);

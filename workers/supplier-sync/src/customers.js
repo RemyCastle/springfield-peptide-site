@@ -73,7 +73,7 @@ export async function reviewRequests(env, db) {
       to: email,
       subject: 'How was your SPBC order?',
       html: wrap(`<p>Hi ${esc(first)},</p><p>How did order <strong>${esc(o.order_number)}</strong> go? A one-minute review helps other club members.</p>
-<p><a href="${link}" style="display:inline-block;background:#FDD700;color:#000;font-weight:bold;padding:10px 18px;border-radius:10px;text-decoration:none">Leave a quick review</a></p>
+<p><a href="${link}" style="display:inline-block;background:#F3D94A;color:#13301F;font-weight:bold;padding:10px 18px;border-radius:10px;text-decoration:none">Leave a quick review</a></p>
 <p>If anything was wrong, just reply to this email and we'll make it right.</p>${foot.html}`),
       headers: { 'List-Unsubscribe': `<${foot.url}>` },
     });

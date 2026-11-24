@@ -27,6 +27,8 @@ export function siteUrl(env) {
 
 /** Plain, readable email wrapper. */
 export function wrap(inner) {
-  return `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#111;max-width:560px">${inner}
-<p style="font-size:12px;color:#666;margin-top:24px">Springfield Peptide Buyers Club · research use only</p></div>`;
+  return `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#14251C;max-width:560px">
+<div style="background:#12392A;color:#F6F7F2;padding:12px 16px;border-radius:10px 10px 0 0;border-bottom:3px solid #F3D94A;font-weight:bold;letter-spacing:.06em">SPBC</div>
+<div style="padding:16px;border:1px solid #DEDCD2;border-top:0;border-radius:0 0 10px 10px">${inner}
+<p style="font-size:12px;color:#5F6E65;margin-top:24px">Springfield Peptide Buyers Club · research use only</p></div></div>`;
 }
