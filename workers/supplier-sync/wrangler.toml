@@ -11,7 +11,8 @@
 name = "spbc-supplier-sync"
 main = "src/index.js"
 compatibility_date = "2024-11-12"
-workers_dev = false
+# workers.dev is on only for /partner-prices (bearer-token protected; partner prices only).
+workers_dev = true
 
 [triggers]
 crons = ["17 */2 * * *", "0 13 * * *"] # sync + reminders every 2h; digest daily 13:00 UTC (7am Central)
@@ -19,6 +20,9 @@ crons = ["17 */2 * * *", "0 13 * * *"] # sync + reminders every 2h; digest daily
 [vars]
 # "1" = test mode: log what would change, change nothing. Set to "0" after Remy reviews a few runs.
 DRY_RUN = "1"
+# Partner (Patriotic) wholesale markups over the supplier price.
+PARTNER_VIAL_MARKUP = "15"
+PARTNER_KIT_MARKUP = "100"
 # e.g. "SPBC <orders@springfieldpbc.com>". Empty = no emails at all (sign-ups wait in the admin).
 RESTOCK_FROM = ""
 # The spbc-orders URL (Outlook account). Reminders + digest also need the ORDERS_ADMIN_TOKEN secret.
