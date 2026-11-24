@@ -3,22 +3,22 @@
     <form id="reviewForm" class="depth-card p-5 sm:p-6 space-y-4 hidden" novalidate>
       <p id="reviewFor" class="text-sm text-zinc-400 text-center"></p>
       <fieldset>
-        <legend class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1 text-center w-full">Your rating</legend>
+        <legend class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1 text-center w-full">Your Rating</legend>
         <div id="stars" class="flex justify-center gap-2 text-4xl" role="radiogroup" aria-label="Rating">
           <button type="button" class="star text-zinc-600" data-star="1" role="radio" aria-checked="false" aria-label="1 star">★</button><button type="button" class="star text-zinc-600" data-star="2" role="radio" aria-checked="false" aria-label="2 stars">★</button><button type="button" class="star text-zinc-600" data-star="3" role="radio" aria-checked="false" aria-label="3 stars">★</button><button type="button" class="star text-zinc-600" data-star="4" role="radio" aria-checked="false" aria-label="4 stars">★</button><button type="button" class="star text-zinc-600" data-star="5" role="radio" aria-checked="false" aria-label="5 stars">★</button>
         </div>
       </fieldset>
       <div>
-        <label for="reviewText" class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Your review (optional)</label>
+        <label for="reviewText" class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Your Review (optional)</label>
         <textarea id="reviewText" rows="4" maxlength="1000" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2.5 text-white" placeholder="How was ordering, shipping and the products?"></textarea>
       </div>
       <div>
-        <label for="reviewName" class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Name to show</label>
+        <label for="reviewName" class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Name to Show</label>
         <input id="reviewName" maxlength="40" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2.5 text-white">
         <p class="text-[11px] text-zinc-500 mt-1">We show only this name. Never your email or address.</p>
       </div>
       <p id="reviewMsg" class="text-sm hidden" role="status"></p>
-      <button id="reviewBtn" type="submit" class="btn-primary inline-flex w-full justify-center py-3 rounded-xl text-sm font-bold">Send review</button>
+      <button id="reviewBtn" type="submit" class="btn-primary inline-flex w-full justify-center py-3 rounded-xl text-sm font-bold">Send Review</button>
     </form>
     <div id="reviewState" class="depth-card p-5 text-center text-sm text-zinc-300">Loading…</div>
   </div>

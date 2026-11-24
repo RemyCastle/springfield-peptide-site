@@ -86,7 +86,7 @@
         chip(d.holds + d.new_products, 'Supplier items to check', 'sync') +
         (d.problems ? chip(d.problems, 'Checkout problems today', 'sync', true) : '') +
         `<button type="button" data-todo-open="messages" class="px-3 py-1.5 rounded-full border ${d.messages ? 'border-[#FDD700] text-[#FDD700]' : 'border-zinc-700 text-zinc-500'}">Messages: <strong>${d.messages ?? 0}</strong></button>` +
-        `<button type="button" data-todo-open="reviews" class="px-3 py-1.5 rounded-full border ${d.reviews ? 'border-[#FDD700] text-[#FDD700]' : 'border-zinc-700 text-zinc-500'}">Reviews to approve: <strong>${d.reviews ?? 0}</strong></button>` +
+        `<button type="button" data-todo-open="reviews" class="px-3 py-1.5 rounded-full border ${d.reviews ? 'border-[#FDD700] text-[#FDD700]' : 'border-zinc-700 text-zinc-500'}">Reviews to Approve: <strong>${d.reviews ?? 0}</strong></button>` +
         (syncBad ? '<button type="button" data-todo-tab="sync" class="px-3 py-1.5 rounded-full border border-red-500 text-red-300">Supplier check failing</button>' : '');
       bar.querySelectorAll('[data-todo-tab]').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.todoTab)));
       bar.querySelectorAll('[data-todo-open]').forEach((b) => b.addEventListener('click', () => (b.dataset.todoOpen === 'messages' ? messagesModal() : reviewsModal())));
@@ -287,7 +287,7 @@
       div.className = 'flex flex-wrap items-center justify-between gap-2 text-[11px] text-zinc-400 border-t border-zinc-800 pt-2';
       div.innerHTML = `<label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" data-bulk-pick class="accent-[#FDD700]"> Select</label>
         <span>${parts.length ? parts.join(' · ') : '<span class="text-zinc-600">No supplier cost yet</span>'}</span>
-        <button type="button" data-history class="underline hover:text-white">Price history</button>`;
+        <button type="button" data-history class="underline hover:text-white">Price History</button>`;
       card.insertBefore(div, card.firstElementChild);
       div.querySelector('[data-history]').addEventListener('click', () => showHistory(card.querySelector('[data-field="name"]').value));
       div.querySelector('[data-bulk-pick]').addEventListener('change', updateBulkCount);
@@ -300,13 +300,13 @@
     bar.id = 'bulkBar';
     bar.className = 'admin-card p-3 mb-3 flex flex-wrap items-center gap-2 text-sm';
     bar.innerHTML = `<span id="bulkCount" class="text-zinc-400">0 selected</span>
-      <button type="button" data-bulk-all class="border border-zinc-600 text-zinc-300 px-2 py-1 rounded-lg text-xs">Select all</button>
+      <button type="button" data-bulk-all class="border border-zinc-600 text-zinc-300 px-2 py-1 rounded-lg text-xs">Select All</button>
       <select id="bulkOp" class="admin-input text-sm w-auto">
         <option value="show">Show on shop</option><option value="hide">Hide from shop</option>
         <option value="add_vial">Change vial price by $</option><option value="add_kit">Change kit price by $</option></select>
       <input id="bulkAmount" type="number" step="1" placeholder="+5 or -5" class="admin-input text-sm w-24">
       <button type="button" id="bulkApply" class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-1.5 rounded-xl text-xs">Apply</button>
-      <button type="button" id="changeLogBtn" class="ml-auto border border-zinc-600 text-zinc-300 px-3 py-1.5 rounded-xl text-xs">Change log / Undo</button>
+      <button type="button" id="changeLogBtn" class="ml-auto border border-zinc-600 text-zinc-300 px-3 py-1.5 rounded-xl text-xs">Change Log / Undo</button>
       <div id="changeLog" class="hidden w-full"></div>`;
     list.parentNode.insertBefore(bar, list);
     bar.querySelector('[data-bulk-all]').addEventListener('click', () => {
@@ -351,7 +351,7 @@
       box.querySelectorAll('[data-undo]').forEach((b) =>
         b.addEventListener('click', async () => {
           try {
-            const r = await api('/api/admin/tools', { action: 'undo', id: b.dataset.undo });
+            const r = await api('/api/admin/tools', { action: 'Undo', id: b.dataset.undo });
             toast(r.message);
             box.classList.add('hidden');
             await loadProducts();
@@ -408,7 +408,7 @@
     const div = document.createElement('div');
     div.className = 'admin-card p-4';
     if (!bc.ready) {
-      div.innerHTML = '<p class="font-semibold text-white">Supplier bill check</p><p class="text-xs text-zinc-500">Starts after the next supplier check saves today\'s show-me-source costs.</p>';
+      div.innerHTML = '<p class="font-semibold text-white">Supplier Bill Check</p><p class="text-xs text-zinc-500">Starts after the next supplier check saves today\'s show-me-source costs.</p>';
     } else {
       const flagged = bc.orders.filter((o) => o.flag);
       div.innerHTML = `<p class="font-semibold text-white mb-1">Supplier bill check ${flagged.length ? `<span class="text-red-300 text-sm">(${flagged.length} to look at)</span>` : '<span class="text-emerald-300 text-sm">(all fine)</span>'}</p>
@@ -501,7 +501,7 @@
       if (e.target === modal || e.target.dataset.close) modal.remove();
     });
     const panel = modal.firstElementChild;
-    const head = '<div class="flex justify-between items-start"><h2 class="ducks-font text-2xl text-[#FDD700]">Two-step login</h2><button type="button" data-close="1" class="text-zinc-400 hover:text-white text-2xl leading-none">&times;</button></div>';
+    const head = '<div class="flex justify-between items-start"><h2 class="ducks-font text-2xl text-[#FDD700]">Two-Step Login</h2><button type="button" data-close="1" class="text-zinc-400 hover:text-white text-2xl leading-none">&times;</button></div>';
     const s = await api('/api/admin/tools?view=security').catch(() => ({}));
     if (s.totp_on) {
       panel.innerHTML = `${head}<p class="text-emerald-300">On. Signing in needs your password and a code from your authenticator app.</p>
@@ -558,7 +558,7 @@
     b.id = 'twoStepBtn';
     b.type = 'button';
     b.className = pw.className;
-    b.textContent = 'Two-step login';
+    b.textContent = 'Two-Step Login';
     b.addEventListener('click', securityModal);
     pw.parentNode.insertBefore(b, pw);
   }
@@ -569,7 +569,7 @@
     navigator.serviceWorker.register('/admin-sw.js', { scope: '/admin' }).catch(() => null);
   }
 
-  // "Add to home screen": Android/Chrome/Edge get the real install prompt; iPhone/iPad get
+  // "Add to Home Screen": Android/Chrome/Edge get the real install prompt; iPhone/iPad get
   // two-step instructions (Apple has no install prompt). Hidden once it runs as an app.
   (function installButton() {
     const btn = $('installBtn');
@@ -593,8 +593,8 @@
       const s = document.createElement('div');
       s.className = 'install-sheet';
       s.setAttribute('role', 'dialog');
-      s.setAttribute('aria-label', 'Add to home screen');
-      s.innerHTML = html + '<button type="button" class="btn-primary-admin" data-close>Got it</button>';
+      s.setAttribute('aria-label', 'Add to Home Screen');
+      s.innerHTML = html + '<button type="button" class="btn-primary-admin" data-close>Got It</button>';
       s.querySelector('[data-close]').addEventListener('click', () => s.remove());
       document.body.appendChild(s);
     }

@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Saira:wght@700;800&display=optional" rel="stylesheet">
   <link rel="stylesheet" href="/shared/tailwind.bc01e255.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
-  <link rel="stylesheet" href="/shared/spbc-2026.0e0dd77c.css">
+  <link rel="stylesheet" href="/shared/spbc-2026.98e62eac.css">
 
 </head>
 <body class="atmosphere spbc26 text-white min-h-screen" data-page="calculator">
@@ -39,10 +39,10 @@
           <span class="mast__name"><img class="mast__word" src="/assets/brand/spbc-springfield-h64.webp" alt="Springfield" width="170" height="18"><span>Peptide Buyers Club</span></span>
         </a>
         <nav class="mast__nav site-header__nav" aria-label="Main">
-          <a href="/#prices" class="nav-link" data-nav="index">Price list</a>
+          <a href="/#prices" class="nav-link" data-nav="index">Price List</a>
           <a href="/calculator.html" class="nav-link" data-nav="calculator">Calculator</a>
-          <a href="/lab-reports.html" class="nav-link" data-nav="lab-reports">Lab reports</a>
-          <a href="/track.html" class="nav-link" data-nav="track">Track<span class="nav-long">&nbsp;order</span></a>
+          <a href="/lab-reports.html" class="nav-link" data-nav="lab-reports">Lab Reports</a>
+          <a href="/track.html" class="nav-link" data-nav="track">Track<span class="nav-long">&nbsp;Order</span></a>
           <a href="/contact.html" class="nav-link" data-nav="contact">Contact</a>
         </nav>
         <a href="/#orderForm" class="mast__cart site-header__cart" data-header-cart hidden>
@@ -56,14 +56,14 @@
     <section class="page-hero hero26" aria-label="Calculator intro">
       <div class="page-hero-inner">
         <div class="hero26__text">
-          <p class="page-hero-eyebrow">Dosage tools</p>
-          <h1 class="page-hero-title">Dosage calculator</h1>
+          <p class="page-hero-eyebrow">Dosage Tools</p>
+          <h1 class="page-hero-title">Dosage Calculator</h1>
           <p class="page-hero-sub">Reconstitution math for U-100 insulin syringes (100 units = 1&nbsp;mL).
       BAC water max <strong class="text-zinc-100">3&nbsp;mL</strong> per vial.
       For research planning only - not medical advice.</p>
           <div class="page-hero-cta">
-            <a href="#calc-main" class="btn-primary">Open calculator</a>
-            <a href="/#prices" class="btn-secondary">Price list</a>
+            <a href="#calc-main" class="btn-primary">Open Calculator</a>
+            <a href="/#prices" class="btn-secondary">Price List</a>
           </div>
         </div>
         
@@ -89,12 +89,12 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="vialMg">Vial size (mg)</label>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="vialMg">Vial Size (mg)</label>
           <input id="vialMg" type="number" min="0.01" step="any" value="10" class="field" required inputmode="decimal" aria-describedby="vialMg-hint">
           <p id="vialMg-hint" class="text-[11px] text-zinc-500 mt-1">Total peptide in the vial</p>
         </div>
         <div>
-          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="bacMl">BAC water (mL)</label>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="bacMl">BAC Water (mL)</label>
           <input id="bacMl" type="number" min="0.1" max="3" step="0.1" value="2" class="field" required inputmode="decimal" aria-describedby="bacMl-hint">
           <p id="bacMl-hint" class="text-[11px] text-zinc-500 mt-1">Max 3.0 mL</p>
         </div>
@@ -102,11 +102,11 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="doseValue">Desired dose</label>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="doseValue">Desired Dose</label>
           <input id="doseValue" type="number" min="0.01" step="any" value="250" class="field" required inputmode="decimal">
         </div>
         <div>
-          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="doseUnit">Dose unit</label>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="doseUnit">Dose Unit</label>
           <select id="doseUnit" class="field">
             <option value="mcg" selected>mcg</option>
             <option value="mg">mg</option>
@@ -123,7 +123,7 @@
     <!-- SYRINGE VISUAL -->
     <section id="syringePanel" class="syringe-wrap depth-card grid-item mb-0 reveal" aria-labelledby="syringe-heading">
       <div class="flex items-center justify-between mb-3 px-1 gap-2">
-        <h2 id="syringe-heading" class="text-xs text-zinc-300 uppercase tracking-wider font-semibold">U-100 insulin syringe</h2>
+        <h2 id="syringe-heading" class="text-xs text-zinc-300 uppercase tracking-wider font-semibold">U-100 Insulin Syringe</h2>
         <p id="syringeLabel" class="text-sm font-bold text-[#EAB308]" aria-live="polite">— units</p>
       </div>
 
@@ -210,10 +210,10 @@
       <p id="outWarn" class="text-amber-400 text-xs hidden" role="status"></p>
       <div class="flex flex-col sm:flex-row gap-2 pt-1">
         <button type="button" id="copyCalcLinkBtn" class="btn-secondary flex-1 text-sm">
-          Copy shareable link
+          Copy Shareable Link
         </button>
         <button type="button" id="copyResultsBtn" class="btn-secondary flex-1 text-sm">
-          Copy results text
+          Copy Results Text
         </button>
       </div>
       <p id="shareStatus" class="text-emerald-400 text-xs text-center hidden" role="status"></p>
@@ -227,7 +227,7 @@
     </div>
 
     <p class="text-center text-zinc-500 text-xs mt-8">
-      <a href="/#prices" class="hover:text-[#EAB308] underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#EAB308] rounded">← Back to price list</a>
+      <a href="/#prices" class="hover:text-[#EAB308] underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#EAB308] rounded">← Back to Price List</a>
     </p>
   </main>
 
@@ -238,13 +238,13 @@
         <div>
           <div class="foot26__brand"><img src="/assets/brand/spbc-wordmark-h120.webp" alt="Springfield Peptide Buyers Club" width="260" height="40"></div>
           <p class="foot26__statement">Research peptides at posted prices, shipped with tracking.</p>
-          <p>Questions about an order? <a href="/contact.html" class="text-[#EAB308] hover:underline">Send us a message</a> or email <a href="mailto:support@springfieldpbc.com" class="text-[#EAB308] hover:underline">support@springfieldpbc.com</a>.</p>
+          <p>Questions about an order? <a href="/contact.html" class="text-[#EAB308] hover:underline">Send Us a Message</a> or email <a href="mailto:support@springfieldpbc.com" class="text-[#EAB308] hover:underline">support@springfieldpbc.com</a>.</p>
         </div>
         <nav class="foot26__links site-footer__nav" aria-label="Footer">
-          <a href="/#prices">Price list</a>
-          <a href="/my-orders.html">My orders</a>
-          <a href="/track.html">Track order</a>
-          <a href="/lab-reports.html">Lab reports</a>
+          <a href="/#prices">Price List</a>
+          <a href="/my-orders.html">My Orders</a>
+          <a href="/track.html">Track Order</a>
+          <a href="/lab-reports.html">Lab Reports</a>
           <a href="/calculator.html">Calculator</a>
           <a href="/contact.html">Contact</a>
           <a href="/privacy.html">Privacy</a>

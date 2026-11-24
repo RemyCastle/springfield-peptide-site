@@ -162,7 +162,7 @@ ${r.paid_cents ? `<tr><td colspan="3" style="text-align:right">Paid</td><td styl
             showError('Lookup failed. Please try again.');
         } finally {
             btn.disabled = false;
-            btn.textContent = 'Look up order';
+            btn.textContent = 'Look Up Order';
         }
     });
 

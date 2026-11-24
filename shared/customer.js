@@ -178,7 +178,7 @@
             $('prefReviews').checked = d.reviews;
             $('prefNews').checked = d.news;
         };
-        if (!token) state.textContent = 'This page opens from the "Email preferences" link at the bottom of our emails.';
+        if (!token) state.textContent = 'This page opens from the "Email Preferences" link at the bottom of our emails.';
         else post('/api/email-prefs', { token }).then((r) => {
             if (!r.ok) { state.textContent = r.d.message || 'This link is not valid.'; return; }
             state.classList.add('hidden');

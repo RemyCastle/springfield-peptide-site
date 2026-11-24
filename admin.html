@@ -172,21 +172,21 @@
 
     /* ---- SPBC palette (same as the shop): dark green header, light work area, lemon for main actions ---- */
     :root {
-      --a-paper: #F5F4EE; --a-paper-2: #FFFFFF; --a-paper-3: #EDEBE2; --a-line: #DEDCD2; --a-line-2: #C4C4B8;
-      --a-ink: #14251C; --a-ink-2: #3A4C42; --a-ink-3: #5F6E65;
-      --a-brand: #135232; --a-accent: #FDDC0E; --a-accent-2: #FFE647; --a-accent-ink: #0B2716;
+      --a-paper: #113623; --a-paper-2: #174A31; --a-paper-3: #1D5639; --a-line: rgba(251, 250, 242, 0.13); --a-line-2: rgba(251, 250, 242, 0.28);
+      --a-ink: #FBFAF2; --a-ink-2: #D6DFD8; --a-ink-3: #A9BAAF;
+      --a-brand: #FDDC0E; --a-accent: #FDDC0E; --a-accent-2: #FFE647; --a-accent-ink: #0B2716;
       --a-dark: #113623; --a-dark-2: #164A30; --a-dark-ink: #F6F7F2; --a-dark-ink-3: #A9BAB0;
-      --a-ok: #1E7A4A; --a-ok-bg: #E8F4EC; --a-ok-line: #A9D4B8;
-      --a-warn: #8A5A00; --a-warn-bg: #FFF6DB; --a-warn-line: #E9CF8A;
-      --a-bad: #B42318; --a-bad-bg: #FDECEA; --a-bad-line: #F1B5AE;
-      --a-info: #1D5F8A; --a-info-bg: #E6F0F7; --a-info-line: #A9C8DE;
-      --a-violet: #6B3FA0;
+      --a-ok: #7FD6A0; --a-ok-bg: rgba(127, 214, 160, 0.12); --a-ok-line: rgba(127, 214, 160, 0.4);
+      --a-warn: #F5C451; --a-warn-bg: rgba(253, 220, 14, 0.10); --a-warn-line: rgba(253, 220, 14, 0.4);
+      --a-bad: #FF8F80; --a-bad-bg: rgba(255, 143, 128, 0.12); --a-bad-line: rgba(255, 143, 128, 0.4);
+      --a-info: #8EC5EA; --a-info-bg: rgba(142, 197, 234, 0.12); --a-info-line: rgba(142, 197, 234, 0.4);
+      --a-violet: #C9A7F5;
     }
     body, .ducks-font { font-family: 'Archivo', system-ui, sans-serif; }
     .ducks-font { font-weight: 800; letter-spacing: -0.01em; text-transform: none; }
     html, body.admin-shell, .admin-shell { background: var(--a-paper) !important; color: var(--a-ink); scrollbar-gutter: stable; }
     body.atmosphere::before { display: none !important; }
-    input, select, textarea, button { color-scheme: light; }
+    input, select, textarea, button { color-scheme: dark; }
 
     /* Header (dark, like the shop) */
     .site-header[data-site-header] { background: var(--a-dark) !important; border-bottom: 1px solid rgba(246,247,242,.14); }
@@ -200,10 +200,10 @@
     .section-rule { display: none; }
 
     /* Cards, inputs, buttons */
-    .admin-card { background: var(--a-paper-2) !important; border: 1px solid var(--a-line) !important; box-shadow: 0 1px 2px rgba(20,37,28,.06), 0 2px 8px rgba(20,37,28,.05) !important; color: var(--a-ink); }
-    .admin-input { background: var(--a-paper-2) !important; border: 1px solid var(--a-line-2) !important; color: var(--a-ink) !important; border-radius: 0.6rem; }
+    .admin-card { background: var(--a-paper-2) !important; border: 1px solid var(--a-line) !important; box-shadow: none !important; color: var(--a-ink); }
+    .admin-input { background: #0D2C1C !important; border: 1px solid var(--a-line-2) !important; color: var(--a-ink) !important; border-radius: 0.6rem; }
     .admin-input:focus { border-color: var(--a-brand) !important; box-shadow: 0 0 0 3px rgba(21,69,48,.12) !important; }
-    .admin-input::placeholder { color: #8A968F; }
+    .admin-input::placeholder { color: #8FA398; }
     .btn-primary-admin { background: var(--a-accent) !important; color: var(--a-accent-ink) !important; border-radius: 999px; }
     .btn-primary-admin:hover { background: var(--a-accent-2) !important; }
     .btn-ghost-admin { background: var(--a-paper-2); border: 1px solid var(--a-line-2); color: var(--a-ink); border-radius: 999px; }
@@ -224,7 +224,7 @@
     body.admin-shell .text-amber-100, body.admin-shell .text-amber-300, body.admin-shell .text-amber-400, body.admin-shell .text-amber-400\/90, body.admin-shell .text-amber-500\/90 { color: var(--a-warn) !important; }
     body.admin-shell .text-sky-200, body.admin-shell .text-sky-300 { color: var(--a-info) !important; }
     body.admin-shell .text-\[\#a855f7\], body.admin-shell .text-\[\#e9d5ff\] { color: var(--a-violet) !important; }
-    body.admin-shell .bg-black, body.admin-shell .bg-zinc-900 { background-color: var(--a-paper-2) !important; }
+    body.admin-shell .bg-black, body.admin-shell .bg-zinc-900 { background-color: #0D2C1C !important; }
     body.admin-shell .bg-zinc-800, body.admin-shell .hover\:bg-zinc-700:hover, body.admin-shell .hover\:bg-zinc-800:hover, body.admin-shell .hover\:bg-zinc-800\/60:hover { background-color: var(--a-paper-3) !important; }
     body.admin-shell .bg-black\/80, body.admin-shell .bg-black\/70 { background-color: rgba(10, 30, 22, 0.55) !important; }
     body.admin-shell .bg-\[\#FDD700\], body.admin-shell .bg-amber-400 { background-color: var(--a-accent) !important; color: var(--a-accent-ink) !important; }
@@ -233,7 +233,7 @@
     body.admin-shell .bg-red-950 { background-color: var(--a-bad-bg) !important; }
     body.admin-shell .bg-emerald-950, body.admin-shell .bg-emerald-950\/30, body.admin-shell .bg-green-950 { background-color: var(--a-ok-bg) !important; }
     body.admin-shell .bg-sky-950, body.admin-shell .hover\:bg-sky-900:hover { background-color: var(--a-info-bg) !important; }
-    body.admin-shell .bg-emerald-600, body.admin-shell .bg-emerald-700, body.admin-shell .hover\:bg-emerald-500:hover { background-color: var(--a-brand) !important; color: #fff !important; }
+    body.admin-shell .bg-emerald-600, body.admin-shell .bg-emerald-700, body.admin-shell .hover\:bg-emerald-500:hover { background-color: var(--a-accent) !important; color: var(--a-accent-ink) !important; }
     body.admin-shell .bg-red-700, body.admin-shell .hover\:bg-red-900:hover { background-color: var(--a-bad) !important; color: #fff !important; }
     body.admin-shell [class*="border-zinc-"], body.admin-shell .divide-zinc-800 > * + * { border-color: var(--a-line) !important; }
     body.admin-shell .hover\:border-zinc-500:hover { border-color: var(--a-ink-3) !important; }
@@ -241,21 +241,22 @@
     body.admin-shell [class*="border-emerald-"], body.admin-shell .border-green-800 { border-color: var(--a-ok-line) !important; }
     body.admin-shell [class*="border-amber-"] { border-color: var(--a-warn-line) !important; }
     body.admin-shell [class*="border-sky-"] { border-color: var(--a-info-line) !important; }
-    body.admin-shell [class*="border-\[\#FDD700\]"], body.admin-shell .hover\:border-\[\#FDD700\]:hover { border-color: var(--a-brand) !important; }
+    body.admin-shell [class*="border-\[\#FDD700\]"] { border-color: var(--a-line-2) !important; } body.admin-shell .hover\:border-\[\#FDD700\]:hover { border-color: var(--a-accent) !important; }
     body.admin-shell [class*="ring-emerald-"] { --tw-ring-color: var(--a-ok-line) !important; }
     body.admin-shell [class*="accent-\[\#FDD700\]"] { accent-color: var(--a-brand) !important; }
     body.admin-shell [style*="color:#fca5a5"] { color: var(--a-bad) !important; }
     body.admin-shell [style*="background:#FDD700"] { background: var(--a-accent) !important; color: var(--a-accent-ink) !important; }
 
     body.admin-shell h1.text-\[\#FDD700\], body.admin-shell h2.text-\[\#FDD700\] { color: var(--a-ink) !important; letter-spacing: -0.02em; }
+    body.admin-shell [class*="uppercase"], body.admin-shell th { text-transform: none !important; letter-spacing: 0 !important; }
     /* Tabs: same style as the shop's filter buttons */
     body.admin-shell .admin-tabs {
       position: sticky; top: 0; z-index: 30; margin: 0 -0.75rem 1.25rem; padding: 0.6rem 0.75rem;
-      background: rgba(245, 244, 238, 0.95); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      background: rgba(17, 54, 35, 0.96); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--a-line);
     }
     body.admin-shell .admin-tabs .tab-btn { border-radius: 999px !important; border: 1px solid var(--a-line-2) !important; background: var(--a-paper-2) !important; color: var(--a-ink-2) !important; }
-    body.admin-shell .admin-tabs .tab-btn.bg-\[\#FDD700\] { background: var(--a-brand) !important; border-color: var(--a-brand) !important; color: #fff !important; }
+    body.admin-shell .admin-tabs .tab-btn.bg-\[\#FDD700\] { background: var(--a-accent) !important; border-color: var(--a-accent) !important; color: var(--a-accent-ink) !important; }
 
     /* Install button + sheet, account menu */
     .btn-install-admin {
@@ -292,15 +293,15 @@
       </a>
       <button id="installBtn" type="button" class="btn-install-admin" hidden>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg>
-        <span class="install-long">Add to home screen</span><span class="install-short">Install</span>
+        <span class="install-long">Add to Home Screen</span><span class="install-short">Install</span>
       </button>
       <div id="headerActions" class="hidden items-center gap-2">
         <span id="adminWho" class="text-xs text-emerald-200/90 hidden sm:inline"></span>
         <details class="acct-menu">
           <summary class="btn-ghost-admin">Account</summary>
           <div class="acct-menu__panel">
-            <button id="changePwBtn" type="button" class="btn-ghost-admin">Change password</button>
-            <button id="logoutBtn" type="button" class="btn-ghost-admin">Log out</button>
+            <button id="changePwBtn" type="button" class="btn-ghost-admin">Change Password</button>
+            <button id="logoutBtn" type="button" class="btn-ghost-admin">Log Out</button>
           </div>
         </details>
       </div>
@@ -311,8 +312,8 @@
   <main class="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
     <!-- LOGIN -->
     <section id="loginSection" class="max-w-sm mx-auto">
-      <p class="text-center text-[10px] uppercase tracking-[0.22em] text-emerald-300/80 mb-2">Members ops</p>
-      <h1 class="ducks-font text-3xl sm:text-4xl text-[#FDD700] text-center mb-2">Admin login</h1>
+      <p class="text-center text-[10px] uppercase tracking-[0.22em] text-emerald-300/80 mb-2">Members Ops</p>
+      <h1 class="ducks-font text-3xl sm:text-4xl text-[#FDD700] text-center mb-2">Admin Login</h1>
       <p class="text-center text-zinc-500 text-xs mb-6">Remy master - password stored hashed in the database</p>
       <form id="loginForm" class="admin-card space-y-4 p-5 sm:p-6">
         <div>
@@ -324,11 +325,11 @@
           <input id="password" name="password" type="password" autocomplete="current-password" required class="admin-input">
         </div>
         <div id="loginCodeWrap" class="hidden">
-          <label class="block text-xs text-zinc-400 mb-1" for="loginCode">Code from your authenticator app</label>
+          <label class="block text-xs text-zinc-400 mb-1" for="loginCode">Code from Your Authenticator App</label>
           <input id="loginCode" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="admin-input" placeholder="123456">
         </div>
         <p id="loginError" class="text-red-500 text-sm hidden break-word"></p>
-        <button type="submit" class="btn-primary-admin">Sign in</button>
+        <button type="submit" class="btn-primary-admin">Sign In</button>
       </form>
       <p class="text-center text-zinc-600 text-xs mt-6">
         <a href="/" class="hover:text-[#FDD700]">← Back to store</a>
@@ -337,14 +338,14 @@
 
     <!-- FIRST-RUN SETUP (only shown when no admin credential exists) -->
     <section id="setupSection" class="hidden max-w-sm mx-auto">
-      <p class="text-center text-[10px] uppercase tracking-[0.22em] text-emerald-300/80 mb-2">First-run setup</p>
-      <h1 class="ducks-font text-3xl sm:text-4xl text-[#FDD700] text-center mb-2">Set your password</h1>
+      <p class="text-center text-[10px] uppercase tracking-[0.22em] text-emerald-300/80 mb-2">First-Run Setup</p>
+      <h1 class="ducks-font text-3xl sm:text-4xl text-[#FDD700] text-center mb-2">Set Your Password</h1>
       <p class="text-center text-zinc-500 text-xs mb-6">
         No admin password is set. Enter the setup code from your Pages secrets, then pick a username and password.
       </p>
       <form id="setupForm" class="admin-card space-y-4 p-5 sm:p-6">
         <div>
-          <label class="block text-xs text-zinc-400 mb-1" for="setupToken">Setup code</label>
+          <label class="block text-xs text-zinc-400 mb-1" for="setupToken">Setup Code</label>
           <input id="setupToken" name="setupToken" type="password" autocomplete="off" required class="admin-input">
           <p class="text-[11px] text-zinc-500 mt-1">The value of the <code>ADMIN_SETUP_TOKEN</code> secret.</p>
         </div>
@@ -353,12 +354,12 @@
           <input id="setupUser" name="setupUser" autocomplete="username" required class="admin-input" value="remy">
         </div>
         <div>
-          <label class="block text-xs text-zinc-400 mb-1" for="setupPass">New password</label>
+          <label class="block text-xs text-zinc-400 mb-1" for="setupPass">New Password</label>
           <input id="setupPass" name="setupPass" type="password" autocomplete="new-password" required class="admin-input">
           <p class="text-[11px] text-zinc-500 mt-1">At least 12 characters. No leading or trailing spaces.</p>
         </div>
         <div>
-          <label class="block text-xs text-zinc-400 mb-1" for="setupPass2">Confirm password</label>
+          <label class="block text-xs text-zinc-400 mb-1" for="setupPass2">Confirm Password</label>
           <input id="setupPass2" name="setupPass2" type="password" autocomplete="new-password" required class="admin-input">
         </div>
         <p id="setupError" class="text-red-500 text-sm hidden break-word"></p>
@@ -381,15 +382,15 @@
         </button>
         <button type="button" data-tab="place" id="tabPlace"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
-          Place orders <span id="placeCount" class="hidden ml-1 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-amber-400 text-black text-[11px]"></span>
+          Place Orders <span id="placeCount" class="hidden ml-1 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-amber-400 text-black text-[11px]"></span>
         </button>
         <button type="button" data-tab="products" id="tabProducts"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
-          Price list
+          Price List
         </button>
         <button type="button" data-tab="sync" id="tabSync"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
-          Supplier sync
+          Supplier Sync
         </button>
         <button type="button" data-tab="money" id="tabMoney"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
@@ -397,14 +398,14 @@
         </button>
         <button type="button" data-tab="report" id="tabReport"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
-          Sales and profit
+          Sales and Profit
         </button>
       </nav>
 
       <!-- PLACE ORDERS AT SHOW-ME-SOURCE -->
       <div id="placePanel" class="hidden">
         <div class="panel-head">
-          <h1 class="ducks-font text-3xl text-[#FDD700]">Place orders</h1>
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Place Orders</h1>
           <div class="panel-actions">
             <a href="https://show-me-source.com/" target="_blank" rel="noopener noreferrer"
                class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">Open show-me-source ↗</a>
@@ -423,14 +424,14 @@
             <p class="text-xs text-zinc-400">Not your Outlook. That way their order, payment and tracking emails come straight here, so orders get matched, profit adds up, and customers get tracking.</p>
           </div>
           <button type="button" data-place-copy="supplier@springfieldpbc.com"
-                  class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm shrink-0">Copy email</button>
+                  class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm shrink-0">Copy Email</button>
         </div>
         <details class="admin-card p-4 mb-4">
-          <summary class="cursor-pointer font-semibold text-white">Fill orders at show-me-source automatically (one-time setup)</summary>
+          <summary class="cursor-pointer font-semibold text-white">Fill Orders at show-me-source Automatically (one-time setup)</summary>
           <ol class="list-decimal ml-5 mt-2 space-y-1 text-sm text-zinc-300">
             <li>Show your bookmarks bar (Ctrl+Shift+B).</li>
-            <li>Drag this button onto it: <a id="smsFillBookmark" href="#" class="inline-block bg-[#FDD700] text-black font-bold px-3 py-1 rounded-lg text-xs" onclick="return false">SPBC fill</a></li>
-            <li>For each order below, click <strong>Fill at show-me-source ↗</strong>. In the tab that opens, apply your pricing code if needed, then click <strong>SPBC fill</strong> in your bookmarks bar.</li>
+            <li>Drag this button onto it: <a id="smsFillBookmark" href="#" class="inline-block bg-[#FDD700] text-black font-bold px-3 py-1 rounded-lg text-xs" onclick="return false">SPBC Fill</a></li>
+            <li>For each order below, click <strong>Fill at show-me-source ↗</strong>. In the tab that opens, apply your pricing code if needed, then click <strong>SPBC Fill</strong> in your bookmarks bar.</li>
           </ol>
           <p class="text-xs text-zinc-500 mt-2">It fills the cart, the customer's address and supplier@springfieldpbc.com, and picks USPS Priority. It never ticks their boxes or places the order: you check and pay.</p>
         </details>
@@ -486,7 +487,7 @@
       <!-- SALES & PROFIT -->
       <div id="reportPanel" class="hidden">
         <div class="panel-head">
-          <h1 class="ducks-font text-3xl text-[#FDD700]">Sales and profit</h1>
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Sales and Profit</h1>
           <div class="panel-actions">
             <select id="reportRange" class="admin-input text-sm">
               <option value="30">Last 30 days</option>
@@ -509,8 +510,8 @@
 
         <div id="profitBox" class="admin-card p-4 mb-5">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h2 class="text-sm font-bold text-[#FDD700] uppercase tracking-wide">Profit after show-me-source</h2>
-            <button id="profitLoadBtn" type="button" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs">Work it out</button>
+            <h2 class="text-sm font-bold text-[#FDD700] uppercase tracking-wide">Profit After show-me-source</h2>
+            <button id="profitLoadBtn" type="button" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs">Work It Out</button>
           </div>
           <div id="profitBody" class="text-sm text-zinc-400">Uses the range picked above. Supplier cost = your price minus $25 per vial / $200 per kit.</div>
         </div>
@@ -535,7 +536,7 @@
         </div>
 
         <details id="quickOrderBox" class="admin-card p-4 mb-4">
-          <summary class="cursor-pointer font-bold text-[#FDD700]">+ Quick order for a customer who texted or Venmo'd you</summary>
+          <summary class="cursor-pointer font-bold text-[#FDD700]">+ Quick Order for a Customer Who Texted or Venmo'd You</summary>
           <p class="text-xs text-zinc-500 mt-2 mb-3">
             Makes a real order (same prices and rules as the website) and gives you a message with their pay link.
             The order code is filled into their Venmo note, so the payment matches automatically and they get tracking.
@@ -545,7 +546,7 @@
             <input id="qoEmail" type="email" placeholder="Email (optional, for receipts + tracking)" class="admin-input text-sm">
           </div>
           <div id="qoLines" class="space-y-2 mt-3"></div>
-          <button id="qoAddLine" type="button" class="mt-2 text-xs border border-zinc-600 text-zinc-300 px-2 py-1 rounded-lg">+ Add item</button>
+          <button id="qoAddLine" type="button" class="mt-2 text-xs border border-zinc-600 text-zinc-300 px-2 py-1 rounded-lg">+ Add Item</button>
           <details class="mt-3"><summary class="cursor-pointer text-xs text-zinc-400">Shipping address (optional; otherwise they get a link to add it)</summary>
             <div class="grid gap-2 sm:grid-cols-2 mt-2">
               <input id="qoShipLine1" placeholder="Street" class="admin-input text-sm">
@@ -557,7 +558,7 @@
             </div>
           </details>
           <div class="flex flex-wrap items-center gap-3 mt-3">
-            <button id="qoCreate" type="button" class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm">Make order + get pay link</button>
+            <button id="qoCreate" type="button" class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm">Make Order + Get Pay Link</button>
             <span id="qoTotal" class="text-sm text-zinc-400"></span>
           </div>
           <p id="qoError" class="text-sm text-red-400 mt-2 hidden"></p>
@@ -565,9 +566,9 @@
             <p id="qoResultTitle" class="text-emerald-300 font-semibold"></p>
             <textarea id="qoMessage" rows="5" class="w-full bg-black border border-zinc-700 rounded-xl p-2 text-sm text-white"></textarea>
             <div class="flex flex-wrap gap-2">
-              <button id="qoCopy" type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Copy message</button>
-              <a id="qoPayLink" href="#" target="_blank" rel="noopener" class="border border-zinc-600 text-zinc-200 px-3 py-1.5 rounded-lg text-xs">Open pay page</a>
-              <button id="qoNew" type="button" class="border border-zinc-600 text-zinc-300 px-3 py-1.5 rounded-lg text-xs">Start another</button>
+              <button id="qoCopy" type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Copy Message</button>
+              <a id="qoPayLink" href="#" target="_blank" rel="noopener" class="border border-zinc-600 text-zinc-200 px-3 py-1.5 rounded-lg text-xs">Open Pay Page</a>
+              <button id="qoNew" type="button" class="border border-zinc-600 text-zinc-300 px-3 py-1.5 rounded-lg text-xs">Start Another</button>
             </div>
           </div>
         </details>
@@ -590,7 +591,7 @@
                  class="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm">
           <label class="inline-flex items-center gap-2 text-sm text-zinc-400 cursor-pointer select-none px-1">
             <input id="orderShowCleared" type="checkbox" class="rounded border-zinc-600 bg-zinc-900 text-violet-500 focus:ring-violet-500">
-            Show cleared
+            Show Cleared
           </label>
         </div>
 
@@ -632,11 +633,11 @@
       <!-- PRODUCTS -->
       <div id="productsPanel" class="hidden">
         <div class="panel-head">
-          <h1 class="ducks-font text-3xl text-[#FDD700]">Price list</h1>
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Price List</h1>
           <div class="panel-actions">
             <button id="addBtn" type="button"
                     class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
-              + Add product
+              + Add Product
             </button>
           </div>
         </div>
@@ -644,7 +645,7 @@
         <!-- Add product: lands at position 1 -->
         <div id="addProductModal" class="hidden fixed inset-0 z-[120] bg-black/80 flex items-start sm:items-center justify-center p-4 overflow-auto">
           <div class="modal-panel w-full max-w-md bg-zinc-900 border border-[#FDD700]/30 rounded-2xl p-5 space-y-4">
-            <h2 class="ducks-font text-2xl text-[#FDD700]">Add product</h2>
+            <h2 class="ducks-font text-2xl text-[#FDD700]">Add Product</h2>
             <p class="text-xs text-zinc-500">Added at <strong class="text-zinc-300">position 1</strong> (top of the list).</p>
 
             <label class="block text-xs text-zinc-400">Name
@@ -652,17 +653,17 @@
                      class="mt-1 w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
             </label>
             <div class="flex gap-3">
-              <label class="block text-xs text-zinc-400 flex-1">Vial price $
+              <label class="block text-xs text-zinc-400 flex-1">Vial Price $
                 <input id="apVial" type="number" step="0.01" min="0"
                        class="mt-1 w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
               </label>
-              <label class="block text-xs text-zinc-400 flex-1">10-pack / kit $
+              <label class="block text-xs text-zinc-400 flex-1">10-pack / Kit $
                 <input id="apPack" type="number" step="0.01" min="0"
                        class="mt-1 w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
               </label>
             </div>
             <label class="flex items-center gap-2 text-xs text-zinc-400">
-              <input id="apKitOnly" type="checkbox" class="accent-[#FDD700]"> Kit only (no single vials)
+              <input id="apKitOnly" type="checkbox" class="accent-[#FDD700]"> Kit Only (no single vials)
             </label>
 
 
@@ -671,7 +672,7 @@
               <button id="apCancel" type="button"
                       class="px-4 py-2 rounded-xl border border-zinc-600 text-zinc-300 text-sm min-h-[44px]">Cancel</button>
               <button id="apSave" type="button"
-                      class="px-4 py-2 rounded-xl bg-[#FDD700] hover:bg-white text-black font-bold text-sm min-h-[44px]">Add product</button>
+                      class="px-4 py-2 rounded-xl bg-[#FDD700] hover:bg-white text-black font-bold text-sm min-h-[44px]">Add Product</button>
             </div>
           </div>
         </div>
@@ -685,7 +686,7 @@
       <!-- SUPPLIER SYNC (show-me-source prices + stock, workers/supplier-sync) -->
       <div id="syncPanel" class="hidden">
         <div class="panel-head">
-          <h1 class="ducks-font text-3xl text-[#FDD700]">Supplier sync</h1>
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Supplier Sync</h1>
           <div class="panel-actions">
             <button id="syncReloadBtn" type="button"
                     class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm">
@@ -710,31 +711,31 @@
   <div id="pwModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4"
        style="background:rgba(0,0,0,.75);">
     <div class="modal-panel admin-card w-full max-w-sm p-5 sm:p-6">
-      <h2 class="ducks-font text-2xl text-[#FDD700] mb-1">Change password</h2>
+      <h2 class="ducks-font text-2xl text-[#FDD700] mb-1">Change Password</h2>
       <p class="text-zinc-500 text-xs mb-5">
         Stored hashed in the database. You stay signed in after changing it.
       </p>
       <form id="pwForm" class="space-y-4">
         <div>
-          <label class="block text-xs text-zinc-400 mb-1" for="pwCurrent">Current password</label>
+          <label class="block text-xs text-zinc-400 mb-1" for="pwCurrent">Current Password</label>
           <input id="pwCurrent" name="pwCurrent" type="password" autocomplete="current-password"
                  required class="admin-input">
         </div>
         <div>
-          <label class="block text-xs text-zinc-400 mb-1" for="pwNew">New password</label>
+          <label class="block text-xs text-zinc-400 mb-1" for="pwNew">New Password</label>
           <input id="pwNew" name="pwNew" type="password" autocomplete="new-password"
                  required minlength="12" class="admin-input">
           <p class="text-[11px] text-zinc-600 mt-1">At least 12 characters. No leading or trailing space.</p>
         </div>
         <div>
-          <label class="block text-xs text-zinc-400 mb-1" for="pwNew2">Confirm new password</label>
+          <label class="block text-xs text-zinc-400 mb-1" for="pwNew2">Confirm New Password</label>
           <input id="pwNew2" name="pwNew2" type="password" autocomplete="new-password"
                  required minlength="12" class="admin-input">
         </div>
         <p id="pwError" class="text-red-500 text-sm hidden break-word"></p>
         <p id="pwOk" class="text-emerald-400 text-sm hidden break-word"></p>
         <div class="flex gap-2 pt-1">
-          <button type="submit" class="btn-primary-admin flex-1">Save password</button>
+          <button type="submit" class="btn-primary-admin flex-1">Save Password</button>
           <button type="button" id="pwCancel" class="btn-ghost-admin">Cancel</button>
         </div>
       </form>
@@ -949,7 +950,7 @@
         loadOrders();
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Make order + get pay link';
+        btn.textContent = 'Make Order + Get Pay Link';
       }
     });
     document.getElementById('qoCopy')?.addEventListener('click', async (e) => {
@@ -966,7 +967,7 @@
       });
       document.getElementById('qoLines').innerHTML = '';
       document.getElementById('qoResult').classList.add('hidden');
-      document.getElementById('qoCopy').textContent = 'Copy message';
+      document.getElementById('qoCopy').textContent = 'Copy Message';
       qoAddLine();
     });
 
@@ -1000,8 +1001,8 @@
         ${p.note ? `<span class="text-xs text-zinc-400 italic">“${escapeHtml(p.note)}”</span>` : ''}
         <span class="flex-1"></span>
         ${moneySmsSelect(p.key)}
-        <button type="button" data-money-notsale="${escapeAttr(p.key)}" class="text-[11px] border border-zinc-600 text-zinc-300 px-2 py-0.5 rounded-lg">Not a sale</button>
-        ${linked ? `<button type="button" data-money-auto="${escapeAttr(p.key)}" class="text-[11px] text-zinc-500 underline">undo</button>` : ''}
+        <button type="button" data-money-notsale="${escapeAttr(p.key)}" class="text-[11px] border border-zinc-600 text-zinc-300 px-2 py-0.5 rounded-lg">Not a Sale</button>
+        ${linked ? `<button type="button" data-money-auto="${escapeAttr(p.key)}" class="text-[11px] text-zinc-500 underline">Undo</button>` : ''}
       </div>`;
     }
 
@@ -1023,23 +1024,23 @@
       const card = (label, v, tone) =>
         `<div class="admin-card p-3"><p class="text-[11px] uppercase tracking-wide text-zinc-500">${label}</p><p class="text-xl font-bold ${tone || 'text-zinc-100'}">${v}</p></div>`;
       let html = `<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        ${card('Paired sales', t.sales || 0)}
-        ${card('Money in (after fees)', $m((t.money_in || 0) - (t.fees || 0)))}
+        ${card('Paired Sales', t.sales || 0)}
+        ${card('Money In (after fees)', $m((t.money_in || 0) - (t.fees || 0)))}
         ${card('Paid show-me-source', $m(t.supplier_cost))}
         ${card('Profit', $m(t.profit), (t.profit || 0) >= 0 ? 'text-emerald-300' : 'text-red-400')}
       </div>
       <p class="text-xs text-zinc-500">From ${d.emails || 0} emails. ${t.unpaired_payments || 0} payments (${$m(t.unpaired_payments_total)}) and ${t.unpaired_orders || 0} show-me-source orders have no partner yet; they are not in these totals.</p>`;
 
       if ((d.months || []).length) {
-        html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-1">By month</p><ul class="space-y-0.5">' +
+        html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-1">By Month</p><ul class="space-y-0.5">' +
           d.months.map((m) => `<li>${escapeHtml(m.month)}: ${m.sales} sales · in ${$m(m.money_in)} · out ${$m(m.supplier_cost)} · profit <strong class="${m.profit >= 0 ? 'text-emerald-300' : 'text-red-400'}">${$m(m.profit)}</strong></li>`).join('') +
           '</ul></div>';
       }
 
       if ((d.customers || []).length) {
-        html += '<div class="admin-card p-4 overflow-x-auto"><p class="font-semibold text-white mb-1">By customer</p>' +
+        html += '<div class="admin-card p-4 overflow-x-auto"><p class="font-semibold text-white mb-1">By Customer</p>' +
           '<p class="text-xs text-zinc-500 mb-2">Everything each customer paid vs everything you paid show-me-source for them. "Balance" estimates what they still owe at <strong>today&#39;s</strong> prices (orders × today&#39;s price + $15 shipping, minus what they sent). Orders sold at older or wholesale prices will look owed, so check before asking anyone to pay.</p>' +
-          '<table class="w-full min-w-[720px]"><thead class="text-xs text-zinc-500 text-left"><tr><th class="py-1">Customer</th><th class="text-right">Paid you</th><th class="text-right">Show-me-source</th><th class="text-right">Profit</th><th class="text-right" title="At today&#39;s prices, so orders sold at older or wholesale prices look owed">Balance at today&#39;s prices</th><th></th></tr></thead><tbody>' +
+          '<table class="w-full min-w-[720px]"><thead class="text-xs text-zinc-500 text-left"><tr><th class="py-1">Customer</th><th class="text-right">Paid You</th><th class="text-right">Show-me-source</th><th class="text-right">Profit</th><th class="text-right" title="At today&#39;s prices, so orders sold at older or wholesale prices look owed">Balance at today&#39;s prices</th><th></th></tr></thead><tbody>' +
           d.customers.map((c, i) => `<tr class="border-t border-zinc-800"><td class="py-1">${escapeHtml(c.customer)}${c.complete ? '' : ' <span class="text-xs text-amber-300">(one side missing)</span>'}</td>
             <td class="text-right tabular-nums">${$m(c.money_in)} <span class="text-xs text-zinc-500">(${c.payments})</span></td>
             <td class="text-right tabular-nums">${$m(c.supplier_cost)} <span class="text-xs text-zinc-500">(${c.orders})</span></td>
@@ -1050,12 +1051,12 @@
       }
 
       if ((d.unmatched_in || []).length) {
-        html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-1">Payments with no show-me-source order</p>' +
-          '<p class="text-xs text-zinc-500 mb-2">Pick the order it paid for, or mark it "Not a sale" (refunds, training, friends and family). A payment here may also be an order you still need to place.</p>' +
+        html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-1">Payments with No show-me-source Order</p>' +
+          '<p class="text-xs text-zinc-500 mb-2">Pick the order it paid for, or mark it "Not a Sale" (refunds, training, friends and family). A payment here may also be an order you still need to place.</p>' +
           d.unmatched_in.map((p) => moneyPayment(p, linked.has(p.key))).join('') + '</div>';
       }
 
-      html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-2">Show-me-source orders</p>' +
+      html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-2">Show-Me-Source Orders</p>' +
         (d.sales || []).map((x) => `<div class="border-t border-zinc-800 py-2">
           <div class="flex flex-wrap justify-between gap-2">
             <p><strong class="text-white">${escapeHtml(x.sms)}</strong> · ${escapeHtml(x.customer)} · ${mDay(x.date)}
@@ -1070,11 +1071,11 @@
         </div>`).join('') + '</div>';
 
       if ((d.other_out || []).length) {
-        html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-1">Other money you sent</p><p class="text-xs text-zinc-500 mb-1">Not counted in profit.</p><ul class="space-y-0.5">' +
+        html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-1">Other Money You Sent</p><p class="text-xs text-zinc-500 mb-1">Not counted in profit.</p><ul class="space-y-0.5">' +
           d.other_out.map((o) => `<li>${escapeHtml(o.name)} · ${$m(o.amount)} · ${mDay(o.date)}${o.note ? ` · <span class="italic text-zinc-400">“${escapeHtml(o.note)}”</span>` : ''}</li>`).join('') + '</ul></div>';
       }
       if (notSale.length) {
-        html += `<p class="text-xs text-zinc-500">${notSale.length} payment(s) marked "Not a sale". <button type="button" data-money-shownotsale class="underline">Show</button></p><div id="moneyNotSale" class="hidden"></div>`;
+        html += `<p class="text-xs text-zinc-500">${notSale.length} payment(s) marked "Not a Sale". <button type="button" data-money-shownotsale class="underline">Show</button></p><div id="moneyNotSale" class="hidden"></div>`;
       }
       body.innerHTML = html;
       window.spbcAdminTools?.billCheck(d, body);
@@ -1345,7 +1346,7 @@
       try {
         await navigator.clipboard.writeText(btn.dataset.placeCopy);
         btn.textContent = 'Copied';
-        setTimeout(() => (btn.textContent = 'Copy email'), 1500);
+        setTimeout(() => (btn.textContent = 'Copy Email'), 1500);
       } catch {
         btn.textContent = 'Copy failed';
       }
@@ -1580,7 +1581,7 @@
         html += '<p class="text-xs text-amber-300 mb-2">For orders without a typed cost, set what show-me-source charges you to ship (Supplier sync → Automations) so the estimate counts it.</p>';
       }
       if ((d.months || []).length > 1) {
-        html += '<p class="text-[11px] uppercase tracking-wide text-zinc-500 mt-2 mb-1">By month</p><ul class="text-sm space-y-0.5">' +
+        html += '<p class="text-[11px] uppercase tracking-wide text-zinc-500 mt-2 mb-1">By Month</p><ul class="text-sm space-y-0.5">' +
           d.months.map((m) => `<li>${escapeHtml(m.month)}: ${m.orders} orders · profit <strong class="text-white">${$(m.profit)}</strong></li>`).join('') + '</ul>';
       }
       if ((d.products || []).length) {
@@ -1673,7 +1674,7 @@
         <label class="flex flex-wrap items-center gap-2 text-sm">Delete old contact messages, alert sign-ups and logs after
           <input type="number" data-auto="cleanup_months" value="${escapeAttr(A.cleanup_months || '0')}" min="0" max="120" class="admin-input w-20 text-sm"> months
           <span class="text-xs text-zinc-500">(0 = keep; orders and payment records are always kept)</span></label>
-        <p class="font-semibold text-white pt-2">Shop settings</p>
+        <p class="font-semibold text-white pt-2">Shop Settings</p>
         <label class="flex flex-wrap items-center gap-2 text-sm">Shipping: Standard $
           <input type="number" step="0.01" data-auto="ship_standard" value="${escapeAttr(A.ship_standard || '10')}" min="0" max="100" class="admin-input w-20 text-sm">
           Priority $ <input type="number" step="0.01" data-auto="ship_priority" value="${escapeAttr(A.ship_priority || '18')}" min="0" max="200" class="admin-input w-20 text-sm">
@@ -1687,19 +1688,19 @@
           Charge sales tax of <input type="number" step="0.001" data-auto="tax_rate" value="${escapeAttr(A.tax_rate || '0')}" min="0" max="15" class="admin-input w-20 text-sm">%
           on orders shipping to <input type="text" data-auto="tax_state" value="${escapeAttr(A.tax_state || 'OR')}" maxlength="2" class="admin-input w-14 text-sm uppercase">
           <span class="text-xs text-zinc-500">(ask your accountant for the right rate)</span></label>
-        <button type="button" id="autoSaveBtn" class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm">Save automations</button>
+        <button type="button" id="autoSaveBtn" class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm">Save Automations</button>
       </div>`;
 
       const labOn = !!(d.settings && d.settings.show_lab_reports);
       html += `<div class="admin-card p-4 flex flex-wrap items-center justify-between gap-3">
-        <div><p class="font-semibold text-white">Lab reports on the shop</p>
+        <div><p class="font-semibold text-white">Lab Reports on the Shop</p>
         <p class="text-xs text-zinc-400">${d.lab_reports_found || 0} products have a lab report from show-me-source.
         They open through springfieldpbc.com, but the document itself may name the supplier. Open one before turning this on.</p></div>
         <button type="button" id="syncLabToggle" class="${labOn ? 'bg-emerald-700 text-white' : 'bg-zinc-800 text-zinc-200'} font-bold px-4 py-2 rounded-xl text-sm">
           ${labOn ? 'Shown · turn off' : 'Hidden · turn on'}</button></div>`;
 
       const waiting = d.restock_waiting || [];
-      html += `<div class="admin-card p-4"><p class="font-semibold text-white mb-1">Waiting for restock emails</p>` +
+      html += `<div class="admin-card p-4"><p class="font-semibold text-white mb-1">Waiting for Restock Emails</p>` +
         (waiting.length
           ? '<ul class="text-sm space-y-0.5">' + waiting.map((w) => `<li>${escapeHtml(w.spbc_name)}: <strong>${w.n}</strong> ${w.n === 1 ? 'person' : 'people'}</li>`).join('') + '</ul>'
           : '<p class="text-xs text-zinc-500">Nobody is waiting.</p>') +
@@ -1728,7 +1729,7 @@
       }
 
       // Held price changes
-      html += '<div><h2 class="text-sm font-bold text-[#FDD700] uppercase tracking-wide mb-2">Waiting for you: big price changes</h2>';
+      html += '<div><h2 class="text-sm font-bold text-[#FDD700] uppercase tracking-wide mb-2">Waiting for You: Big Price Changes</h2>';
       html += d.holds.length
         ? d.holds.map((h) => {
             const x = h.detail || {};
@@ -1749,7 +1750,7 @@
 
       // New supplier products
       const opts = d.products.map((p) => `<option value="${escapeAttr(p.name)}">${escapeHtml(p.name)}${p.active ? '' : ' (hidden)'}</option>`).join('');
-      html += '<div><h2 class="text-sm font-bold text-[#FDD700] uppercase tracking-wide mb-2">Waiting for you: new supplier products</h2>';
+      html += '<div><h2 class="text-sm font-bold text-[#FDD700] uppercase tracking-wide mb-2">Waiting for You: New Supplier Products</h2>';
       html += d.new_products.length
         ? d.new_products.map((n) => {
             const x = n.detail || {};
@@ -1772,7 +1773,7 @@
       html += '</div>';
 
       // Recent automatic changes
-      html += '<div><h2 class="text-sm font-bold text-zinc-300 uppercase tracking-wide mb-2">Recent changes</h2>';
+      html += '<div><h2 class="text-sm font-bold text-zinc-300 uppercase tracking-wide mb-2">Recent Changes</h2>';
       html += d.recent.length
         ? '<div class="admin-card divide-y divide-zinc-800">' +
           d.recent.map((r) => `<div class="px-4 py-2 flex flex-wrap justify-between gap-2">
@@ -1891,9 +1892,9 @@
             reportStatCard('Their profit', usd(d.profit_cents), 'revenue minus cost', tone) +
             reportStatCard('Their margin', d.margin_pct == null ? '—' : d.margin_pct + '%', '', tone)
           : reportStatCard('Revenue', usd(d.revenue_cents), d.orders + ' orders · ' + d.units + ' units') +
-            reportStatCard('Units sold', String(d.units), 'vials + packs') +
+            reportStatCard('Units Sold', String(d.units), 'vials + packs') +
             reportStatCard('Orders', String(d.orders), 'paid, shipped or complete') +
-            reportStatCard('Net profit', '—', 'needs a supplier cost per product');
+            reportStatCard('Net Profit', '—', 'needs a supplier cost per product');
       }
 
       if (channels && d.channels && d.channels.length) {
@@ -2762,14 +2763,14 @@
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs text-zinc-500 mb-1">Vial price</label>
+            <label class="block text-xs text-zinc-500 mb-1">Vial Price</label>
             <input data-field="vial_price" type="number" step="0.01" min="0"
                    value="${escapeAttr(moneyVal(p.vial_price))}"
                    ${p.kit_only ? 'disabled' : ''}
                    class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm disabled:opacity-40">
           </div>
           <div>
-            <label class="block text-xs text-zinc-500 mb-1">10-pack / kit</label>
+            <label class="block text-xs text-zinc-500 mb-1">10-pack / Kit</label>
             <input data-field="pack_price" type="number" step="0.01" min="0"
                    value="${escapeAttr(moneyVal(p.pack_price))}"
                    class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">
@@ -3172,6 +3173,6 @@
 
     checkSession();
   </script>
-  <script src="/shared/admin-tools.5884c256.js"></script>
+  <script src="/shared/admin-tools.6a27a481.js"></script>
 </body>
 </html>

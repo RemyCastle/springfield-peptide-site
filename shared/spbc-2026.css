@@ -10,30 +10,30 @@
  * fonts load with display=optional, scrollbar space always reserved, price grid holds its room.
  */
 
-/* ── Tokens: light reading area ──────────────────────────── */
+/* ── Tokens: one green field, matched to the logo ─────────── */
 :root {
-  --color-paper: #F5F4EE;
-  --color-paper-2: #FFFFFF;
-  --color-paper-3: #EDEBE2;
-  --color-ink: #14251C;
-  --color-ink-2: #3A4C42;
-  --color-ink-3: #5F6E65;
-  --color-rule: #DEDCD2;
-  --color-rule-strong: #C4C4B8;
-  --color-brand: #135232;
+  --color-paper: #113623;
+  --color-paper-2: #174A31;
+  --color-paper-3: #1D5639;
+  --color-ink: #FBFAF2;
+  --color-ink-2: #D6DFD8;
+  --color-ink-3: #A9BAAF;
+  --color-rule: rgba(251, 250, 242, 0.13);
+  --color-rule-strong: rgba(251, 250, 242, 0.28);
+  --color-brand: #FDDC0E;
   --color-accent: #FDDC0E;
   --color-accent-strong: #FFE647;
   --color-accent-ink: #0B2716;
-  --color-accent-text: var(--color-brand);
-  --color-accent-wash: rgba(21, 69, 48, 0.12);
-  --color-ok: #1E7A4A;
-  --color-warn: #8A5A00;
-  --color-warn-bg: #FFF6DB;
-  --color-danger: #B42318;
-  --color-danger-bg: #FDECEA;
-  --color-focus: #1E5C40;
+  --color-accent-text: var(--color-accent);
+  --color-accent-wash: rgba(253, 220, 14, 0.18);
+  --color-ok: #7FD6A0;
+  --color-warn: #F5C451;
+  --color-warn-bg: rgba(253, 220, 14, 0.10);
+  --color-danger: #FF8F80;
+  --color-danger-bg: rgba(255, 143, 128, 0.12);
+  --color-focus: #FDDC0E;
   --color-scrim: #113623;
-  --shadow-card: 0 1px 2px rgba(20, 37, 28, 0.06), 0 2px 8px rgba(20, 37, 28, 0.05);
+  --shadow-card: none;
 
   --font-display: 'Saira', 'Archivo', 'Segoe UI', system-ui, sans-serif;
   --font-body: 'Archivo', 'Segoe UI', system-ui, sans-serif;
@@ -141,7 +141,7 @@ body.spbc26 .text-red-300, body.spbc26 .text-red-400 { color: var(--color-danger
 body.spbc26 .text-amber-200, body.spbc26 .text-amber-300, body.spbc26 .text-amber-400 { color: var(--color-warn) !important; }
 body.spbc26 .bg-black, body.spbc26 .bg-zinc-900, body.spbc26 .bg-zinc-800 { background-color: var(--color-paper-2) !important; }
 body.spbc26 .bg-red-950, body.spbc26 .bg-red-950\/80 { background-color: var(--color-danger-bg) !important; }
-body.spbc26 .bg-emerald-950, body.spbc26 .bg-emerald-950\/80 { background-color: #E8F4EC !important; }
+body.spbc26 .bg-emerald-950, body.spbc26 .bg-emerald-950\/80 { background-color: rgba(127, 214, 160, 0.12) !important; }
 body.spbc26 [class*="border-zinc-"] { border-color: var(--color-rule-strong) !important; }
 body.spbc26 .bg-\[\#EAB308\], body.spbc26 .bg-\[\#FDD700\] { background-color: var(--color-accent) !important; color: var(--color-accent-ink) !important; }
 body.spbc26 .border-\[\#EAB308\], body.spbc26 .border-\[\#FDD700\]\/40, body.spbc26 .border-\[\#EAB308\]\/40 { border-color: var(--color-brand) !important; }
@@ -292,7 +292,7 @@ body.atmosphere .cat-head p { margin: 0; color: var(--color-ink-3); font-size: v
   border-radius: 999px !important; border: 1px solid var(--color-rule-strong) !important; background: var(--color-paper-2) !important; color: var(--color-ink-2) !important;
   box-shadow: none !important; min-height: 38px; padding: 0 1rem !important;
 }
-.filter-chip.active, .filter-chip[aria-pressed="true"] { border-color: var(--color-brand) !important; color: #fff !important; background: var(--color-brand) !important; }
+.filter-chip.active, .filter-chip[aria-pressed="true"] { border-color: var(--color-accent) !important; color: var(--color-accent-ink) !important; background: var(--color-accent) !important; }
 
 /* ── Catalogue cards (store.js markup) ───────────────────── */
 #priceTable { min-height: 28rem; }
@@ -338,10 +338,10 @@ body.atmosphere .price-label { font-family: var(--font-body); font-size: var(--t
 body.spbc26 main input[type="text"], body.spbc26 main input[type="email"], body.spbc26 main input[type="tel"], body.spbc26 main input[type="number"], body.spbc26 main input[type="search"], body.spbc26 main textarea, body.spbc26 main select,
 body.spbc26 .modal-backdrop input, body.spbc26 .modal-backdrop textarea, body.spbc26 .modal-backdrop select {
   background: var(--color-paper-2) !important; border: 1px solid var(--color-rule-strong) !important;
-  color: var(--color-ink) !important; font-family: var(--font-body); color-scheme: light;
+  color: var(--color-ink) !important; font-family: var(--font-body); color-scheme: dark;
 }
 #orderForm input:not([type="checkbox"]):not([type="radio"]), #orderForm textarea, body.spbc26 main textarea, body.spbc26 main input[type="text"], body.spbc26 main input[type="email"], body.spbc26 main input[type="tel"] { border-radius: var(--radius-sm) !important; }
-body.spbc26 main input::placeholder, body.spbc26 main textarea::placeholder { color: #8A968F !important; }
+body.spbc26 main input::placeholder, body.spbc26 main textarea::placeholder { color: #8FA398 !important; }
 #orderForm input:focus, #orderForm textarea:focus, body.spbc26 main input:focus, body.spbc26 main textarea:focus, body.spbc26 main select:focus { border-color: var(--color-brand) !important; outline: none; box-shadow: 0 0 0 3px var(--color-accent-wash) !important; }
 #orderForm legend, #orderForm label { color: var(--color-ink-2); }
 body.spbc26 label[class*="uppercase"], body.spbc26 main p[class*="uppercase"] { text-transform: none !important; letter-spacing: 0 !important; font-size: var(--text-sm) !important; font-weight: 600; color: var(--color-ink-2) !important; }
@@ -431,7 +431,7 @@ body.spbc26 .tabular-gold, body.spbc26 .text-gold { color: var(--color-brand) !i
 body.spbc26 main.spbc-main p.text-center { text-align: left !important; }
 
 /* Last old-theme leftovers: cart bar, quantity menus, copy button, progress bar */
-body.spbc26 .qty-select { background: var(--color-paper-2) !important; border-color: var(--color-rule-strong) !important; color: var(--color-ink) !important; color-scheme: light; }
+body.spbc26 .qty-select { background: var(--color-paper-2) !important; border-color: var(--color-rule-strong) !important; color: var(--color-ink) !important; color-scheme: dark; }
 .sticky-order-inner { border-color: var(--color-rule) !important; box-shadow: none !important; }
 .sticky-expand-hint { color: var(--color-ink-3) !important; }
 #stickyClearBtn, .btn-clear-cart { background: transparent !important; color: var(--color-ink-3) !important; border-color: var(--color-rule-strong) !important; }
@@ -482,3 +482,53 @@ body.spbc26 .age-gate__brand { margin-bottom: var(--space-lg); }
   .mast__cart { min-height: 36px; padding: 0 var(--space-sm); }
   .hero26__logo { display: none; } /* the header already carries the logo on phones */
 }
+
+/* ── All-green round ─────────────────────────────────────── */
+.hero26__logo { display: none !important; }
+footer.site-footer, body.atmosphere footer.foot26 { background: #0C2919 !important; border-top: 1px solid var(--color-rule) !important; }
+.mast { border-bottom: 1px solid var(--color-rule) !important; }
+.page-hero.hero26 { border-bottom: 1px solid var(--color-rule) !important; }
+body.spbc26 .price-card, body.spbc26 .price-card.depth-card, .depth-card, .flat-panel, #orderForm, .hero26__panel, .notice26 { background: var(--color-paper-2) !important; border-color: var(--color-rule) !important; }
+#orderForm input:not([type="checkbox"]):not([type="radio"]), #orderForm textarea, #orderForm select,
+body.spbc26 main input[type="text"], body.spbc26 main input[type="email"], body.spbc26 main input[type="tel"], body.spbc26 main input[type="number"], body.spbc26 main input[type="search"], body.spbc26 main textarea, body.spbc26 main select,
+body.spbc26 .search-field, body.spbc26 .qty-select, body.spbc26 .modal-backdrop input, body.spbc26 .modal-backdrop textarea, body.spbc26 .modal-backdrop select {
+  background: #0D2C1C !important; border-color: var(--color-rule-strong) !important; color: var(--color-ink) !important;
+}
+.qty-stepper { background: #0D2C1C !important; }
+.filter-chip { background: transparent !important; }
+.price-amount { color: var(--color-accent) !important; }
+.terms-scroll { background: #0D2C1C !important; }
+#shipSpeedBox label { background: #0D2C1C !important; }
+#shipSpeedBox label:has(input:checked) { border-color: var(--color-accent) !important; box-shadow: inset 0 0 0 1px var(--color-accent); }
+body.spbc26 .btn-secondary:hover { border-color: var(--color-accent) !important; color: var(--color-accent) !important; }
+body.spbc26 .modal-backdrop { background: rgba(4, 16, 10, 0.7) !important; }
+body.spbc26 .copy-btn { background: transparent !important; color: var(--color-accent) !important; }
+.paywarn26 { border-left-color: var(--color-accent) !important; }
+.paywarn26 strong { color: var(--color-accent) !important; }
+.notice26--ship { border-left-color: var(--color-accent) !important; }
+body.spbc26 .price-card a[href^="/api/lab-report"] { color: var(--color-accent) !important; text-decoration-color: rgba(253, 220, 14, 0.4); }
+
+/* ── Centered layout: titles and narrow blocks sit on the page's centre line ── */
+.hero26 .page-hero-inner { grid-template-columns: minmax(0, 1fr) !important; justify-items: center; text-align: center !important; }
+.hero26__text { max-width: 44rem; margin: 0 auto; text-align: center; }
+.hero26 .page-hero-title, body.atmosphere .hero26 p.page-hero-sub, body.atmosphere .hero26 p.page-hero-eyebrow { text-align: center !important; margin-left: auto !important; margin-right: auto !important; }
+.hero26 .page-hero-cta { justify-content: center !important; }
+body[data-page="index"] .hero26__panel { width: 100%; max-width: 60rem; text-align: left; }
+.cat-head { flex-direction: column; align-items: center; text-align: center; }
+.prices-filter-panel { display: flex; flex-direction: column; align-items: center; }
+.prices-filter-panel > .relative { width: 100%; max-width: 30rem; }
+.prices-filter-panel .flex { justify-content: center !important; }
+#shopBanners { text-align: center; }
+.price-group-heading, h3.price-group-heading { text-align: center !important; }
+body.spbc26 #gtkTitle, body.spbc26 #good-to-know .text-center, body.spbc26 #good-to-know > div > p { text-align: center !important; }
+body.spbc26 main.spbc-main > .mx-auto, body.spbc26 .order-shell > * { margin-left: auto !important; margin-right: auto !important; }
+body.spbc26 main.spbc-main h1.text-center, body.spbc26 main.spbc-main h2.text-center, body.spbc26 main.spbc-main > div.text-center,
+body.spbc26 main.spbc-main p.text-center, body.spbc26 .order-shell .text-center, body.spbc26 .order-shell h2, .terms26-title { text-align: center !important; }
+body.spbc26 main.spbc-main h2.ducks-font { text-align: center !important; }
+body.spbc26 form, body.spbc26 #labList, body.spbc26 .terms-scroll { text-align: left; }
+.notice26 { text-align: center; border-left-width: 1px !important; border-top: 3px solid var(--color-accent) !important; }
+.notice26--ruo { border-top-color: var(--color-danger) !important; }
+
+/* One capitalisation rule: Title Case words as written; no forced ALL CAPS (product names stay as named) */
+body.spbc26 [class*="uppercase"]:not(.price-card-title), body.spbc26 .btn-clear-cart, body.spbc26 #orderForm legend, body.spbc26 .copy-btn { text-transform: none !important; letter-spacing: 0 !important; }
+body.spbc26 #orderForm legend, body.spbc26 #orderForm p[class*="uppercase"] { font-size: var(--text-sm) !important; font-weight: 700; color: var(--color-ink) !important; }

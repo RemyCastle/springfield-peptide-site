@@ -16,12 +16,12 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="vialMg">Vial size (mg)</label>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="vialMg">Vial Size (mg)</label>
           <input id="vialMg" type="number" min="0.01" step="any" value="10" class="field" required inputmode="decimal" aria-describedby="vialMg-hint">
           <p id="vialMg-hint" class="text-[11px] text-zinc-500 mt-1">Total peptide in the vial</p>
         </div>
         <div>
-          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="bacMl">BAC water (mL)</label>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="bacMl">BAC Water (mL)</label>
           <input id="bacMl" type="number" min="0.1" max="3" step="0.1" value="2" class="field" required inputmode="decimal" aria-describedby="bacMl-hint">
           <p id="bacMl-hint" class="text-[11px] text-zinc-500 mt-1">Max 3.0 mL</p>
         </div>
@@ -29,11 +29,11 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="doseValue">Desired dose</label>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="doseValue">Desired Dose</label>
           <input id="doseValue" type="number" min="0.01" step="any" value="250" class="field" required inputmode="decimal">
         </div>
         <div>
-          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="doseUnit">Dose unit</label>
+          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide font-semibold" for="doseUnit">Dose Unit</label>
           <select id="doseUnit" class="field">
             <option value="mcg" selected>mcg</option>
             <option value="mg">mg</option>
@@ -50,7 +50,7 @@
     <!-- SYRINGE VISUAL -->
     <section id="syringePanel" class="syringe-wrap depth-card grid-item mb-0 reveal" aria-labelledby="syringe-heading">
       <div class="flex items-center justify-between mb-3 px-1 gap-2">
-        <h2 id="syringe-heading" class="text-xs text-zinc-300 uppercase tracking-wider font-semibold">U-100 insulin syringe</h2>
+        <h2 id="syringe-heading" class="text-xs text-zinc-300 uppercase tracking-wider font-semibold">U-100 Insulin Syringe</h2>
         <p id="syringeLabel" class="text-sm font-bold text-[#EAB308]" aria-live="polite">— units</p>
       </div>
 
@@ -137,10 +137,10 @@
       <p id="outWarn" class="text-amber-400 text-xs hidden" role="status"></p>
       <div class="flex flex-col sm:flex-row gap-2 pt-1">
         <button type="button" id="copyCalcLinkBtn" class="btn-secondary flex-1 text-sm">
-          Copy shareable link
+          Copy Shareable Link
         </button>
         <button type="button" id="copyResultsBtn" class="btn-secondary flex-1 text-sm">
-          Copy results text
+          Copy Results Text
         </button>
       </div>
       <p id="shareStatus" class="text-emerald-400 text-xs text-center hidden" role="status"></p>
@@ -154,6 +154,6 @@
     </div>
 
     <p class="text-center text-zinc-500 text-xs mt-8">
-      <a href="/#prices" class="hover:text-[#EAB308] underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#EAB308] rounded">← Back to price list</a>
+      <a href="/#prices" class="hover:text-[#EAB308] underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#EAB308] rounded">← Back to Price List</a>
     </p>
   </main>

@@ -27,66 +27,66 @@ const CART_KEY = "spbc_cart_draft";
          * Keys MUST match product names exactly (join key — never rename products).
          * Unmapped names fall through to FALLBACK_CATEGORY so new products never disappear.
          */
-        const FALLBACK_CATEGORY = 'Other research';
+        const FALLBACK_CATEGORY = 'Other Research';
         const PRODUCT_CATEGORY_ORDER = [
-            'GLP-1 / metabolic',
-            'Repair & recovery',
-            'Skin & cosmetic',
-            'Longevity & mitochondrial',
-            'GH secretagogues',
-            'Other research',
+            'GLP-1 / Metabolic',
+            'Repair & Recovery',
+            'Skin & Cosmetic',
+            'Longevity & Mitochondrial',
+            'GH Secretagogues',
+            'Other Research',
             'Supplies',
         ];
         const PRODUCT_CATEGORY_BY_NAME = {
-            'SEMA 5MG': 'GLP-1 / metabolic',
-            'SEMA 10MG': 'GLP-1 / metabolic',
-            'CAGRI  5MG': 'GLP-1 / metabolic',
-            'CAGRI 10MG': 'GLP-1 / metabolic',
-            'TIRZ 10MG': 'GLP-1 / metabolic',
-            'TIRZ 30MG': 'GLP-1 / metabolic',
-            'TIRZ 60MG': 'GLP-1 / metabolic',
-            'RETA 10MG': 'GLP-1 / metabolic',
-            'RETA 30MG': 'GLP-1 / metabolic',
-            'RETA 60 MG': 'GLP-1 / metabolic',
-            'RETA 66MG': 'GLP-1 / metabolic',
-            'BPC-157 10MG': 'Repair & recovery',
-            'TB-500 10MG': 'Repair & recovery',
-            'KPV 10 MG': 'Repair & recovery',
-            'KLOW 80MG': 'Repair & recovery',
-            'GHK-CU 50MG': 'Skin & cosmetic',
-            'GHK-cu 100MG': 'Skin & cosmetic',
-            'MOTS-C 10MG': 'Longevity & mitochondrial',
-            'MOTS-C 40MG': 'Longevity & mitochondrial',
-            'SS-31 10MG': 'Longevity & mitochondrial',
-            'SS-31 50MG': 'Longevity & mitochondrial',
-            'NAD+ 500MG': 'Longevity & mitochondrial',
-            'NAD+ 1000MG': 'Longevity & mitochondrial',
-            '5-AMINO-1MQ 50MG': 'Longevity & mitochondrial',
-            'GLUTATHIONE 1200MG': 'Longevity & mitochondrial',
-            'IPA 10MG': 'GH secretagogues',
-            'CJC/IPA NO DAC 10MG': 'GH secretagogues',
-            'Tesamorelin': 'GH secretagogues',
-            'Tesamorelin 10MG': 'GH secretagogues',
-            'Tesamorelin 20MG': 'GH secretagogues',
-            'SEMAX 10MG': 'Other research',
-            'PE-22-28 10MG': 'Other research',
-            'PT-141 10 MG': 'Other research',
-            'MT1': 'Other research',
-            'MT2': 'Other research',
-            'DSIP 10MG': 'Other research',
+            'SEMA 5MG': 'GLP-1 / Metabolic',
+            'SEMA 10MG': 'GLP-1 / Metabolic',
+            'CAGRI  5MG': 'GLP-1 / Metabolic',
+            'CAGRI 10MG': 'GLP-1 / Metabolic',
+            'TIRZ 10MG': 'GLP-1 / Metabolic',
+            'TIRZ 30MG': 'GLP-1 / Metabolic',
+            'TIRZ 60MG': 'GLP-1 / Metabolic',
+            'RETA 10MG': 'GLP-1 / Metabolic',
+            'RETA 30MG': 'GLP-1 / Metabolic',
+            'RETA 60 MG': 'GLP-1 / Metabolic',
+            'RETA 66MG': 'GLP-1 / Metabolic',
+            'BPC-157 10MG': 'Repair & Recovery',
+            'TB-500 10MG': 'Repair & Recovery',
+            'KPV 10 MG': 'Repair & Recovery',
+            'KLOW 80MG': 'Repair & Recovery',
+            'GHK-CU 50MG': 'Skin & Cosmetic',
+            'GHK-cu 100MG': 'Skin & Cosmetic',
+            'MOTS-C 10MG': 'Longevity & Mitochondrial',
+            'MOTS-C 40MG': 'Longevity & Mitochondrial',
+            'SS-31 10MG': 'Longevity & Mitochondrial',
+            'SS-31 50MG': 'Longevity & Mitochondrial',
+            'NAD+ 500MG': 'Longevity & Mitochondrial',
+            'NAD+ 1000MG': 'Longevity & Mitochondrial',
+            '5-AMINO-1MQ 50MG': 'Longevity & Mitochondrial',
+            'GLUTATHIONE 1200MG': 'Longevity & Mitochondrial',
+            'IPA 10MG': 'GH Secretagogues',
+            'CJC/IPA NO DAC 10MG': 'GH Secretagogues',
+            'Tesamorelin': 'GH Secretagogues',
+            'Tesamorelin 10MG': 'GH Secretagogues',
+            'Tesamorelin 20MG': 'GH Secretagogues',
+            'SEMAX 10MG': 'Other Research',
+            'PE-22-28 10MG': 'Other Research',
+            'PT-141 10 MG': 'Other Research',
+            'MT1': 'Other Research',
+            'MT2': 'Other Research',
+            'DSIP 10MG': 'Other Research',
             'BAC WATER 2.5ML': 'Supplies',
             'BAC WATER 3ML': 'Supplies',
             'BAC WATER 10 ML': 'Supplies',
             // show-me-source catalog (2026-11-23)
-            'TIRZ 100MG': 'GLP-1 / metabolic',
-            'WOLVERINE 20MG': 'Repair & recovery',
-            'GHK-CU 75MG': 'Skin & cosmetic',
-            'SS-31 30MG': 'Longevity & mitochondrial',
-            'EPITHALON': 'Longevity & mitochondrial',
-            'SELANK 10MG': 'Other research',
-            'THYMOSIN A1 10MG': 'Other research',
-            'THYMALIN 10MG': 'Other research',
-            'VIP 10MG': 'Other research',
+            'TIRZ 100MG': 'GLP-1 / Metabolic',
+            'WOLVERINE 20MG': 'Repair & Recovery',
+            'GHK-CU 75MG': 'Skin & Cosmetic',
+            'SS-31 30MG': 'Longevity & Mitochondrial',
+            'EPITHALON': 'Longevity & Mitochondrial',
+            'SELANK 10MG': 'Other Research',
+            'THYMOSIN A1 10MG': 'Other Research',
+            'THYMALIN 10MG': 'Other Research',
+            'VIP 10MG': 'Other Research',
         };
 
         function categoryForProduct(name) {
@@ -655,10 +655,10 @@ const CART_KEY = "spbc_cart_draft";
                     body += `<span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border border-amber-700/30 text-amber-300">Only ${maxUnits} vial${maxUnits === 1 ? '' : 's'} left</span>`;
                 }
                 if (p.low_stock && !fewLeft) {
-                    body += '<span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border border-amber-700/30 text-amber-300">Low stock</span>';
+                    body += '<span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border border-amber-700/30 text-amber-300">Low Stock</span>';
                 }
                 if (p.lab_report) {
-                    body += `<a href="/api/lab-report?p=${encodeURIComponent(name)}" target="_blank" rel="noopener" class="text-[11px] font-semibold text-emerald-300 hover:underline">View lab report</a>`;
+                    body += `<a href="/api/lab-report?p=${encodeURIComponent(name)}" target="_blank" rel="noopener" class="text-[11px] font-semibold text-emerald-300 hover:underline">View Lab Report</a>`;
                 }
                 body += '</div>';
             }
@@ -693,7 +693,7 @@ const CART_KEY = "spbc_cart_draft";
             return article;
         }
 
-        /** Sold out at the supplier: name + "Email me when it's back". Lives outside #priceTable. */
+        /** Sold out at the supplier: name + "Email Me When It's Back". Lives outside #priceTable. */
         function renderSoldOut(list) {
             let box = document.getElementById('soldOutList');
             if (!box) {
@@ -708,7 +708,7 @@ const CART_KEY = "spbc_cart_draft";
                 return;
             }
             const savedEmail = savedContactEmail();
-            box.innerHTML = `<h3 class="price-group-heading">Sold out, back soon</h3>
+            box.innerHTML = `<h3 class="price-group-heading">Sold Out, Back Soon</h3>
                 <div class="grid gap-3 sm:grid-cols-2">` +
                 list.map((p) => `
                     <form class="depth-card p-4 space-y-2" data-restock="${escapeHtml(p.name)}" novalidate>
@@ -717,7 +717,7 @@ const CART_KEY = "spbc_cart_draft";
                             <input type="email" required placeholder="Your email" value="${escapeHtml(savedEmail)}"
                                    aria-label="Email for ${escapeHtml(p.name)} restock"
                                    class="min-w-0 flex-1 bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white">
-                            <button type="submit" class="shrink-0 px-3 py-2 rounded-xl text-sm font-bold bg-[#FDD700] text-black">Email me when it's back</button>
+                            <button type="submit" class="shrink-0 px-3 py-2 rounded-xl text-sm font-bold bg-[#FDD700] text-black">Email Me When It's Back</button>
                         </div>
                         <p class="text-xs text-zinc-400 hidden" data-restock-msg></p>
                     </form>`).join('') +
@@ -761,7 +761,7 @@ const CART_KEY = "spbc_cart_draft";
                     after.parentNode.insertBefore(box, after.nextSibling);
                 }
                 const stars = (n) => '★★★★★'.slice(0, n) + '<span class="text-zinc-700">' + '★★★★★'.slice(0, 5 - n) + '</span>';
-                box.innerHTML = `<h3 class="price-group-heading">What members say <span class="text-sm text-zinc-400 font-normal">${d.average}★ from ${d.count} review${d.count === 1 ? '' : 's'}</span></h3>
+                box.innerHTML = `<h3 class="price-group-heading">What Members Say <span class="text-sm text-zinc-400 font-normal">${d.average}★ from ${d.count} review${d.count === 1 ? '' : 's'}</span></h3>
                     <div class="grid gap-3 sm:grid-cols-2">` +
                     d.reviews.slice(0, 6).map((r) => `<figure class="depth-card p-4 space-y-1">
                         <p class="text-[#EAB308] text-sm" aria-label="${Number(r.rating)} out of 5 stars">${stars(Number(r.rating))}</p>
@@ -1015,7 +1015,7 @@ const CART_KEY = "spbc_cart_draft";
             submitBtn.textContent = 'PLACE ORDER & PAY';
             const confirmBtn = document.getElementById('reviewConfirmBtn');
             confirmBtn.disabled = false;
-            confirmBtn.textContent = 'Confirm & place order';
+            confirmBtn.textContent = 'Confirm & Place Order';
             refreshSubmitEnabled();
         }
 
@@ -1575,7 +1575,7 @@ const CART_KEY = "spbc_cart_draft";
                     shipLink.classList.add('ring-2', 'ring-amber-400');
                 } else {
                     if (shipNote) shipNote.textContent = 'Shipping address is on file.';
-                    shipLink.textContent = 'Edit shipping address';
+                    shipLink.textContent = 'Edit Shipping Address';
                 }
 
                 box.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1596,7 +1596,7 @@ const CART_KEY = "spbc_cart_draft";
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'PLACE ORDER & PAY';
                 confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Confirm & place order';
+                confirmBtn.textContent = 'Confirm & Place Order';
                 refreshSubmitEnabled();
             }
         }
@@ -1758,7 +1758,7 @@ const CART_KEY = "spbc_cart_draft";
             try {
                 await navigator.clipboard.writeText(num);
                 label.textContent = 'Copied!';
-                setTimeout(() => { label.textContent = 'Copy order #'; }, 2000);
+                setTimeout(() => { label.textContent = 'Copy Order #'; }, 2000);
             } catch (_) {
                 // Fallback
                 const ta = document.createElement('textarea');
@@ -1768,7 +1768,7 @@ const CART_KEY = "spbc_cart_draft";
                 document.execCommand('copy');
                 ta.remove();
                 label.textContent = 'Copied!';
-                setTimeout(() => { label.textContent = 'Copy order #'; }, 2000);
+                setTimeout(() => { label.textContent = 'Copy Order #'; }, 2000);
             }
         });
 
