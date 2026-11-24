@@ -1134,10 +1134,10 @@ const CART_KEY = "spbc_cart_draft";
                 document.getElementById('successTotal').textContent =
                     '$' + (Number(data.total_cents || subtotalFinal) / 100).toFixed(2);
                 document.getElementById('successPayLink').href =
-                    data.pay_url || `https://spbc-orders.spbc.workers.dev/pay/${encodeURIComponent(data.order_number)}`;
+                    data.pay_url || `https://spbc-orders.remycastle.workers.dev/pay/${encodeURIComponent(data.order_number)}`;
                 const shipLink = document.getElementById('successShipLink');
                 shipLink.href =
-                    data.shipping_url || `https://spbc-orders.spbc.workers.dev/shipping/${encodeURIComponent(data.order_number)}`;
+                    data.shipping_url || `https://spbc-orders.remycastle.workers.dev/shipping/${encodeURIComponent(data.order_number)}`;
                 const shipNote = document.getElementById('successShipNote');
                 if (data.shipping_saved === false) {
                     if (shipNote) shipNote.textContent = 'We still need your shipping address — use the link below.';

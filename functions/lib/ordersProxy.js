@@ -3,11 +3,11 @@
  *
  * Env (Pages secrets / vars):
  *   ORDERS_ADMIN_TOKEN  — same value as ADMIN_TOKEN on spbc-orders
- *   ORDERS_PUBLIC_URL   — optional, default https://spbc-orders.spbc.workers.dev
+ *   ORDERS_PUBLIC_URL   — optional, default https://spbc-orders.remycastle.workers.dev
  */
 
 function ordersBaseUrl(env) {
-  return (env.ORDERS_PUBLIC_URL || 'https://spbc-orders.spbc.workers.dev').replace(
+  return (env.ORDERS_PUBLIC_URL || 'https://spbc-orders.remycastle.workers.dev').replace(
     /\/$/,
     ''
   );
