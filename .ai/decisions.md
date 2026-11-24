@@ -220,3 +220,13 @@ Append-only log. Newest at bottom.
 
 ### 2026-11-24 — "SPBC fill" for show-me-source checkout
 - Place orders: "Fill at show-me-source" opens their shop with the order in `window.name` (SPBCFILL:<base64 JSON>; not in the URL). The "SPBC fill" bookmarklet (source in admin.html `#smsFillSrc`) uses their own `setProductQty(supplier_id, units)` to set the cart (kits = 10 units), fills fname/lname/email (supplier@)/phone/addr/city/state/zip, picks usps-priority, warns when `PROMO_CODE` is empty and lists products it could not find. It never ticks their agreement boxes or places the order. Tested on the live show-me-source page; test cart emptied.
+
+## 2026-11-24 — 40-upgrade build
+- Prices round to whole dollars (halves up) in the sync formula.
+- Shipping: Standard $10 / Priority $18 by default (admin-editable); free shipping covers Standard, Priority pays the difference.
+- Duplicate-order warning never shows the earlier order number (anyone can type an email).
+- Two-step login secret lives in admin_security, never site_settings; login fails closed if it can't check; code reuse blocked atomically.
+- Sales tax is its own line (SKU SALES-TAX), left out of supplier orders and profit.
+- Customer tokens (review, email preferences) are random and stored; My-orders sign-in tokens are stored only as SHA-256.
+- Clean-up never touches orders or payment/supplier emails (tax records).
+- Off-site backup uses OneDrive until Google Drive for desktop is installed (Remy asked for Google Drive).
