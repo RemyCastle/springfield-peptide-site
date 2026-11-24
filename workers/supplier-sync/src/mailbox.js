@@ -14,6 +14,11 @@
  *
  * COPY_TO (optional var): a copy of trusted direct mail is forwarded there (Remy's Outlook),
  * so he still sees show-me-source emails. The address must be verified in Email Routing.
+ *
+ * Outlook often forwards emails AS ATTACHMENTS (always when several are forwarded at once).
+ * For trusted forwards, each attached email (.eml / message/rfc822) is opened and saved as
+ * its own row; the empty outer note is skipped. Outlook .msg files cannot be read here and
+ * are logged as kind 'unsupported_msg' so Remy can be told to forward them inline.
  */
 import PostalMime from 'postal-mime';
 import { ensureSyncSchema } from './schema.js';
@@ -108,24 +113,27 @@ export async function handleEmail(message, env) {
     }
   }
 
-  const res = await env.DB.prepare(
-    `INSERT INTO supplier_mail (message_id, envelope_from, from_addr, subject, kind, text_body, html_body, sent_at, trusted, auth)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(message_id) DO NOTHING`
-  )
-    .bind(
-      String(email.messageId || `${Date.now()}-${Math.random()}`).slice(0, 300),
-      envelopeFrom,
-      origFrom.slice(0, 300),
+  // Emails Outlook attached to a forward: save each one (only for trusted forwards).
+  const attached = forwarded ? await attachedEmails(email) : [];
+  for (const a of attached) {
+    await insertMail(env.DB, { ...a, envelopeFrom, trusted: true, auth: 'forwarded-attachment' });
+  }
+  const outerEmpty = !subject.trim() && !htmlToPlain(text || html).trim();
+  let stored = false;
+  if (!(attached.length && outerEmpty)) {
+    stored = await insertMail(env.DB, {
+      messageId: email.messageId,
+      fromAddr: origFrom,
       subject,
       kind,
       text,
       html,
-      email.date || null,
-      trusted ? 1 : 0,
-      forwarded ? 'forwarded' : direct || 'none'
-    )
-    .run();
-  const stored = !!(res && res.meta && res.meta.changes);
+      sentAt: email.date,
+      envelopeFrom,
+      trusted,
+      auth: forwarded ? 'forwarded' : direct || 'none',
+    });
+  }
 
   // Keep Remy's Outlook in the loop for mail show-me-source sent here directly.
   if (stored && direct && env.COPY_TO) {
@@ -142,7 +150,77 @@ export async function handleEmail(message, env) {
       trusted,
       via: forwarded ? 'forwarded' : direct || 'untrusted',
       from_masked: mask(origFrom || envelopeFrom),
+      attachments_saved: attached.length,
     })
   );
-  return { stored, kind, trusted };
+  return { stored, kind, trusted, attached: attached.length };
+}
+
+function htmlToPlain(s) {
+  return String(s || '')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ');
+}
+
+async function insertMail(db, m) {
+  const res = await db
+    .prepare(
+      `INSERT INTO supplier_mail (message_id, envelope_from, from_addr, subject, kind, text_body, html_body, sent_at, trusted, auth)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(message_id) DO NOTHING`
+    )
+    .bind(
+      String(m.messageId || `${Date.now()}-${Math.random()}`).slice(0, 300),
+      m.envelopeFrom,
+      String(m.fromAddr || '').toLowerCase().slice(0, 300),
+      String(m.subject || '').slice(0, 500),
+      m.kind,
+      String(m.text || '').slice(0, MAX_BODY),
+      String(m.html || '').slice(0, MAX_BODY),
+      m.sentAt || null,
+      m.trusted ? 1 : 0,
+      m.auth
+    )
+    .run();
+  return !!(res && res.meta && res.meta.changes);
+}
+
+/** Emails attached to a forward (.eml / message/rfc822), parsed. .msg files are reported, not read. */
+export async function attachedEmails(email) {
+  const out = [];
+  for (const att of email.attachments || []) {
+    const type = String(att.mimeType || '').toLowerCase();
+    const name = String(att.filename || '').toLowerCase();
+    if (type === 'message/rfc822' || name.endsWith('.eml')) {
+      try {
+        const inner = await PostalMime.parse(att.content);
+        const from = String((inner.from && inner.from.address) || '').toLowerCase();
+        const text = String(inner.text || '');
+        const html = String(inner.html || '');
+        out.push({
+          messageId: inner.messageId,
+          fromAddr: from,
+          subject: inner.subject || '',
+          kind: mailKind(from, inner.subject || '', text || htmlToPlain(html)),
+          text,
+          html,
+          sentAt: inner.date,
+        });
+      } catch (e) {
+        console.log(JSON.stringify({ msg: 'supplier_mail.attachment_unreadable', error: String(e.message || e).slice(0, 120) }));
+      }
+    } else if (type === 'application/vnd.ms-outlook' || name.endsWith('.msg')) {
+      out.push({
+        messageId: `msg-${name}-${Date.now()}-${Math.random()}`,
+        fromAddr: '',
+        subject: att.filename || 'Outlook .msg attachment',
+        kind: 'unsupported_msg',
+        text: '',
+        html: '',
+        sentAt: null,
+      });
+    }
+  }
+  return out;
 }
