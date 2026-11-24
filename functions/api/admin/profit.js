@@ -82,8 +82,13 @@ export async function onRequestGet({ request, env }) {
     const o = d.order;
     let rev = 0;
     let cost = 0;
+    let taxIn = 0;
     for (const it of d.items || []) {
       const qty = Number(it.qty) || 0;
+      if (it.sku === 'SALES-TAX') {
+        taxIn += (Number(it.unit_price_cents) / 100) * qty;
+        continue;
+      }
       const lineRev = (Number(it.unit_price_cents) / 100) * qty;
       const lineCost = supplierUnitCost(it) * qty;
       rev += lineRev;
@@ -98,7 +103,8 @@ export async function onRequestGet({ request, env }) {
     }
     const shipIn = (Number(o.shipping_cents) || 0) / 100;
     const paidRecorded = o.paid_amount_cents != null && Number(o.paid_amount_cents) > 0;
-    const moneyIn = paidRecorded ? Number(o.paid_amount_cents) / 100 : (Number(o.total_cents) || 0) / 100;
+    // Sales tax collected belongs to the state, so it is not counted as money in.
+    const moneyIn = (paidRecorded ? Number(o.paid_amount_cents) / 100 : (Number(o.total_cents) || 0) / 100) - taxIn;
     const hasReal = realCost.has(o.order_number);
     const moneyOut = hasReal ? realCost.get(o.order_number) : cost + smsShip;
     const profit = moneyIn - moneyOut;

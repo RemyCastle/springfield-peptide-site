@@ -82,6 +82,8 @@ ${cancelDays ? `<p>Unpaid orders are cancelled after ${cancelDays} days.</p>` : 
 }
 
 /** Morning email to Remy: paid orders not yet placed at show-me-source, plus things waiting. */
+const PROBLEM_LABEL = { place_order: 'failed order tries', js_error: 'page errors', load_products: 'price list failed to load' };
+
 export async function dailyDigest(env, db) {
   const s = await getSettings(db);
   if (s.digest_on !== '1' || !s.digest_to || !emailReady(env)) return { skipped: true };
@@ -100,6 +102,12 @@ export async function dailyDigest(env, db) {
   const holds = (await one("SELECT COUNT(*) AS n FROM supplier_sync_events WHERE kind = 'hold_price' AND status = 'pending'")).n || 0;
   const newer = (await one("SELECT COUNT(*) AS n FROM supplier_sync_events WHERE kind = 'new_product' AND status = 'pending'")).n || 0;
   const lastRun = await one("SELECT status, created_at FROM supplier_sync_events WHERE kind = 'run' ORDER BY id DESC LIMIT 1");
+  const problems = await db
+    .prepare("SELECT kind, COUNT(*) AS n FROM client_reports WHERE created_at > datetime('now', '-1 day') GROUP BY kind")
+    .all()
+    .then((r) => r.results || [])
+    .catch(() => []);
+  const problemText = problems.map((p) => `${p.n} ${PROBLEM_LABEL[p.kind] || p.kind}`).join(', ');
   const admin = `${siteUrl(env)}/admin`;
   const rows = toPlace
     .map((o) => `<li><strong>${esc(o.order_number)}</strong> · ${esc(o.customer_name || '')} · ${money(o.total_cents)}</li>`)
@@ -110,6 +118,7 @@ ${rows ? `<ul>${rows}</ul>` : ''}
 ${ordersError ? `<p style="color:#b00">Could not read orders: ${esc(ordersError)}</p>` : ''}
 ${holds ? `<p>${holds} big price change${holds === 1 ? '' : 's'} waiting for you.</p>` : ''}
 ${newer ? `<p>${newer} new show-me-source product${newer === 1 ? '' : 's'} waiting for you.</p>` : ''}
+${problemText ? `<p style="color:#b00">Checkout problems on the shop in the last day: ${esc(problemText)}.</p>` : ''}
 ${lastRun.status === 'error' ? '<p style="color:#b00">The last supplier check failed. Open Supplier sync in the admin.</p>' : ''}
 <p><a href="${admin}" style="color:#b8860b">Open the admin</a></p>`);
   const ok = await sendEmail(env, {
@@ -249,4 +258,39 @@ export async function autoMatch(env, db, now = Date.now()) {
     }
   }
   return { paid, shipped };
+}
+
+/**
+ * Best sellers: single vials sold per SPBC product over the last 90 days, from show-me-source's
+ * order emails (these include sales made outside the website). Top 3 saved as
+ * site_settings.best_sellers (JSON list of SPBC product names) for the shop's badges and sort.
+ */
+export async function computeBestSellers(db) {
+  const { results: rows } = await db
+    .prepare(
+      `SELECT id, from_addr, subject, sent_at, received_at, text_body, html_body FROM supplier_mail
+       WHERE trusted = 1 AND kind IN ('sms_order','sms_shipping') AND received_at > datetime('now', '-90 days')`
+    )
+    .all();
+  const orders = smsOrders(rows.map(parseMoneyMail).filter(Boolean));
+  const map = (await db.prepare('SELECT supplier_name, spbc_name FROM supplier_map WHERE skip = 0 AND spbc_name IS NOT NULL').all()).results;
+  const bySupplier = new Map(map.map((m) => [String(m.supplier_name || '').toLowerCase(), m.spbc_name]));
+  const units = new Map();
+  for (const o of orders) {
+    for (const part of String(o.items || '').split('|')) {
+      const m = part.match(/^\s*(.+?)\s+x(\d+)/i);
+      if (!m) continue;
+      const spbc = bySupplier.get(m[1].trim().toLowerCase());
+      if (!spbc) continue;
+      units.set(spbc, (units.get(spbc) || 0) + (parseInt(m[2], 10) || 0));
+    }
+  }
+  const top = [...units.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name]) => name);
+  await db
+    .prepare(
+      "INSERT INTO site_settings (key, value) VALUES ('best_sellers', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+    )
+    .bind(JSON.stringify(top))
+    .run();
+  return { top, counted: orders.length };
 }

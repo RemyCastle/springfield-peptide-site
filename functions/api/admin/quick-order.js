@@ -39,6 +39,10 @@ export async function onRequestPost({ request, env }) {
     items: lines.map((l) => ({ name: `${l.product} (${l.kind === 'vial' ? 'Vial' : '10-Pack / Kit'})`, qty: l.qty })),
     shipping: body.shipping,
     notes: ['Quick order made in the admin', body.notes ? String(body.notes) : ''].filter(Boolean).join(' · '),
+    speed: body.speed === 'priority' ? 'priority' : 'standard',
+    deliveryNotes: body.delivery_notes,
+    confirmDuplicate: true,
+    fromAdmin: true,
   });
   if (result.status !== 200) return json(result.body, result.status);
 

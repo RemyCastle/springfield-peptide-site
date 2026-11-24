@@ -5,7 +5,8 @@
  * decide what to change. No I/O here, so it can be tested on saved samples.
  *
  * Rules (Remy, 2026-11-23):
- *   SPBC vial = supplier vial + $25, SPBC kit = supplier 10-vial kit + $200.
+ *   SPBC vial = supplier vial + $25, SPBC kit = supplier 10-vial kit + $200,
+ *   rounded to the nearest whole dollar (Remy, 2026-11-24; 50 cents rounds up).
  *   Supplier kit = bulk_price x 10 (pricing_mode "block10").
  *   kits_only supplier items are sold as kits only on SPBC.
  * Safety:
@@ -24,13 +25,18 @@ export function round2(n) {
   return Math.round(Number(n) * 100) / 100;
 }
 
+/** Nearest whole dollar, halves up ($37.50 -> $38). round2 first so 37.4999 float noise can't flip it. */
+export function wholeDollar(n) {
+  return Math.round(round2(n));
+}
+
 /** SPBC target prices for one supplier product. */
 export function targetPrices(sp) {
   const single = Number(sp && sp.single_price);
   const bulk = Number(sp && sp.bulk_price);
   const kitsOnly = !!(sp && (sp.kits_only === true || sp.kits_only === 1));
-  const vial = !kitsOnly && Number.isFinite(single) && single > 0 ? round2(single + VIAL_MARKUP) : null;
-  const kit = Number.isFinite(bulk) && bulk > 0 ? round2(bulk * KIT_SIZE + KIT_MARKUP) : null;
+  const vial = !kitsOnly && Number.isFinite(single) && single > 0 ? wholeDollar(single + VIAL_MARKUP) : null;
+  const kit = Number.isFinite(bulk) && bulk > 0 ? wholeDollar(bulk * KIT_SIZE + KIT_MARKUP) : null;
   return { vial, kit, kitOnly: kitsOnly };
 }
 

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.68b0c32a.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.38ceda3f.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -320,7 +320,7 @@
   const set = (id, v) => { const el = document.getElementById(id); if (!el || v == null || v === '') return; el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
   const parts = String(d.name || '').trim().split(/\s+/);
   set('fname', parts.shift()); set('lname', parts.join(' ')); set('email', d.email); set('phone', d.phone);
-  set('addr1', d.line1); set('addr2', d.line2); set('city', d.city); set('state', d.state); set('zip', d.zip); set('ship-zip', d.zip); set('shipping', d.shipping);
+  set('addr1', d.line1); set('addr2', d.line2); set('city', d.city); set('state', d.state); set('zip', d.zip); set('ship-zip', d.zip); set('shipping', d.shipping); set('notes', d.notes);
   window.name = '';
   const esc = (t) => String(t || '').replace(/[<>&]/g, '');
   const noCode = typeof PROMO_CODE !== 'undefined' && !PROMO_CODE;
@@ -1039,7 +1039,8 @@
         city: a.city,
         state: a.state,
         zip: a.postal,
-        shipping: 'usps-priority',
+        shipping: r.shipping_speed === 'priority' ? 'usps-priority' : 'usps-ground',
+        notes: r.delivery_notes || '',
         items: (r.items || []).map((it) => ({
           id: it.supplier_id,
           units: it.kind === 'kit' ? it.qty * 10 : it.qty,
@@ -1521,6 +1522,20 @@
         <label class="flex flex-wrap items-center gap-2 text-sm">show-me-source charges me $
           <input type="number" step="0.01" data-auto="sms_ship_cost" value="${escapeAttr(A.sms_ship_cost || '0')}" min="0" max="200" class="admin-input w-24 text-sm"> to ship one order
           <span class="text-xs text-zinc-500">(for the profit view)</span></label>
+        <p class="font-semibold text-white pt-2">Shop settings</p>
+        <label class="flex flex-wrap items-center gap-2 text-sm">Shipping: Standard $
+          <input type="number" step="0.01" data-auto="ship_standard" value="${escapeAttr(A.ship_standard || '10')}" min="0" max="100" class="admin-input w-20 text-sm">
+          Priority $ <input type="number" step="0.01" data-auto="ship_priority" value="${escapeAttr(A.ship_priority || '18')}" min="0" max="200" class="admin-input w-20 text-sm">
+          <span class="text-xs text-zinc-500">(show-me-source charges you $8 / $16)</span></label>
+        <label class="flex flex-wrap items-center gap-2 text-sm"><input type="checkbox" data-auto="vacation_on" ${chk('vacation_on')} class="accent-[#FDD700]">
+          Pause orders (vacation) with this note:
+          <input type="text" data-auto="vacation_message" value="${escapeAttr(A.vacation_message || '')}" maxlength="300" placeholder="Back on Monday, Dec 1" class="admin-input flex-1 min-w-[14rem] text-sm"></label>
+        <label class="flex flex-wrap items-center gap-2 text-sm">Banner on the shop:
+          <input type="text" data-auto="announcement" value="${escapeAttr(A.announcement || '')}" maxlength="300" placeholder="Empty = no banner" class="admin-input flex-1 min-w-[14rem] text-sm"></label>
+        <label class="flex flex-wrap items-center gap-2 text-sm"><input type="checkbox" data-auto="tax_on" ${chk('tax_on')} class="accent-[#FDD700]">
+          Charge sales tax of <input type="number" step="0.001" data-auto="tax_rate" value="${escapeAttr(A.tax_rate || '0')}" min="0" max="15" class="admin-input w-20 text-sm">%
+          on orders shipping to <input type="text" data-auto="tax_state" value="${escapeAttr(A.tax_state || 'MO')}" maxlength="2" class="admin-input w-14 text-sm uppercase">
+          <span class="text-xs text-zinc-500">(ask your accountant for the right rate)</span></label>
         <button type="button" id="autoSaveBtn" class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm">Save automations</button>
       </div>`;
 

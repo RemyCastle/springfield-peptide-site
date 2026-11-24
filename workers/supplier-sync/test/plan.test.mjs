@@ -15,7 +15,8 @@ const clone = (o) => JSON.parse(JSON.stringify(o));
 // Formula
 assert.deepEqual(targetPrices({ single_price: 24, bulk_price: 14.5 }), { vial: 49, kit: 345, kitOnly: false });
 assert.deepEqual(targetPrices({ single_price: 7, bulk_price: 7, kits_only: true }), { vial: null, kit: 270, kitOnly: true });
-assert.deepEqual(targetPrices({ single_price: 12.5, bulk_price: 7.5 }), { vial: 37.5, kit: 275, kitOnly: false });
+assert.deepEqual(targetPrices({ single_price: 12.5, bulk_price: 7.5 }), { vial: 38, kit: 275, kitOnly: false }, 'whole dollars, halves up');
+assert.deepEqual(targetPrices({ single_price: 12.49, bulk_price: 7.51 }), { vial: 37, kit: 275, kitOnly: false });
 
 // Every SEED_MAP id exists in today's feed, and every feed id is mapped or skipped.
 for (const m of SEED_MAP) assert.ok(fx.feed[String(m.supplier_id)], `map id ${m.supplier_id} not in feed`);

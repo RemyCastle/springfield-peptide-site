@@ -13,7 +13,7 @@ export async function supplierNameMap(db) {
 export function buildPlacement(detail, nameMap) {
   const o = (detail && detail.order) || {};
   let cost = 0;
-  const items = ((detail && detail.items) || []).map((it) => {
+  const items = ((detail && detail.items) || []).filter((it) => it.sku !== 'SALES-TAX').map((it) => {
     const isVial = /\(\s*Vial\s*\)\s*$/i.test(it.name || '') || /-VIAL$/i.test(it.sku || '');
     const spbcName = String(it.name || '').replace(/\s+\((?:10-Pack \/ Kit|Kit|Vial)\)\s*$/i, '').trim();
     const unitCost = supplierUnitCost(it);
@@ -29,8 +29,13 @@ export function buildPlacement(detail, nameMap) {
       supplier_unit_cost: unitCost,
     };
   });
+  const notes = String(o.notes || o.customer_notes || '');
+  const speedMatch = notes.match(/Shipping speed:\s*(Standard|Priority)/i);
+  const deliveryMatch = notes.match(/Delivery notes:\s*([^\n·]+)/i);
   return {
     order_number: o.order_number,
+    shipping_speed: speedMatch && /priority/i.test(speedMatch[1]) ? 'priority' : 'standard',
+    delivery_notes: deliveryMatch ? deliveryMatch[1].trim().slice(0, 300) : '',
     status: o.status,
     customer_name: o.customer_name || '',
     created_at: o.created_at || null,

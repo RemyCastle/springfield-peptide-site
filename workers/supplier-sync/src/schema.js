@@ -87,11 +87,20 @@ const TABLES = [
     sms_ref TEXT,
     note TEXT
   )`,
+  // Checkout problems the shop reported (no names, emails or addresses).
+  `CREATE TABLE IF NOT EXISTS client_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind TEXT NOT NULL,
+    detail TEXT,
+    page TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
 ];
 
 const LATE_COLUMNS = [
   ['supplier_map', 'low_inventory', 'INTEGER NOT NULL DEFAULT 0'],
   ['supplier_map', 'coa_url', 'TEXT'],
+  ['supplier_map', 'max_qty', 'INTEGER'], // how many single vials show-me-source will sell right now
   ['supplier_orders', 'sms_cost', 'REAL'], // what Remy actually paid show-me-source (incl. their shipping)
   ['supplier_mail', 'trusted', 'INTEGER NOT NULL DEFAULT 0'],
   ['supplier_mail', 'auth', 'TEXT'], // forwarded | dkim | spf | none
@@ -137,6 +146,14 @@ export const DEFAULT_SETTINGS = {
   sms_ship_cost: '0', // what show-me-source charges you to ship one order (profit view)
   auto_match_on: '0', // hands-free: mark website orders paid/shipped from emails (strong matches only)
   free_ship_over: '0', // free shipping when the order's items reach this many dollars (0 = off)
+  ship_standard: '10', // Standard shipping price (USPS Ground at show-me-source, 5-8 business days)
+  ship_priority: '18', // Priority shipping price (USPS Priority at show-me-source, 2-3 business days)
+  vacation_on: '0', // pause checkout
+  vacation_message: '', // shown while paused
+  announcement: '', // banner at the top of the shop ('' = none)
+  tax_on: '0', // collect sales tax
+  tax_state: 'MO', // ...on orders shipping to this state
+  tax_rate: '0', // ...at this percent
 };
 
 export async function getSettings(db) {

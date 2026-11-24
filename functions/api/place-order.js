@@ -29,6 +29,11 @@ export async function onRequestPost({ request, env }) {
     notes: body.notes,
     eventId: body.event_id,
     currency: body.currency,
+    speed: body.shipping_speed,
+    deliveryNotes: body.delivery_notes,
+    confirmDuplicate: body.confirm_duplicate === true,
+    turnstileToken: body.turnstile_token,
+    ip: request.headers.get('CF-Connecting-IP') || '',
   });
   return json(result.body, result.status);
 }

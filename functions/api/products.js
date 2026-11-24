@@ -1,5 +1,6 @@
+import { ensureSyncSchema } from '../../workers/supplier-sync/src/schema.js';
 import { json, productToPublic } from '../lib/auth.js';
-import { freeShipOverCents } from '../lib/createOrder.js';
+import { shopSettings, shippingTable } from '../lib/createOrder.js';
 
 /** Soft member session cookie set after 21+ age gate accept (client). Not hard security. */
 const MEMBER_COOKIE = 'spbc_member';
@@ -51,9 +52,21 @@ export async function onRequestGet({ request, env }) {
   try {
     // Supplier extras (low stock, lab report, out of stock) come from the show-me-source
     // sync tables. If those tables are not there yet, fall back to the plain list.
-    const free_ship_over = (await freeShipOverCents(env)) / 100;
+    const s = await shopSettings(env);
+    const t = shippingTable(s);
+    // Shop-wide info for the storefront (shipping prices, pause, banner, tax, best sellers).
+    const shop = {
+      free_ship_over: t.freeOver / 100,
+      shipping: { standard: t.standard / 100, priority: t.priority / 100 },
+      vacation: s.vacation_on === '1' ? { message: s.vacation_message || 'Ordering is paused for a few days.' } : null,
+      announcement: String(s.announcement || '').slice(0, 300),
+      tax: s.tax_on === '1' && Number(s.tax_rate) > 0 ? { state: String(s.tax_state || '').toUpperCase(), rate: Number(s.tax_rate) } : null,
+      best_sellers: await bestSellers(env.DB),
+      turnstile_site_key: String(env.TURNSTILE_SITE_KEY || ''),
+    };
+    const free_ship_over = shop.free_ship_over;
     const extras = await loadSupplierExtras(env.DB);
-    if (extras) return json({ ...extras, free_ship_over });
+    if (extras) return json({ ...extras, ...shop, free_ship_over });
     const { results } = await env.DB.prepare(
       `SELECT id, name, vial_price, pack_price, kit_only, sort_order, active
        FROM products
@@ -62,7 +75,7 @@ export async function onRequestGet({ request, env }) {
     ).all();
     // Prices in D1 ARE the customer price. Everyone (storefront, admin, spbc-orders) gets
     // the same stored price.
-    return json({ products: (results || []).map(productToPublic), out_of_stock: [], free_ship_over });
+    return json({ products: (results || []).map(productToPublic), out_of_stock: [], ...shop, free_ship_over });
   } catch (e) {
     return json({ error: 'Failed to load products', detail: String(e.message || e) }, 500);
   }
@@ -74,8 +87,21 @@ export async function onRequestGet({ request, env }) {
  * shop can offer "Email me when it's back". Kept out of `products` on purpose: the
  * spbc-orders worker also reads this list.
  */
+/** Top sellers (product names), worked out daily by the sync job. */
+async function bestSellers(db) {
+  try {
+    const row = await db.prepare("SELECT value FROM site_settings WHERE key = 'best_sellers'").first();
+    const list = JSON.parse((row && row.value) || '[]');
+    return Array.isArray(list) ? list.slice(0, 10).map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
 async function loadSupplierExtras(db) {
   try {
+    // Adds new columns (like max_qty) right after a deploy, once per server start.
+    await ensureSyncSchema(db).catch(() => null);
     const labOn = await db
       .prepare("SELECT value FROM site_settings WHERE key = 'show_lab_reports'")
       .first();
@@ -86,7 +112,7 @@ async function loadSupplierExtras(db) {
     const { results } = await db
       .prepare(
         `SELECT p.id, p.name, p.vial_price, p.pack_price, p.kit_only, p.sort_order, p.active,
-                m.low_inventory, m.coa_url
+                m.low_inventory, m.coa_url, m.max_qty
          FROM products p
          LEFT JOIN supplier_map m ON m.spbc_name = p.name AND m.skip = 0
          WHERE p.active = 1
@@ -105,6 +131,8 @@ async function loadSupplierExtras(db) {
         ...productToPublic(r),
         low_stock: r.low_inventory === 1,
         lab_report: showLab && !!r.coa_url,
+        // Single vials show-me-source will sell right now (null = unknown); the shop caps steppers to it.
+        max_units: r.max_qty == null ? null : Number(r.max_qty),
       })),
       out_of_stock: (out.results || []).map((r) => ({ name: r.name })),
       price_alerts: !!alertsOn && alertsOn.value === '1',

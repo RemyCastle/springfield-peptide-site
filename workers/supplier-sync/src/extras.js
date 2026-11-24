@@ -24,7 +24,7 @@ export function coaUrlFrom(row, baseUrl) {
 
 /** Update low_inventory + coa_url on supplier_map from this run's feed. */
 export async function updateProductMeta(db, { stock, details, feed, baseUrl }) {
-  const map = (await db.prepare('SELECT supplier_id, low_inventory, coa_url FROM supplier_map WHERE skip = 0').all()).results;
+  const map = (await db.prepare('SELECT supplier_id, low_inventory, coa_url, max_qty FROM supplier_map WHERE skip = 0').all()).results;
   const stmts = [];
   for (const m of map) {
     const id = String(m.supplier_id);
@@ -32,11 +32,13 @@ export async function updateProductMeta(db, { stock, details, feed, baseUrl }) {
     const row = (details || {})[id] || (feed || {})[id];
     const low = st.low_inventory === true || (row && row.low_inventory === true) ? 1 : 0;
     const coa = coaUrlFrom(row, baseUrl);
-    if (low !== m.low_inventory || coa !== (m.coa_url || null)) {
+    const maxRaw = Number(st.max_qty ?? (row && row.max_qty));
+    const max = Number.isFinite(maxRaw) && maxRaw >= 0 ? Math.floor(maxRaw) : null;
+    if (low !== m.low_inventory || coa !== (m.coa_url || null) || max !== (m.max_qty ?? null)) {
       stmts.push(
         db
-          .prepare("UPDATE supplier_map SET low_inventory = ?, coa_url = ?, updated_at = datetime('now') WHERE supplier_id = ?")
-          .bind(low, coa, m.supplier_id)
+          .prepare("UPDATE supplier_map SET low_inventory = ?, coa_url = ?, max_qty = ?, updated_at = datetime('now') WHERE supplier_id = ?")
+          .bind(low, coa, max, m.supplier_id)
       );
     }
   }

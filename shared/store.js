@@ -6,8 +6,13 @@ const CART_KEY = "spbc_cart_draft";
         // Order minimum: MIN_ORDER_VIALS single vials, or at least one kit (any mix).
         // Must match functions/lib/orderItems.js.
         const MIN_ORDER_VIALS = 2;
-        // Flat shipping per order (show-me-source dropship). Server sets the real charge.
-        const SHIPPING_FLAT = 15;
+        // Shipping per order (show-me-source dropship). Server sets the real charge; these
+        // defaults are replaced by /api/products (shop.shipping).
+        let SHIP_RATES = { standard: 10, priority: 18 };
+        let shopTax = null; // { state, rate } when Remy turns sales tax on
+        let bestSellerSet = new Set();
+        let turnstileKey = '';
+        let turnstileToken = '';
 
         /**
          * Public storefront sells single vials (when vial_price is set) and 10-packs / kits.
@@ -506,6 +511,7 @@ const CART_KEY = "spbc_cart_draft";
                 let typeOk = true;
                 if (activeFilter === 'vials') typeOk = hasVial;
                 if (activeFilter === 'kit-only') typeOk = kitOnly;
+                if (activeFilter === 'popular') typeOk = card.hasAttribute('data-popular');
                 const textOk = !q || name.includes(q);
                 const show = typeOk && textOk;
                 card.classList.toggle('hidden', !show);
@@ -616,7 +622,12 @@ const CART_KEY = "spbc_cart_draft";
             const showVial = !PUBLIC_KITS_ONLY && hasPositivePrice(p.vial_price);
             const showPack = hasPositivePrice(p.pack_price) && !vialOnly;
             const saved = draft[name] || {};
-            const savedPack = showPack ? storefrontKitQty(saved, trueKitOnly ? VIAL_OPTS : PACK_OPTS) : 0;
+            // show-me-source's stock limit (single vials). Kits use 10 vials each.
+            const maxUnits = Number.isFinite(Number(p.max_units)) && p.max_units !== null ? Number(p.max_units) : null;
+            const vialOpts = maxUnits === null ? VIAL_OPTS : VIAL_OPTS.filter((n) => n <= maxUnits);
+            const packBase = trueKitOnly ? VIAL_OPTS : PACK_OPTS;
+            const packOpts = maxUnits === null ? packBase : packBase.filter((n) => n * 10 <= maxUnits);
+            const savedPack = showPack ? storefrontKitQty(saved, packOpts) : 0;
             let savedVial = saved.vial || 0;
             if (showVial && !(Number(saved.vial) > 0) && vialOnly && (Number(saved.pack) > 0)) {
                 savedVial = snapQty(saved.pack, VIAL_OPTS);
@@ -632,10 +643,18 @@ const CART_KEY = "spbc_cart_draft";
                 article.setAttribute('data-pack', String(p.pack_price));
             }
 
+            if (bestSellerSet.has(name)) article.setAttribute('data-popular', '1');
+            const fewLeft = maxUnits !== null && maxUnits > 0 && maxUnits <= 20;
             let body = `<h3 class="price-card-title break-word">${escapeHtml(name)}</h3>`;
-            if (p.low_stock || p.lab_report) {
+            if (p.low_stock || p.lab_report || fewLeft || bestSellerSet.has(name)) {
                 body += '<div class="flex flex-wrap items-center gap-2 mb-2">';
-                if (p.low_stock) {
+                if (bestSellerSet.has(name)) {
+                    body += '<span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border border-[#EAB308]/40 text-[#EAB308]">Popular</span>';
+                }
+                if (fewLeft) {
+                    body += `<span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border border-amber-700/30 text-amber-300">Only ${maxUnits} vial${maxUnits === 1 ? '' : 's'} left</span>`;
+                }
+                if (p.low_stock && !fewLeft) {
                     body += '<span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border border-amber-700/30 text-amber-300">Low stock</span>';
                 }
                 if (p.lab_report) {
@@ -646,23 +665,23 @@ const CART_KEY = "spbc_cart_draft";
             body += `<div class="price-card-body">`;
             // Vial stepper when D1 has a vial price. True kit_only (HGH) has no vial_price.
             // RETA 66MG is vial-only (same 70/70 dummy pack) — Vial, not 10-pack.
-            if (showVial) {
+            if (showVial && vialOpts.length > 1) {
                 body += `
                     <div class="price-row">
                         <span class="price-label">Vial</span>
                         <div class="price-controls">
                             <span class="price-amount tabular-nums">$${formatPrice(p.vial_price)}</span>
-                            ${buildStepper('vial', VIAL_OPTS, savedVial, name + ' vial qty')}
+                            ${buildStepper('vial', vialOpts, snapQty(savedVial, vialOpts), name + ' vial qty')}
                         </div>
                     </div>`;
             }
-            if (showPack) {
+            if (showPack && packOpts.length > 1) {
                 body += `
                     <div class="price-row">
                         <span class="price-label">${trueKitOnly ? 'Kit' : '10-Pack / Kit'}</span>
                         <div class="price-controls">
                             <span class="price-amount tabular-nums">$${formatPrice(p.pack_price)}</span>
-                            ${buildStepper('pack', trueKitOnly ? VIAL_OPTS : PACK_OPTS, savedPack, name + ' kit qty')}
+                            ${buildStepper('pack', packOpts, savedPack, name + ' kit qty')}
                         </div>
                     </div>`;
             }
@@ -783,9 +802,11 @@ const CART_KEY = "spbc_cart_draft";
                 const data = await res.json();
                 priceAlertsOn = !!data.price_alerts;
                 freeShipOver = Number(data.free_ship_over) || 0;
+                applyShopSettings(data);
                 renderProducts(data.products || []);
                 renderSoldOut(data.out_of_stock || []);
             } catch (e) {
+                reportClientProblem('load_products', e && e.message);
                 root.innerHTML = `
                     <div class="text-center py-8 space-y-3">
                         <p class="text-red-400 text-sm">Could not load prices.</p>
@@ -809,6 +830,184 @@ const CART_KEY = "spbc_cart_draft";
                 requestAnimationFrame(function () { window.spbcAtmosphereRefresh(); });
             }
         }
+
+        /* ---------- Shop settings from /api/products (banners, shipping, tax, popular, bot check) ---------- */
+        let shopPaused = '';
+
+        function shippingSpeed() {
+            const r = document.querySelector('input[name="ship_speed"]:checked');
+            return r && r.value === 'priority' ? 'priority' : 'standard';
+        }
+
+        function applyShopSettings(data) {
+            if (data.shipping && Number(data.shipping.standard) >= 0 && Number(data.shipping.priority) >= 0) {
+                SHIP_RATES = { standard: Number(data.shipping.standard), priority: Number(data.shipping.priority) };
+            }
+            document.querySelectorAll('[data-speed-price]').forEach((el) => {
+                el.textContent = '$' + money(SHIP_RATES[el.getAttribute('data-speed-price')]);
+            });
+            shopTax = data.tax && Number(data.tax.rate) > 0 ? { state: String(data.tax.state || '').toUpperCase(), rate: Number(data.tax.rate) } : null;
+            bestSellerSet = new Set(Array.isArray(data.best_sellers) ? data.best_sellers : []);
+            const popChip = document.querySelector('.filter-chip[data-filter="popular"]');
+            if (popChip) popChip.hidden = bestSellerSet.size === 0;
+            shopPaused = data.vacation ? (data.vacation.message || 'We are taking a short break. Orders are paused for now.') : '';
+            const box = document.getElementById('shopBanners');
+            if (box) {
+                const parts = [];
+                if (shopPaused) {
+                    parts.push(`<div class="depth-card px-4 py-3 text-sm text-center border border-amber-500/40 text-amber-200" role="status"><strong class="text-amber-300">Orders paused.</strong> ${escapeHtml(shopPaused)}</div>`);
+                }
+                if (data.announcement) {
+                    parts.push(`<div class="depth-card px-4 py-3 text-sm text-center text-zinc-200" role="status">${escapeHtml(data.announcement)}</div>`);
+                }
+                box.innerHTML = parts.join('');
+            }
+            if (data.turnstile_site_key && !turnstileKey) {
+                turnstileKey = data.turnstile_site_key;
+                loadTurnstile();
+            }
+        }
+
+        function loadTurnstile() {
+            const box = document.getElementById('turnstileBox');
+            if (!box || !turnstileKey) return;
+            window.spbcTurnstileReady = function () {
+                box.classList.remove('hidden');
+                window.turnstile.render(box, {
+                    sitekey: turnstileKey,
+                    theme: 'dark',
+                    size: 'flexible',
+                    callback: (tok) => { turnstileToken = tok; },
+                    'expired-callback': () => { turnstileToken = ''; },
+                    'error-callback': () => { turnstileToken = ''; },
+                });
+            };
+            const s = document.createElement('script');
+            s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=spbcTurnstileReady';
+            s.async = true;
+            s.defer = true;
+            document.head.appendChild(s);
+        }
+
+        function resetTurnstile() {
+            turnstileToken = '';
+            try { if (window.turnstile) window.turnstile.reset(document.getElementById('turnstileBox')); } catch (_) {}
+        }
+
+        /** Weekend or USPS holiday (Springfield time): tell people when the order actually goes out. */
+        const USPS_HOLIDAYS = new Set([
+            '2026-01-01', '2026-01-19', '2026-02-16', '2026-05-25', '2026-06-19', '2026-07-03', '2026-09-07',
+            '2026-10-12', '2026-11-11', '2026-11-26', '2026-12-25',
+            '2027-01-01', '2027-01-18', '2027-02-15', '2027-05-31', '2027-06-18', '2027-07-05', '2027-09-06',
+            '2027-10-11', '2027-11-11', '2027-11-25', '2027-12-24',
+        ]);
+        function chicagoDate(d) {
+            const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+            return parts; // YYYY-MM-DD
+        }
+        function isShipDay(ymd) {
+            const dow = new Date(ymd + 'T12:00:00Z').getUTCDay();
+            return dow !== 0 && dow !== 6 && !USPS_HOLIDAYS.has(ymd);
+        }
+        function updateShipDayNote() {
+            const el = document.getElementById('shipDayNote');
+            if (!el) return;
+            const today = chicagoDate(new Date());
+            if (isShipDay(today)) {
+                el.classList.add('hidden');
+                return;
+            }
+            let d = new Date(today + 'T12:00:00Z');
+            for (let i = 0; i < 10; i++) {
+                d = new Date(d.getTime() + 86400000);
+                const ymd = d.toISOString().slice(0, 10);
+                if (isShipDay(ymd)) {
+                    const label = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' });
+                    el.textContent = `Post offices are closed today. Orders placed now ship ${label}.`;
+                    el.classList.remove('hidden');
+                    return;
+                }
+            }
+        }
+
+        /** ZIP check: fill city/state when empty, warn when they don't match the ZIP. */
+        let lastZipChecked = '';
+        async function checkZip() {
+            const zipEl = document.getElementById('shipPostal');
+            const hint = document.getElementById('zipHint');
+            const zip = (zipEl?.value || '').trim().slice(0, 5);
+            if (!/^\d{5}$/.test(zip) || zip === lastZipChecked) return;
+            lastZipChecked = zip;
+            try {
+                const res = await fetch(`/api/address-check?zip=${zip}`);
+                if (!res.ok) {
+                    if (res.status === 404 && hint) {
+                        hint.textContent = `We could not find ZIP ${zip}. Please double-check it.`;
+                        hint.classList.remove('hidden');
+                    }
+                    return;
+                }
+                const d = await res.json();
+                const cityEl = document.getElementById('shipCity');
+                const stateEl = document.getElementById('shipState');
+                if (cityEl && !cityEl.value.trim() && d.city) cityEl.value = d.city;
+                if (stateEl && !stateEl.value.trim() && d.state) stateEl.value = d.state;
+                const stateNow = (stateEl?.value || '').trim().toUpperCase();
+                const cityNow = (cityEl?.value || '').trim().toLowerCase();
+                const cities = (d.cities || [d.city]).map((c) => String(c).toLowerCase());
+                let msg = '';
+                if (d.state && stateNow && stateNow !== d.state) msg = `ZIP ${zip} is in ${d.state}, not ${stateNow}. Please check your address.`;
+                else if (cityNow && cities.length && !cities.includes(cityNow)) msg = `ZIP ${zip} is usually ${d.city}, ${d.state}. Double-check the city if that's not right.`;
+                if (hint) {
+                    hint.textContent = msg;
+                    hint.classList.toggle('hidden', !msg);
+                }
+                saveContactDraft();
+                updateOrder();
+            } catch (_) { /* address check is a helper only */ }
+        }
+
+        /** Checkout problem reports: no names, emails or addresses, just what broke. */
+        let clientReports = 0;
+        function reportClientProblem(kind, detail) {
+            if (clientReports >= 3) return;
+            clientReports += 1;
+            try {
+                const body = JSON.stringify({ kind, detail: String(detail || '').slice(0, 300), page: location.pathname });
+                if (navigator.sendBeacon) navigator.sendBeacon('/api/client-report', new Blob([body], { type: 'application/json' }));
+                else fetch('/api/client-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true });
+            } catch (_) {}
+        }
+        window.addEventListener('error', (e) => {
+            if (!e || !e.filename || !/springfieldpbc\.com|localhost|127\.0\.0\.1|pages\.dev/.test(e.filename)) return;
+            reportClientProblem('js_error', `${e.message || ''} @ ${String(e.filename).split('/').pop()}:${e.lineno || 0}`);
+        });
+
+        function resetPlaceButtons() {
+            placingOrder = false;
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'PLACE ORDER & PAY';
+            const confirmBtn = document.getElementById('reviewConfirmBtn');
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Confirm & place order';
+            refreshSubmitEnabled();
+        }
+
+        /** Same order placed again within minutes: ask before making a second one. */
+        function showDuplicateConfirm(message) {
+            const err = document.getElementById('reviewError');
+            err.innerHTML = `${escapeHtml(message || 'It looks like you just placed this same order.')}
+                <span class="flex flex-col sm:flex-row gap-2 justify-center mt-2">
+                    <button type="button" id="dupYesBtn" class="btn-secondary">Yes, place a second order</button>
+                    <a href="/track.html" class="btn-secondary text-center">Check my order instead</a>
+                </span>`;
+            err.classList.remove('hidden');
+            document.getElementById('dupYesBtn').addEventListener('click', () => {
+                err.classList.add('hidden');
+                placeOrder({ confirmDuplicate: true });
+            });
+        }
+
 
         function skuFrom(name, kind) {
             const base = String(name).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toUpperCase();
@@ -887,8 +1086,16 @@ const CART_KEY = "spbc_cart_draft";
             const subtotal = vialSubtotal + packSubtotal + nonDiscountSubtotal;
             const hasAny = singleVials > 0 || kitCount > 0;
             const freeShip = freeShipOver > 0 && subtotal >= freeShipOver;
-            const shipping = hasAny && !freeShip ? SHIPPING_FLAT : 0;
-            const total = subtotal + shipping;
+            const speed = shippingSpeed();
+            // Free shipping covers Standard; Priority then costs only the difference.
+            const shipping = !hasAny ? 0 : freeShip
+                ? (speed === 'priority' ? Math.max(0, SHIP_RATES.priority - SHIP_RATES.standard) : 0)
+                : SHIP_RATES[speed];
+            const shipState = (document.getElementById('shipState')?.value || '').trim().toUpperCase();
+            const tax = hasAny && shopTax && shipState === shopTax.state
+                ? Math.round(subtotal * shopTax.rate) / 100
+                : 0;
+            const total = subtotal + shipping + tax;
             const minimumMet = kitCount >= 1 || singleVials >= MIN_ORDER_VIALS;
 
             const items = rawLines.map((r) => {
@@ -912,6 +1119,9 @@ const CART_KEY = "spbc_cart_draft";
                 kitDiscountPct,
                 subtotal,
                 shipping,
+                speed,
+                freeShip,
+                tax,
                 minimumMet,
                 total,
                 lines,
@@ -1047,7 +1257,8 @@ const CART_KEY = "spbc_cart_draft";
                 if (t.packSubtotal > 0) {
                     orderText += `\n10-pack / kit subtotal: $${money(t.packSubtotal)}`;
                 }
-                orderText += `\nShipping: $${money(t.shipping)}`;
+                orderText += `\nShipping (${t.speed === 'priority' ? 'Priority' : 'Standard'}): $${money(t.shipping)}`;
+                if (t.tax) orderText += `\nSales tax: $${money(t.tax)}`;
                 orderText += `\n\nESTIMATED TOTAL: $${money(t.total)}`;
                 document.getElementById('message').value = orderText.trim();
             }
@@ -1097,6 +1308,7 @@ const CART_KEY = "spbc_cart_draft";
 
         function canSubmitOrder() {
             const t = tallyOrder();
+            if (shopPaused) return { ok: false, reason: 'Orders are paused right now. ' + shopPaused };
             if (!t.lines.length) return { ok: false, reason: 'Select at least one item.' };
             if (!t.minimumMet) {
                 return { ok: false, reason: `Minimum order is ${MIN_ORDER_VIALS} vials or 1 kit.` };
@@ -1203,6 +1415,14 @@ const CART_KEY = "spbc_cart_draft";
             document.getElementById('reviewTotal').textContent = `$${money(t.total)}`;
             const rs = document.getElementById('reviewShipping');
             if (rs) rs.textContent = t.shipping ? `$${money(t.shipping)}` : 'Free';
+            const rsl = document.getElementById('reviewShippingLabel');
+            if (rsl) rsl.textContent = `Shipping (${t.speed === 'priority' ? 'Priority' : 'Standard'})`;
+            const taxRow = document.getElementById('reviewTaxRow');
+            if (taxRow) {
+                taxRow.classList.toggle('hidden', !t.tax);
+                document.getElementById('reviewTax').textContent = `$${money(t.tax)}`;
+                document.getElementById('reviewTaxLabel').textContent = shopTax ? `Sales tax (${shopTax.state})` : 'Sales tax';
+            }
             let reviewShip = document.getElementById('reviewShip');
             if (!reviewShip) {
                 const wrap = document.getElementById('reviewEmail')?.closest('.border-t') || document.getElementById('reviewEmail')?.parentElement?.parentElement;
@@ -1237,7 +1457,8 @@ const CART_KEY = "spbc_cart_draft";
             modal.setAttribute('hidden', '');
         }
 
-        async function placeOrder() {
+        async function placeOrder(opts) {
+            const confirmDuplicate = !!(opts && opts.confirmDuplicate === true);
             if (placingOrder) return;
             const check = canSubmitOrder();
             if (!agreeCheckbox.checked || !check.ok) return;
@@ -1280,10 +1501,23 @@ const CART_KEY = "spbc_cart_draft";
                         currency: 'USD',
                         notes: notes || undefined,
                         shipping,
+                        shipping_speed: shippingSpeed(),
+                        delivery_notes: (document.getElementById('deliveryNotes')?.value || '').trim() || undefined,
+                        confirm_duplicate: confirmDuplicate || undefined,
+                        turnstile_token: turnstileToken || undefined,
                     }),
                 });
                 const data = await res.json().catch(() => ({}));
+                if (res.status === 409 && data.error === 'possible_duplicate') {
+                    resetPlaceButtons();
+                    showDuplicateConfirm(data.message);
+                    return;
+                }
                 if (!res.ok || !data.ok) {
+                    if (!['not_enough_stock', 'paused', 'validation_failed', 'order_minimum', 'turnstile_failed'].includes(data.error)) {
+                        reportClientProblem('place_order', `${res.status} ${data.error || ''}`);
+                    }
+                    if (data.error === 'turnstile_failed') resetTurnstile();
                     throw new Error(data.message || data.error || `Order failed (${res.status})`);
                 }
 
@@ -1297,7 +1531,7 @@ const CART_KEY = "spbc_cart_draft";
                 box.classList.remove('hidden');
                 document.getElementById('successOrderNumber').textContent = data.order_number;
                 document.getElementById('successTotal').textContent =
-                    '$' + (Number(data.total_cents || subtotalFinal + dollarsToCents(SHIPPING_FLAT)) / 100).toFixed(2) +
+                    '$' + (Number(data.total_cents || subtotalFinal + dollarsToCents(t.shipping)) / 100).toFixed(2) +
                     (data.perk === 'free_shipping' ? ' (free shipping, thanks for coming back!)' : data.perk === 'free_shipping_over' ? ' (free shipping)' : '');
                 document.getElementById('successPayLink').href =
                     data.pay_url || `https://spbc-orders.remycastle.workers.dev/pay/${encodeURIComponent(data.order_number)}`;
@@ -1326,6 +1560,7 @@ const CART_KEY = "spbc_cart_draft";
                     }, 1600);
                 }
             } catch (err) {
+                if (err && err.name === 'TypeError') reportClientProblem('place_order', 'network');
                 const msg = err.message || 'Could not place order. Please try again.';
                 document.getElementById('reviewError').textContent = msg;
                 document.getElementById('reviewError').classList.remove('hidden');
@@ -1341,6 +1576,18 @@ const CART_KEY = "spbc_cart_draft";
         }
 
         agreeCheckbox.addEventListener('change', refreshSubmitEnabled);
+        document.querySelectorAll('input[name="ship_speed"]').forEach((r) => r.addEventListener('change', () => {
+            try { localStorage.setItem('spbc_ship_speed', shippingSpeed()); } catch (_) {}
+            updateOrder();
+        }));
+        try {
+            const savedSpeed = localStorage.getItem('spbc_ship_speed');
+            const radio = savedSpeed && document.querySelector(`input[name="ship_speed"][value="${savedSpeed}"]`);
+            if (radio) radio.checked = true;
+        } catch (_) {}
+        document.getElementById('shipState')?.addEventListener('change', updateOrder);
+        document.getElementById('shipPostal')?.addEventListener('blur', checkZip);
+        updateShipDayNote();
         ['name', 'email', 'shipLine1', 'shipLine2', 'shipCity', 'shipState', 'shipPostal', 'shipPhone'].forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
@@ -1358,7 +1605,7 @@ const CART_KEY = "spbc_cart_draft";
             openReviewModal();
         });
 
-        document.getElementById('reviewConfirmBtn').addEventListener('click', placeOrder);
+        document.getElementById('reviewConfirmBtn').addEventListener('click', () => placeOrder());
         document.getElementById('reviewCancelBtn').addEventListener('click', closeReviewModal);
         document.getElementById('reviewCloseBtn').addEventListener('click', closeReviewModal);
         document.getElementById('reviewModal').addEventListener('click', e => {

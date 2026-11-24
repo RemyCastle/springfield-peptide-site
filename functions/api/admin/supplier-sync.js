@@ -12,8 +12,19 @@
 import { json, requireAdmin } from '../../lib/auth.js';
 import { ensureSyncSchema, getSetting, setSetting, getSettings } from '../../../workers/supplier-sync/src/schema.js';
 
-const SWITCHES = ['reminders_on', 'digest_on', 'price_alerts_on', 'auto_match_on'];
-const NUMBERS = { reminder_hours: [1, 336], auto_cancel_days: [0, 60], free_ship_after: [0, 50], sms_ship_cost: [0, 200], free_ship_over: [0, 5000] };
+const SWITCHES = ['reminders_on', 'digest_on', 'price_alerts_on', 'auto_match_on', 'vacation_on', 'tax_on'];
+const NUMBERS = {
+  reminder_hours: [1, 336],
+  auto_cancel_days: [0, 60],
+  free_ship_after: [0, 50],
+  sms_ship_cost: [0, 200],
+  free_ship_over: [0, 5000],
+  ship_standard: [0, 100],
+  ship_priority: [0, 200],
+  tax_rate: [0, 15],
+};
+const DECIMALS = new Set(['sms_ship_cost', 'ship_standard', 'ship_priority', 'tax_rate']);
+const TEXTS = { vacation_message: 300, announcement: 300 };
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
 
 /** Only known switches, checked values. */
@@ -24,7 +35,15 @@ function cleanSettings(input) {
     if (!(k in input)) continue;
     const n = Number(input[k]);
     if (!Number.isFinite(n) || n < lo || n > hi) return { error: `${k} must be between ${lo} and ${hi}` };
-    values[k] = String(k === 'sms_ship_cost' ? Math.round(n * 100) / 100 : Math.round(n));
+    values[k] = String(DECIMALS.has(k) ? Math.round(n * 1000) / 1000 : Math.round(n));
+  }
+  for (const [k, max] of Object.entries(TEXTS)) {
+    if (k in input) values[k] = String(input[k] || '').replace(/[<>]/g, '').trim().slice(0, max);
+  }
+  if ('tax_state' in input) {
+    const st = String(input.tax_state || '').trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(st)) return { error: 'Tax state must be 2 letters, like MO' };
+    values.tax_state = st;
   }
   if ('digest_to' in input) {
     const e = String(input.digest_to || '').trim();
