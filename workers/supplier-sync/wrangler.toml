@@ -13,6 +13,7 @@ main = "src/index.js"
 compatibility_date = "2024-11-12"
 # workers.dev is on only for /partner-prices (bearer-token protected; partner prices only).
 workers_dev = true
+preview_urls = false
 
 [triggers]
 crons = ["17 */2 * * *", "0 13 * * *"] # sync + reminders every 2h; digest daily 13:00 UTC (7am Central)
