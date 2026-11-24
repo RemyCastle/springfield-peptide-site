@@ -31,6 +31,27 @@ export async function onRequestPost({ request, env }) {
   const body = await request.json().catch(() => ({}));
   const orderNumber = String(body.order_number || '').trim().toUpperCase();
   if (!orderNumber) return json({ error: 'order_number required' }, 400);
+  if (body.action === 'ship') {
+    // Paid -> shipped with show-me-source's tracking. spbc-orders emails the customer.
+    const number = String(body.tracking_number || '').trim().slice(0, 60);
+    if (!/^[A-Za-z0-9]{8,40}$/.test(number)) {
+      return json({ error: 'validation_failed', message: 'That tracking number does not look right.' }, 400);
+    }
+    const carrier = String(body.tracking_carrier || '').trim().slice(0, 30) || null;
+    const url = String(body.tracking_url || '').trim();
+    const res = await proxyOrdersAdmin(env, `/admin/orders/${encodeURIComponent(orderNumber)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'shipped',
+        tracking_number: number,
+        tracking_carrier: carrier || undefined,
+        tracking_url: /^https:\/\//.test(url) ? url : undefined,
+        note: body.sms_ref ? `Tracking from show-me-source ${String(body.sms_ref).slice(0, 20)}` : 'Tracking from show-me-source',
+      }),
+    });
+    if (!res.ok) return json(res.data, res.status);
+    return json({ ok: true, message: `${orderNumber} marked shipped. The customer gets the tracking email.` });
+  }
   if (body.placed === false) {
     await env.DB.prepare('DELETE FROM supplier_orders WHERE order_number = ?').bind(orderNumber).run();
     return json({ ok: true, message: 'Marked as not placed' });

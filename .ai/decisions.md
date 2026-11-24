@@ -198,3 +198,10 @@ Append-only log. Newest at bottom.
 ### 2026-11-23 — Place orders tab; Vendor match retired
 - Admin "Place orders" tab (`/api/admin/supplier-queue`): paid SPBC orders not yet placed, oldest first, with show-me-source product names, KIT/VIAL counts, estimated cost, per-field copy buttons for checkout (email supplier@springfieldpbc.com, ship-to), and Mark placed (their order #, what you paid). Shared builder `functions/lib/supplierPlacement.js`. Tab badge shows the waiting count.
 - Vendor match tab, its panel/JS and the "Vendor cost" box on product cards removed (Remy: not needed). `functions/api/admin/vendor-links.js` / `vendor-create.js` left in place (bot code references them).
+
+### 2026-11-24 — Money ledger + tracking from show-me-source emails
+- `workers/supplier-sync/src/money.js`: reads Venmo (payer, amount, fee, note, date, txn; "You paid" = money out) and show-me-source (SMS-### stages invoice/paid/tracking: name, cost, items, ship-to, carrier, tracking). Unpaid bills are not costs. "You paid JJ" equal to an order cost within 3 days = that order paid by Venmo (not double counted).
+- Names: nicknames (Nate=Nathan), one-letter typos, initial-only last names and same family name count (the last two as "likely").
+- Each payment goes to the nearest show-me-source order of the same customer within 21 days; per-customer summary handles lump payers. Remy fixes pairs in the Money tab (`money_links`: link to SMS-### or "Not a sale").
+- Place orders: suggests the show-me-source order for each website order (typed SMS #, or name + ZIP / full name after the order date); "mark placed" fills their # and cost; "Placed, waiting to ship" offers "Mark shipped + email customer" with their tracking (spbc-orders PATCH shipped).
+- Real samples showed many sales happen by Venmo outside the website and some payments are training/refunds, hence manual tags.

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.9effac83.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.70199955.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -264,6 +264,10 @@
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Supplier sync
         </button>
+        <button type="button" data-tab="money" id="tabMoney"
+                class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+          Money
+        </button>
         <button type="button" data-tab="report" id="tabReport"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Sales &amp; Profit
@@ -287,6 +291,24 @@
         </p>
         <p id="placeMsg" class="text-sm mb-4 hidden"></p>
         <div id="placeBody" class="space-y-4 text-sm text-zinc-300">Loading…</div>
+      </div>
+
+      <!-- MONEY: Venmo payments vs show-me-source orders (from supplier@ emails) -->
+      <div id="moneyPanel" class="hidden">
+        <div class="panel-head">
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Money</h1>
+          <div class="panel-actions">
+            <button id="moneyReloadBtn" type="button"
+                    class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm">↻ Reload</button>
+          </div>
+        </div>
+        <p class="text-xs text-zinc-500 mb-4">
+          Built from the emails at <strong class="text-zinc-300">supplier@springfieldpbc.com</strong>: Venmo payments in, show-me-source orders out.
+          Each payment is paired with the show-me-source order for the same customer (nicknames and typos are allowed).
+          Fix anything wrong with the buttons. Only emails sent to that address count.
+        </p>
+        <p id="moneyMsg" class="text-sm mb-4 hidden"></p>
+        <div id="moneyBody" class="space-y-5 text-sm text-zinc-300">Loading…</div>
       </div>
 
       <!-- SALES & PROFIT -->
@@ -585,6 +607,7 @@
       });
       ordersPanel.classList.toggle('hidden', activeTab !== 'orders');
       document.getElementById('placePanel')?.classList.toggle('hidden', activeTab !== 'place');
+      document.getElementById('moneyPanel')?.classList.toggle('hidden', activeTab !== 'money');
       productsPanel.classList.toggle('hidden', activeTab !== 'products');
       const sp = document.getElementById('syncPanel');
       if (sp) sp.classList.toggle('hidden', activeTab !== 'sync');
@@ -596,6 +619,7 @@
       setTabStyles();
       if (tab === 'orders') await loadOrders();
       if (tab === 'place') await loadPlaceQueue();
+      if (tab === 'money') await loadMoney();
       if (tab === 'products') {
         await loadSuppliersCache();
         await loadProducts();
@@ -603,6 +627,143 @@
       if (tab === 'sync') await loadSupplierSync();
       if (tab === 'report') await loadReport();
     }
+
+    /* ---------- Money tab ---------- */
+    const $m = (n) => (n == null ? '—' : (n < 0 ? '-$' : '$') + Math.abs(Number(n)).toFixed(2));
+    const mDay = (d) => escapeHtml(String(d || '').slice(0, 10));
+    let moneyCache = null;
+
+    function moneyMsg(text, ok = true) {
+      const el = document.getElementById('moneyMsg');
+      if (!el) return;
+      el.textContent = text;
+      el.className = `text-sm mb-4 ${ok ? 'text-emerald-400' : 'text-red-400'}`;
+      el.classList.remove('hidden');
+      if (ok) setTimeout(() => el.classList.add('hidden'), 3000);
+    }
+
+    function moneySmsSelect(key) {
+      const opts = (moneyCache?.sms_options || [])
+        .map((o) => `<option value="${escapeAttr(o.sms)}">${escapeHtml(o.sms)} · ${escapeHtml(o.customer)} · ${mDay(o.date)} · ${$m(o.cost)}</option>`)
+        .join('');
+      return `<select data-money-sms="${escapeAttr(key)}" class="admin-input text-xs max-w-[18rem]"><option value="">Belongs to order…</option>${opts}</select>`;
+    }
+
+    function moneyPayment(p, linked) {
+      return `<div class="flex flex-wrap items-center gap-2 py-1">
+        <span class="text-white">${escapeHtml(p.name)}</span>
+        <span class="tabular-nums">${$m(p.amount)}</span>
+        ${p.fee ? `<span class="text-xs text-zinc-500">fee ${$m(p.fee)}</span>` : ''}
+        <span class="text-xs text-zinc-500">${mDay(p.date)}</span>
+        ${p.note ? `<span class="text-xs text-zinc-400 italic">“${escapeHtml(p.note)}”</span>` : ''}
+        <span class="flex-1"></span>
+        ${moneySmsSelect(p.key)}
+        <button type="button" data-money-notsale="${escapeAttr(p.key)}" class="text-[11px] border border-zinc-600 text-zinc-300 px-2 py-0.5 rounded-lg">Not a sale</button>
+        ${linked ? `<button type="button" data-money-auto="${escapeAttr(p.key)}" class="text-[11px] text-zinc-500 underline">undo</button>` : ''}
+      </div>`;
+    }
+
+    async function loadMoney() {
+      const body = document.getElementById('moneyBody');
+      if (!body) return;
+      body.innerHTML = '<p class="text-zinc-500">Reading emails…</p>';
+      const res = await fetch('/api/admin/money', { credentials: 'same-origin' });
+      if (res.status === 401) return showLogin();
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        body.innerHTML = `<p class="text-red-400">Could not load: ${escapeHtml(d.message || d.error || res.status)}</p>`;
+        return;
+      }
+      moneyCache = d;
+      const linked = new Set((d.links || []).map((l) => l.payment_key));
+      const notSale = (d.links || []).filter((l) => l.tag === 'not_sale');
+      const t = d.totals || {};
+      const card = (label, v, tone) =>
+        `<div class="admin-card p-3"><p class="text-[11px] uppercase tracking-wide text-zinc-500">${label}</p><p class="text-xl font-bold ${tone || 'text-zinc-100'}">${v}</p></div>`;
+      let html = `<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+        ${card('Paired sales', t.sales || 0)}
+        ${card('Money in (after fees)', $m((t.money_in || 0) - (t.fees || 0)))}
+        ${card('Paid show-me-source', $m(t.supplier_cost))}
+        ${card('Profit', $m(t.profit), (t.profit || 0) >= 0 ? 'text-emerald-300' : 'text-red-400')}
+      </div>
+      <p class="text-xs text-zinc-500">From ${d.emails || 0} emails. ${t.unpaired_payments || 0} payments (${$m(t.unpaired_payments_total)}) and ${t.unpaired_orders || 0} show-me-source orders have no partner yet; they are not in these totals.</p>`;
+
+      if ((d.months || []).length) {
+        html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-1">By month</p><ul class="space-y-0.5">' +
+          d.months.map((m) => `<li>${escapeHtml(m.month)}: ${m.sales} sales · in ${$m(m.money_in)} · out ${$m(m.supplier_cost)} · profit <strong class="${m.profit >= 0 ? 'text-emerald-300' : 'text-red-400'}">${$m(m.profit)}</strong></li>`).join('') +
+          '</ul></div>';
+      }
+
+      if ((d.customers || []).length) {
+        html += '<div class="admin-card p-4 overflow-x-auto"><p class="font-semibold text-white mb-1">By customer</p>' +
+          '<p class="text-xs text-zinc-500 mb-2">Everything each customer paid vs everything you paid show-me-source for them. Best for customers who pay in lumps.</p>' +
+          '<table class="w-full min-w-[520px]"><thead class="text-xs text-zinc-500 text-left"><tr><th class="py-1">Customer</th><th class="text-right">Paid you</th><th class="text-right">Show-me-source</th><th class="text-right">Profit</th></tr></thead><tbody>' +
+          d.customers.map((c) => `<tr class="border-t border-zinc-800"><td class="py-1">${escapeHtml(c.customer)}${c.complete ? '' : ' <span class="text-xs text-amber-300">(one side missing)</span>'}</td>
+            <td class="text-right tabular-nums">${$m(c.money_in)} <span class="text-xs text-zinc-500">(${c.payments})</span></td>
+            <td class="text-right tabular-nums">${$m(c.supplier_cost)} <span class="text-xs text-zinc-500">(${c.orders})</span></td>
+            <td class="text-right tabular-nums ${c.profit >= 0 ? 'text-emerald-300' : 'text-red-400'}">${$m(c.profit)}</td></tr>`).join('') +
+          '</tbody></table></div>';
+      }
+
+      if ((d.unmatched_in || []).length) {
+        html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-1">Payments with no show-me-source order</p>' +
+          '<p class="text-xs text-zinc-500 mb-2">Pick the order it paid for, or mark it "Not a sale" (refunds, training, friends and family). A payment here may also be an order you still need to place.</p>' +
+          d.unmatched_in.map((p) => moneyPayment(p, linked.has(p.key))).join('') + '</div>';
+      }
+
+      html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-2">Show-me-source orders</p>' +
+        (d.sales || []).map((x) => `<div class="border-t border-zinc-800 py-2">
+          <div class="flex flex-wrap justify-between gap-2">
+            <p><strong class="text-white">${escapeHtml(x.sms)}</strong> · ${escapeHtml(x.customer)} · ${mDay(x.date)}
+              ${x.match === 'likely' ? '<span class="text-xs text-amber-300 ml-1">check: name only partly matches</span>' : ''}
+              ${x.match === 'no_payment' ? '<span class="text-xs text-zinc-500 ml-1">no payment found</span>' : ''}</p>
+            <p class="tabular-nums">cost ${$m(x.cost)} <span class="text-xs text-zinc-500">(${escapeHtml(x.paid_supplier_via)})</span> ·
+              profit <strong class="${(x.profit || 0) >= 0 ? 'text-emerald-300' : 'text-red-400'}">${x.profit == null ? '—' : $m(x.profit)}</strong></p>
+          </div>
+          ${x.items ? `<p class="text-xs text-zinc-500">${escapeHtml(x.items.replace(/\([^)]*\)/g, '').replace(/\s+=\s+\$[\d.,]+\)?/g, '').slice(0, 140))}</p>` : ''}
+          ${x.tracking ? `<p class="text-xs text-zinc-500">${escapeHtml(x.carrier)} ${escapeHtml(x.tracking)}</p>` : ''}
+          ${(x.payments || []).map((p) => moneyPayment(p, linked.has(p.key))).join('')}
+        </div>`).join('') + '</div>';
+
+      if ((d.other_out || []).length) {
+        html += '<div class="admin-card p-4"><p class="font-semibold text-white mb-1">Other money you sent</p><p class="text-xs text-zinc-500 mb-1">Not counted in profit.</p><ul class="space-y-0.5">' +
+          d.other_out.map((o) => `<li>${escapeHtml(o.name)} · ${$m(o.amount)} · ${mDay(o.date)}${o.note ? ` · <span class="italic text-zinc-400">“${escapeHtml(o.note)}”</span>` : ''}</li>`).join('') + '</ul></div>';
+      }
+      if (notSale.length) {
+        html += `<p class="text-xs text-zinc-500">${notSale.length} payment(s) marked "Not a sale". <button type="button" data-money-shownotsale class="underline">Show</button></p><div id="moneyNotSale" class="hidden"></div>`;
+      }
+      body.innerHTML = html;
+    }
+
+    async function moneyPost(payload) {
+      const res = await fetch('/api/admin/money', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.status === 401) return showLogin();
+      const r = await res.json().catch(() => ({}));
+      moneyMsg(r.message || (res.ok ? 'Saved' : 'Failed'), res.ok);
+      if (res.ok) await loadMoney();
+    }
+
+    document.getElementById('moneyBody')?.addEventListener('change', (e) => {
+      const sel = e.target.closest('[data-money-sms]');
+      if (sel && sel.value) moneyPost({ payment_key: sel.dataset.moneySms, sms: sel.value });
+    });
+    document.getElementById('moneyBody')?.addEventListener('click', (e) => {
+      const ns = e.target.closest('[data-money-notsale]');
+      if (ns) return moneyPost({ payment_key: ns.dataset.moneyNotsale, tag: 'not_sale' });
+      const auto = e.target.closest('[data-money-auto]');
+      if (auto) return moneyPost({ payment_key: auto.dataset.moneyAuto });
+      if (e.target.closest('[data-money-shownotsale]')) {
+        const box = document.getElementById('moneyNotSale');
+        const keys = (moneyCache?.links || []).filter((l) => l.tag === 'not_sale');
+        box.innerHTML = keys.map((l) => `<p class="text-xs">${escapeHtml(l.payment_key)} <button type="button" data-money-auto="${escapeAttr(l.payment_key)}" class="underline text-zinc-400">count it again</button></p>`).join('');
+        box.classList.toggle('hidden');
+      }
+    });
 
     /* ---------- Place orders tab (queue of paid orders to place at show-me-source) ---------- */
     function placeMsg(text, ok = true) {
@@ -642,6 +803,31 @@
       }
     }
 
+    function placeMatchBox(r, mode) {
+      const m = r.sms_match;
+      if (!m) return '';
+      const trk = m.tracking
+        ? `<p class="text-xs">Tracking: <strong class="text-white">${escapeHtml(m.carrier || '')} ${escapeHtml(m.tracking)}</strong></p>`
+        : '<p class="text-xs text-zinc-500">No tracking email yet.</p>';
+      const btns = [];
+      if (mode === 'queue') {
+        btns.push(`<button type="button" data-place-use="${escapeAttr(r.order_number)}" data-sms="${escapeAttr(m.sms)}" data-cost="${escapeAttr(m.cost ?? '')}"
+          class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Yes, that's it: mark placed</button>`);
+      }
+      if (m.tracking) {
+        btns.push(`<button type="button" data-place-ship="${escapeAttr(r.order_number)}" data-sms="${escapeAttr(m.sms)}" data-tracking="${escapeAttr(m.tracking)}"
+          data-carrier="${escapeAttr(m.carrier || '')}" data-url="${escapeAttr(m.tracking_url || '')}"
+          class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-1.5 rounded-lg text-xs">Mark shipped + email customer</button>`);
+      }
+      return `<div class="rounded-xl border border-emerald-700 bg-emerald-950/30 p-3 space-y-1">
+        <p class="text-sm"><strong class="text-emerald-300">Found show-me-source ${escapeHtml(m.sms)}</strong>
+          · ${escapeHtml(m.name)} · ${m.cost != null ? '$' + Number(m.cost).toFixed(2) : ''} <span class="text-xs text-zinc-500">(${escapeHtml(m.why)})</span></p>
+        ${m.ship_to ? `<p class="text-xs text-zinc-400">Ships to ${escapeHtml(m.ship_to)}</p>` : ''}
+        ${trk}
+        <div class="flex flex-wrap gap-2 pt-1">${btns.join('')}</div>
+      </div>`;
+    }
+
     async function loadPlaceQueue() {
       const body = document.getElementById('placeBody');
       if (!body) return;
@@ -673,6 +859,7 @@
             <p class="text-xs text-zinc-500">Paid ${escapeHtml(String(r.paid_at || r.created_at || '').slice(0, 16).replace('T', ' '))} · customer paid ${formatCents(r.customer_paid_cents || 0)}</p>
           </div>
 
+          ${placeMatchBox(r, 'queue')}
           <div>
             <p class="text-[11px] uppercase tracking-wide text-[#FDD700] mb-1">1 · Add to your show-me-source cart</p>
             <ul class="space-y-1">${(r.items || [])
@@ -712,6 +899,21 @@
           </div>
         </div>`;
       });
+      const awaiting = d.awaiting || [];
+      if (awaiting.length) {
+        html += `<div class="admin-card p-4 space-y-3"><p class="font-semibold text-white">Placed, waiting to ship (${awaiting.length})</p>
+          <p class="text-xs text-zinc-500">When show-me-source's tracking email arrives at supplier@springfieldpbc.com it shows here. One click marks the order shipped and emails the customer their tracking.</p>` +
+          awaiting
+            .map(
+              (r) => `<div class="border-t border-zinc-800 pt-2 space-y-1">
+                <p><strong class="text-white">${escapeHtml(r.order_number)}</strong> · ${escapeHtml(r.customer_name)}
+                  <span class="text-xs text-zinc-500">placed ${escapeHtml(String(r.placed?.placed_at || '').slice(0, 16))}${r.placed?.sms_ref ? ' · their #' + escapeHtml(r.placed.sms_ref) : ''}</span></p>
+                ${r.sms_match ? placeMatchBox(r, 'awaiting') : '<p class="text-xs text-zinc-500">No show-me-source email found for this order yet.</p>'}
+              </div>`
+            )
+            .join('') +
+          '</div>';
+      }
       const recent = d.recent || [];
       if (recent.length) {
         html += `<details class="admin-card p-4"><summary class="cursor-pointer text-zinc-300 font-semibold">Recently placed (${recent.length})</summary>
@@ -736,6 +938,42 @@
           copyBtn.textContent = 'Copy failed';
         }
         return;
+      }
+      const use = e.target.closest('[data-place-use]');
+      if (use) {
+        use.disabled = true;
+        const r1 = await fetch('/api/admin/supplier-orders', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_number: use.dataset.placeUse, placed: true, sms_ref: use.dataset.sms, sms_cost: use.dataset.cost }),
+        });
+        if (r1.status === 401) return showLogin();
+        const j1 = await r1.json().catch(() => ({}));
+        placeMsg(r1.ok ? `${use.dataset.placeUse} marked placed (${use.dataset.sms})` : j1.message || 'Failed', r1.ok);
+        return loadPlaceQueue();
+      }
+      const ship = e.target.closest('[data-place-ship]');
+      if (ship) {
+        if (!confirm(`Mark ${ship.dataset.placeShip} shipped and email the customer tracking ${ship.dataset.tracking}?`)) return;
+        ship.disabled = true;
+        const r2 = await fetch('/api/admin/supplier-orders', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order_number: ship.dataset.placeShip,
+            action: 'ship',
+            sms_ref: ship.dataset.sms,
+            tracking_number: ship.dataset.tracking,
+            tracking_carrier: ship.dataset.carrier,
+            tracking_url: ship.dataset.url,
+          }),
+        });
+        if (r2.status === 401) return showLogin();
+        const j2 = await r2.json().catch(() => ({}));
+        placeMsg(j2.message || (r2.ok ? 'Shipped' : 'Failed'), r2.ok);
+        return loadPlaceQueue();
       }
       const done = e.target.closest('[data-place-done]');
       if (!done) return;
@@ -2215,6 +2453,8 @@
     document.getElementById('tabProducts').addEventListener('click', () => switchTab('products'));
     document.getElementById('tabSuppliers')?.addEventListener('click', () => switchTab('suppliers'));
     document.getElementById('tabPlace')?.addEventListener('click', () => switchTab('place'));
+    document.getElementById('tabMoney')?.addEventListener('click', () => switchTab('money'));
+    document.getElementById('moneyReloadBtn')?.addEventListener('click', () => loadMoney());
     document.getElementById('placeReloadBtn')?.addEventListener('click', () => loadPlaceQueue());
     document.getElementById('tabSync')?.addEventListener('click', () => switchTab('sync'));
     document.getElementById('syncReloadBtn')?.addEventListener('click', () => loadSupplierSync());

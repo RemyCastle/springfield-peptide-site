@@ -73,6 +73,13 @@ const TABLES = [
     processed_at TEXT,
     result TEXT
   )`,
+  // Remy's decisions in the Money tab: a payment belongs to a show-me-source order, or is not a sale.
+  `CREATE TABLE IF NOT EXISTS money_links (
+    payment_key TEXT PRIMARY KEY,
+    sms TEXT,
+    tag TEXT,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
   // Which SPBC orders Remy has placed at show-me-source.
   `CREATE TABLE IF NOT EXISTS supplier_orders (
     order_number TEXT PRIMARY KEY,
