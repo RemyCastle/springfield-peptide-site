@@ -1,5 +1,6 @@
 import { json, requireAdmin, productToAdmin } from '../../../lib/auth.js';
 import { ensureCatalogSchema } from '../../../lib/db.js';
+import { logChange, productRow, pick, PRODUCT_FIELDS } from '../../../lib/adminTables.js';
 
 const PRODUCT_SELECT = `
   SELECT p.id, p.name, p.vial_price, p.pack_price, p.kit_only, p.sort_order, p.active,
@@ -77,6 +78,7 @@ export async function onRequestPut({ request, env, params }) {
       if (!s) return json({ error: 'Supplier not found' }, 400);
     }
 
+    const beforeRow = await productRow(env.DB, id);
     await env.DB.prepare(
       `UPDATE products
        SET name = ?, vial_price = ?, pack_price = ?, kit_only = ?, sort_order = ?,
@@ -89,6 +91,13 @@ export async function onRequestPut({ request, env, params }) {
     const row = await env.DB.prepare(`${PRODUCT_SELECT} WHERE p.id = ?`)
       .bind(id)
       .first();
+    await logChange(env.DB, {
+      kind: 'product',
+      target: id,
+      label: `Edited ${name}`,
+      before: pick(beforeRow, PRODUCT_FIELDS),
+      after: pick(row, PRODUCT_FIELDS),
+    }).catch(() => null);
 
     return json({ product: productToAdmin(row) });
   } catch (e) {

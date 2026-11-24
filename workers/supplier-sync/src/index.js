@@ -13,7 +13,7 @@
 import { planSync, feedProblem } from './plan.js';
 import { ensureSyncSchema } from './schema.js';
 import { updateProductMeta, sendRestockEmails } from './extras.js';
-import { paymentReminders, dailyDigest, priceDropAlerts, autoMatch, computeBestSellers } from './jobs.js';
+import { paymentReminders, dailyDigest, priceDropAlerts, autoMatch, computeBestSellers, syncBreakAlert } from './jobs.js';
 import { handleEmail } from './mailbox.js';
 import { healthCheck } from './health.js';
 import { partnerPriceList } from './partner.js';
@@ -185,6 +185,7 @@ export async function runScheduled(cron, env) {
     return { digest };
   }
   const sync = await runSync(env);
+  await syncBreakAlert(env, db).catch(() => null);
   const reminders = await paymentReminders(env, db).catch((e) => ({ error: String(e.message || e) }));
   if (!reminders.skipped) {
     await logEvent(db, { kind: 'reminders', status: reminders.error ? 'error' : 'done', detail: reminders });

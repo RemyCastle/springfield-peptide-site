@@ -11,6 +11,7 @@
  */
 import { json, requireAdmin } from '../../lib/auth.js';
 import { ensureSyncSchema, getSetting, setSetting, getSettings } from '../../../workers/supplier-sync/src/schema.js';
+import { logChange } from '../../lib/adminTables.js';
 
 const SWITCHES = ['reminders_on', 'digest_on', 'price_alerts_on', 'auto_match_on', 'vacation_on', 'tax_on'];
 const NUMBERS = {
@@ -87,7 +88,19 @@ export async function onRequestPost({ request, env }) {
   if (body.action === 'set_settings') {
     const clean = cleanSettings(body.settings || {});
     if (clean.error) return json({ error: 'validation_failed', message: clean.error }, 400);
+    const old = await getSettings(db);
+    const before = {};
+    const after = {};
+    for (const [k, v] of Object.entries(clean.values)) {
+      if (String(old[k] ?? '') !== v) {
+        before[k] = old[k] ?? '';
+        after[k] = v;
+      }
+    }
     for (const [k, v] of Object.entries(clean.values)) await setSetting(db, k, v);
+    if (Object.keys(after).length) {
+      await logChange(db, { kind: 'settings', target: 'settings', label: `Settings: ${Object.keys(after).join(', ')}`, before, after }).catch(() => null);
+    }
     return json({ ok: true, message: 'Saved', settings: await getSettings(db) });
   }
   if (body.action === 'set_lab_reports') {
@@ -131,6 +144,31 @@ export async function onRequestPost({ request, env }) {
         mark('mapped'),
       ]);
       return json({ ok: true, message: `Linked to ${name}. The next sync sets its price.` });
+    }
+    case 'add_new': {
+      if (ev.kind !== 'new_product') break;
+      const t = detail.target || {};
+      const name = String(body.spbc_name || detail.supplier_name || '').trim().slice(0, 120);
+      if (!name) return json({ error: 'validation_failed', message: 'Give it a name for the shop.' }, 400);
+      const taken = await db.prepare('SELECT id FROM products WHERE name = ?').bind(name).first();
+      if (taken) return json({ error: 'name_taken', message: `${name} is already on the Price list. Use Link instead.` }, 400);
+      if (!(Number(t.kit) > 0)) return json({ error: 'no_price', message: 'No price from the supplier yet. Try after the next sync.' }, 400);
+      const minRow = await db.prepare('SELECT MIN(sort_order) AS m FROM products').first();
+      const sortOrder = Number.isFinite(Number(minRow?.m)) ? Number(minRow.m) - 10 : 10;
+      await db.batch([
+        db
+          .prepare(
+            "INSERT INTO products (name, vial_price, pack_price, kit_only, sort_order, active, updated_at) VALUES (?, ?, ?, ?, ?, 1, datetime('now'))"
+          )
+          .bind(name, t.kitOnly ? null : t.vial ?? null, t.kit, t.kitOnly ? 1 : 0, sortOrder),
+        db
+          .prepare(
+            "INSERT INTO supplier_map (supplier_id, supplier_name, spbc_name, skip, hidden_by_sync) VALUES (?, ?, ?, 0, 0) ON CONFLICT(supplier_id) DO UPDATE SET spbc_name = excluded.spbc_name, skip = 0, updated_at = datetime('now')"
+          )
+          .bind(ev.supplier_id, detail.supplier_name || null, name),
+        mark('mapped'),
+      ]);
+      return json({ ok: true, message: `${name} is now on the shop at the usual markup.` });
     }
     case 'skip_new':
       if (ev.kind !== 'new_product') break;

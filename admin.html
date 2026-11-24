@@ -6,11 +6,15 @@
   <meta name="theme-color" content="#006600">
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/admin.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SPBC admin">
+  <link rel="apple-touch-icon" href="/favicon.svg">
   <title>Admin — Springfield Peptide Buyers Club</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.38ceda3f.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.b804d143.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -199,6 +203,10 @@
         <div>
           <label class="block text-xs text-zinc-400 mb-1" for="password">Password</label>
           <input id="password" name="password" type="password" autocomplete="current-password" required class="admin-input">
+        </div>
+        <div id="loginCodeWrap" class="hidden">
+          <label class="block text-xs text-zinc-400 mb-1" for="loginCode">Code from your authenticator app</label>
+          <input id="loginCode" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="admin-input" placeholder="123456">
         </div>
         <p id="loginError" class="text-red-500 text-sm hidden break-word"></p>
         <button type="submit" class="btn-primary-admin">Sign in</button>
@@ -945,6 +953,7 @@
         html += `<p class="text-xs text-zinc-500">${notSale.length} payment(s) marked "Not a sale". <button type="button" data-money-shownotsale class="underline">Show</button></p><div id="moneyNotSale" class="hidden"></div>`;
       }
       body.innerHTML = html;
+      window.spbcAdminTools?.billCheck(d, body);
     }
 
     /** Printable statement for one customer (opens a new window; print or save as PDF). */
@@ -1606,7 +1615,11 @@
             return `<div class="admin-card p-4 space-y-2">
               <p class="font-semibold text-white">${escapeHtml(x.supplier_name || 'Supplier #' + n.supplier_id)}</p>
               <p class="text-xs text-zinc-400">Would sell at ${syncMoney(t.vial)} vial / ${syncMoney(t.kit)} kit.
-              To sell it, add it on the Price list first, then link it here.</p>
+              Add it to the shop as a new product, or link it to one already on the Price list.</p>
+              <div class="flex flex-wrap gap-2 items-center">
+                <input data-sync-newname="${n.id}" value="${escapeAttr(x.supplier_name || '')}" class="admin-input text-sm max-w-[14rem]" aria-label="Name on the shop">
+                <button type="button" data-sync-act="add_new" data-id="${n.id}" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2 rounded-xl text-sm">Add to shop</button>
+              </div>
               <div class="flex flex-wrap gap-2 items-center">
                 <select data-sync-map="${n.id}" class="admin-input text-sm max-w-xs">${opts}</select>
                 <button type="button" data-sync-act="map_new" data-id="${n.id}" class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-2 rounded-xl text-sm">Link</button>
@@ -1667,6 +1680,10 @@
       if (action === 'map_new') {
         const sel = document.querySelector(`[data-sync-map="${id}"]`);
         payload.spbc_name = sel ? sel.value : '';
+      }
+      if (action === 'add_new') {
+        const inp = document.querySelector(`[data-sync-newname="${id}"]`);
+        payload.spbc_name = inp ? inp.value.trim() : '';
       }
       const res = await fetch('/api/admin/supplier-sync', {
         method: 'POST',
@@ -1885,6 +1902,7 @@
       headerActions.classList.remove('hidden');
       setTabStyles();
       refreshPlaceCount();
+      window.spbcAdminTools?.onApp();
     }
 
     /** No credential configured anywhere → offer first-run setup instead of a dead login. */
@@ -2065,7 +2083,7 @@
         tr.innerHTML =
           `<td class="px-3 py-2.5 font-semibold ${numClass}">${escapeHtml(o.order_number)}${chip}</td>` +
           `<td class="px-3 py-2.5">${statusBadge(o.status)}${smsChip(o, smsPlaced)}</td>` +
-          `<td class="px-3 py-2.5">${escapeHtml(o.customer_name)}<br><span class="text-xs text-zinc-500">${escapeHtml(o.customer_email)}</span></td>` +
+          `<td class="px-3 py-2.5">${escapeHtml(o.customer_name)}${window.spbcAdminTools ? window.spbcAdminTools.riskChip(o, orders) : ''}<br><span class="text-xs text-zinc-500">${escapeHtml(o.customer_email)}</span></td>` +
           `<td class="px-3 py-2.5">${formatCents(o.total_cents)}</td>` +
           `<td class="px-3 py-2.5">${o.shipping_complete ? '✓' : '—'}</td>` +
           `<td class="px-3 py-2.5 text-xs text-zinc-500">${escapeHtml((o.created_at || '').slice(0, 19).replace('T', ' '))}</td>` +
@@ -2241,6 +2259,7 @@
         selectedOrder = null;
       });
       if (!wholesale) loadSmsHelper(o.order_number);
+      if (!wholesale) window.spbcAdminTools?.customerBox(o);
 
       const actions = document.getElementById('orderActions');
       for (const s of next) {
@@ -2585,6 +2604,7 @@
       }
       productList.innerHTML = '';
       products.forEach((p) => productList.appendChild(productCard(p)));
+      window.spbcAdminTools?.afterProducts();
     }
 
     function productCard(p) {
@@ -2835,15 +2855,25 @@
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, code: document.getElementById('loginCode').value.trim() || undefined }),
       });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 428 || data.error === 'bad_code') {
+        document.getElementById('loginCodeWrap').classList.remove('hidden');
+        document.getElementById('loginCode').value = '';
+        document.getElementById('loginCode').focus();
+        loginError.textContent = data.message || 'Enter the code from your authenticator app.';
+        loginError.classList.remove('hidden');
+        return;
+      }
       if (!res.ok) {
         loginError.textContent = data.error || 'Invalid username or password';
         loginError.classList.remove('hidden');
         return;
       }
       document.getElementById('password').value = '';
+      document.getElementById('loginCode').value = '';
+      document.getElementById('loginCodeWrap').classList.add('hidden');
       const who = document.getElementById('adminWho');
       if (who && data.user) {
         who.textContent = (data.user.display_name || data.user.username) + ' · master';
@@ -3000,5 +3030,6 @@
 
     checkSession();
   </script>
+  <script src="/shared/admin-tools.3cc135d0.js"></script>
 </body>
 </html>

@@ -5,6 +5,7 @@ import {
 } from '../../lib/auth.js';
 import { verifyCredential } from '../../lib/adminCredential.js';
 import { loginLocked, noteLoginResult } from '../../lib/loginThrottle.js';
+import { securityGet, useTotp } from '../../lib/totp.js';
 
 /** Shared master login with Patriotic: remy + MASTER_ADMIN_PASSWORD */
 const DEFAULT_MASTER_USER = 'remy';
@@ -12,9 +13,35 @@ const DEFAULT_MASTER_USER = 'remy';
 export async function onRequestPost(ctx) {
   const locked = await loginLocked(ctx.request, ctx.env);
   if (locked) return locked;
-  const res = await handleLogin(ctx);
+  const copy = ctx.request.clone();
+  let res = await handleLogin(ctx);
+  if (res.status === 200) res = await secondStep(ctx.env, copy, res);
   await noteLoginResult(ctx.request, ctx.env, res.status);
   return res;
+}
+
+/**
+ * Two-step login: once Remy turns it on, a right password alone gets no session cookie.
+ * No code yet -> 428 (asks for it, not counted as a failed try). Wrong code -> 401 (counted).
+ */
+async function secondStep(env, request, ok) {
+  if (!env.DB) return ok;
+  let sec;
+  try {
+    sec = await securityGet(env.DB);
+  } catch {
+    return ok;
+  }
+  if (sec.totp_on !== '1' || !sec.totp_secret) return ok;
+  const body = await request.json().catch(() => ({}));
+  const code = String(body.code || '').trim();
+  if (!code) {
+    return json({ error: 'code_required', message: 'Enter the 6-digit code from your authenticator app.' }, 428);
+  }
+  if (!(await useTotp(env.DB, code))) {
+    return json({ error: 'bad_code', message: 'That code is not right (or was already used). Wait for a new one and try again.' }, 401);
+  }
+  return ok;
 }
 
 async function handleLogin({ request, env }) {

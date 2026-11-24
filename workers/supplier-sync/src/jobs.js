@@ -2,7 +2,7 @@
  * Scheduled jobs beyond the price/stock sync. Each one checks its own switch in
  * site_settings (see schema.js DEFAULT_SETTINGS) and does nothing while it is off.
  */
-import { getSettings } from './schema.js';
+import { getSettings, setSetting } from './schema.js';
 import { sendEmail, emailReady, esc, siteUrl, wrap } from './email.js';
 import { ordersReady, listOrders, ordersApi, payUrl } from './orders.js';
 import { parseMoneyMail, smsOrders } from './money.js';
@@ -293,4 +293,37 @@ export async function computeBestSellers(db) {
     .bind(JSON.stringify(top))
     .run();
   return { top, counted: orders.length };
+}
+
+/**
+ * Supplier sync broke: two failed checks in a row (about 4 hours) emails digest_to once.
+ * The next good check clears it, so a later break alerts again.
+ */
+export async function syncBreakAlert(env, db) {
+  const runs = (await db.prepare("SELECT status, detail, created_at FROM supplier_sync_events WHERE kind = 'run' ORDER BY id DESC LIMIT 2").all())
+    .results;
+  const s = await getSettings(db);
+  if (!runs.length) return { skipped: true };
+  if (runs[0].status !== 'error') {
+    if (s.sync_alerted === '1') await setSetting(db, 'sync_alerted', '0');
+    return { skipped: true };
+  }
+  if (runs.length < 2 || runs[1].status !== 'error' || s.sync_alerted === '1') return { skipped: true };
+  if (!s.digest_to || !emailReady(env)) return { skipped: true, reason: 'no_email' };
+  let why = '';
+  try {
+    why = JSON.parse(runs[0].detail || '{}').error || '';
+  } catch {
+    why = '';
+  }
+  const ok = await sendEmail(env, {
+    to: s.digest_to,
+    subject: 'SPBC: the show-me-source price check stopped working',
+    html: wrap(`<p>The automatic show-me-source check failed twice in a row, so prices and stock on the shop are not being updated.</p>
+<p>Last error: <strong>${esc(why || 'unknown')}</strong></p>
+<p>Common causes: show-me-source changed their site key or pricing code, or their site is down. Open <a href="${siteUrl(env)}/admin" style="color:#b8860b">Supplier sync in the admin</a>.</p>
+<p>You get this once; the next good check resets it.</p>`),
+  });
+  if (ok) await setSetting(db, 'sync_alerted', '1');
+  return { sent: ok };
 }

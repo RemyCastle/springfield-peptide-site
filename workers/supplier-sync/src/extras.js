@@ -24,7 +24,7 @@ export function coaUrlFrom(row, baseUrl) {
 
 /** Update low_inventory + coa_url on supplier_map from this run's feed. */
 export async function updateProductMeta(db, { stock, details, feed, baseUrl }) {
-  const map = (await db.prepare('SELECT supplier_id, low_inventory, coa_url, max_qty FROM supplier_map WHERE skip = 0').all()).results;
+  const map = (await db.prepare('SELECT supplier_id, low_inventory, coa_url, max_qty, single_cost, bulk_cost FROM supplier_map WHERE skip = 0').all()).results;
   const stmts = [];
   for (const m of map) {
     const id = String(m.supplier_id);
@@ -34,11 +34,23 @@ export async function updateProductMeta(db, { stock, details, feed, baseUrl }) {
     const coa = coaUrlFrom(row, baseUrl);
     const maxRaw = Number(st.max_qty ?? (row && row.max_qty));
     const max = Number.isFinite(maxRaw) && maxRaw >= 0 ? Math.floor(maxRaw) : null;
-    if (low !== m.low_inventory || coa !== (m.coa_url || null) || max !== (m.max_qty ?? null)) {
+    const f = (feed || {})[id] || {};
+    const cost = (v, old) => (Number(v) > 0 ? Math.round(Number(v) * 100) / 100 : old ?? null);
+    const single = cost(f.single_price, m.single_cost);
+    const bulk = cost(f.bulk_price, m.bulk_cost);
+    if (
+      low !== m.low_inventory ||
+      coa !== (m.coa_url || null) ||
+      max !== (m.max_qty ?? null) ||
+      single !== (m.single_cost ?? null) ||
+      bulk !== (m.bulk_cost ?? null)
+    ) {
       stmts.push(
         db
-          .prepare("UPDATE supplier_map SET low_inventory = ?, coa_url = ?, max_qty = ?, updated_at = datetime('now') WHERE supplier_id = ?")
-          .bind(low, coa, max, m.supplier_id)
+          .prepare(
+            "UPDATE supplier_map SET low_inventory = ?, coa_url = ?, max_qty = ?, single_cost = ?, bulk_cost = ?, updated_at = datetime('now') WHERE supplier_id = ?"
+          )
+          .bind(low, coa, max, single, bulk, m.supplier_id)
       );
     }
   }

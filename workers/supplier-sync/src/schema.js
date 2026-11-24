@@ -101,6 +101,8 @@ const LATE_COLUMNS = [
   ['supplier_map', 'low_inventory', 'INTEGER NOT NULL DEFAULT 0'],
   ['supplier_map', 'coa_url', 'TEXT'],
   ['supplier_map', 'max_qty', 'INTEGER'], // how many single vials show-me-source will sell right now
+  ['supplier_map', 'single_cost', 'REAL'], // today's show-me-source price for 1 vial (pricing-code tier)
+  ['supplier_map', 'bulk_cost', 'REAL'], // today's show-me-source price per vial in a 10-vial kit
   ['supplier_orders', 'sms_cost', 'REAL'], // what Remy actually paid show-me-source (incl. their shipping)
   ['supplier_mail', 'trusted', 'INTEGER NOT NULL DEFAULT 0'],
   ['supplier_mail', 'auth', 'TEXT'], // forwarded | dkim | spf | none

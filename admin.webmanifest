@@ -1,0 +1,10 @@
+{
+  "name": "SPBC admin",
+  "short_name": "SPBC admin",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#006600",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

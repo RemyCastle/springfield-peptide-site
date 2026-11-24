@@ -18,6 +18,7 @@ const pairs = [
   ['store.js', 'store'],
   ['calculator.js', 'calculator'],
   ['track.js', 'track'],
+  ['admin-tools.js', 'admin-tools'],
 ];
 
 const mapping = {};
@@ -63,6 +64,7 @@ const rewrites = [
   [/\/shared\/store\.[a-f0-9]{8}\.js/g, `/shared/${mapping['store.js']}`],
   [/\/shared\/calculator\.[a-f0-9]{8}\.js/g, `/shared/${mapping['calculator.js']}`],
   [/\/shared\/track\.[a-f0-9]{8}\.js/g, `/shared/${mapping['track.js']}`],
+  [/\/shared\/admin-tools\.[a-f0-9]{8}\.js/g, `/shared/${mapping['admin-tools.js']}`],
   [/\/shared\/titration\.[a-f0-9]{8}\.js/g, `/shared/${mapping['titration.js']}`],
 ];
 
