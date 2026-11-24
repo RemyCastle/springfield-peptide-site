@@ -194,3 +194,7 @@ Append-only log. Newest at bottom.
 - Email handler on spbc-supplier-sync saves mail to `supplier_mail`. Remy can use supplier@springfieldpbc.com as the email on his show-me-source orders so receipts/shipping notices arrive directly.
 - Trust: envelope sender in ALLOWED_FORWARDERS (secret), or From domain in TRUSTED_SENDER_DOMAINS (show-me-source.com) with DKIM/SPF pass in Authentication-Results. Untrusted mail is kept (capped 100/day) but ignored by matching. Optional COPY_TO forwards trusted direct mail to a verified Outlook address.
 - Payment notices keep going Outlook -> receipts@springfieldpbc.com (spbc-receipts, built by another session).
+
+### 2026-11-23 — Place orders tab; Vendor match retired
+- Admin "Place orders" tab (`/api/admin/supplier-queue`): paid SPBC orders not yet placed, oldest first, with show-me-source product names, KIT/VIAL counts, estimated cost, per-field copy buttons for checkout (email supplier@springfieldpbc.com, ship-to), and Mark placed (their order #, what you paid). Shared builder `functions/lib/supplierPlacement.js`. Tab badge shows the waiting count.
+- Vendor match tab, its panel/JS and the "Vendor cost" box on product cards removed (Remy: not needed). `functions/api/admin/vendor-links.js` / `vendor-create.js` left in place (bot code references them).

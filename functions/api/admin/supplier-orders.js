@@ -6,7 +6,8 @@
  */
 import { json, requireAdmin } from '../../lib/auth.js';
 import { proxyOrdersAdmin } from '../../lib/ordersProxy.js';
-import { ensureSyncSchema, supplierUnitCost } from '../../../workers/supplier-sync/src/schema.js';
+import { ensureSyncSchema } from '../../../workers/supplier-sync/src/schema.js';
+import { buildPlacement, supplierNameMap } from '../../lib/supplierPlacement.js';
 
 export async function onRequestGet({ request, env }) {
   const denied = await requireAdmin(request, env);
@@ -20,43 +21,7 @@ export async function onRequestGet({ request, env }) {
   const placed = await env.DB.prepare('SELECT * FROM supplier_orders WHERE order_number = ?').bind(orderNumber).first();
   const res = await proxyOrdersAdmin(env, `/admin/orders/${encodeURIComponent(orderNumber)}`);
   if (!res.ok) return json(res.data, res.status);
-  const o = res.data.order || {};
-  // Supplier names for each SPBC line (what to pick on show-me-source).
-  const map = (await env.DB.prepare('SELECT supplier_name, spbc_name FROM supplier_map WHERE skip = 0').all()).results;
-  const bySpbc = new Map(map.map((m) => [m.spbc_name, m.supplier_name]));
-  let cost = 0;
-  const items = (res.data.items || []).map((it) => {
-    const isVial = /\(\s*Vial\s*\)\s*$/i.test(it.name || '') || /-VIAL$/i.test(it.sku || '');
-    const spbcName = String(it.name || '').replace(/\s+\((?:10-Pack \/ Kit|Kit|Vial)\)\s*$/i, '').trim();
-    const unitCost = supplierUnitCost(it);
-    cost += unitCost * (Number(it.qty) || 0);
-    return {
-      spbc_name: spbcName,
-      supplier_name: bySpbc.get(spbcName) || null,
-      kind: isVial ? 'vial' : 'kit',
-      qty: Number(it.qty) || 0,
-      supplier_unit_cost: unitCost,
-    };
-  });
-  return json({
-    placed,
-    ready: {
-      order_number: o.order_number,
-      status: o.status,
-      items,
-      supplier_cost: Math.round(cost * 100) / 100,
-      customer_paid_cents: o.total_cents,
-      address: {
-        name: o.ship_name || o.customer_name || '',
-        line1: o.ship_line1 || '',
-        line2: o.ship_line2 || '',
-        city: o.ship_city || '',
-        state: o.ship_state || '',
-        postal: o.ship_postal || '',
-        phone: o.ship_phone || '',
-      },
-    },
-  });
+  return json({ placed, ready: buildPlacement(res.data, await supplierNameMap(env.DB)) });
 }
 
 export async function onRequestPost({ request, env }) {

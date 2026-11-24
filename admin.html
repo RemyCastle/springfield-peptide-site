@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.d8be5f21.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.9effac83.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -252,16 +252,13 @@
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Orders
         </button>
+        <button type="button" data-tab="place" id="tabPlace"
+                class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+          Place orders <span id="placeCount" class="hidden ml-1 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-amber-400 text-black text-[11px]"></span>
+        </button>
         <button type="button" data-tab="products" id="tabProducts"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Price list
-        </button>
-<!-- Suppliers tab retired: vendor shops (Vendor match) replaced it. The
-     suppliers API and the Supplier dropdown on Price list still work, so
-     existing product→supplier assignments and Telegram routing are intact. -->
-        <button type="button" data-tab="vendors" id="tabVendors"
-                class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
-          Vendor match
         </button>
         <button type="button" data-tab="sync" id="tabSync"
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
@@ -272,6 +269,25 @@
           Sales &amp; Profit
         </button>
       </nav>
+
+      <!-- PLACE ORDERS AT SHOW-ME-SOURCE -->
+      <div id="placePanel" class="hidden">
+        <div class="panel-head">
+          <h1 class="ducks-font text-3xl text-[#FDD700]">Place orders</h1>
+          <div class="panel-actions">
+            <a href="https://show-me-source.com/" target="_blank" rel="noopener noreferrer"
+               class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">Open show-me-source ↗</a>
+            <button id="placeReloadBtn" type="button"
+                    class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm">↻ Reload</button>
+          </div>
+        </div>
+        <p class="text-xs text-zinc-500 mb-4">
+          Paid orders waiting to be placed, oldest first. For each one: add the items to your show-me-source cart,
+          check out with the copy buttons, pay them, then mark it placed here.
+        </p>
+        <p id="placeMsg" class="text-sm mb-4 hidden"></p>
+        <div id="placeBody" class="space-y-4 text-sm text-zinc-300">Loading…</div>
+      </div>
 
       <!-- SALES & PROFIT -->
       <div id="reportPanel" class="hidden">
@@ -432,31 +448,6 @@
         <div id="productList" class="flex flex-col gap-3"></div>
       </div>
 
-      <!-- VENDOR MATCH -->
-      <div id="vendorsPanel" class="hidden">
-        <div class="panel-head">
-          <h1 class="ducks-font text-3xl text-[#FDD700]">Vendor match</h1>
-          <div class="panel-actions">
-            <button id="addVendorBtn" type="button"
-                    class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2.5 rounded-2xl text-sm">
-              + Add vendor
-            </button>
-            <button id="reloadVendorsBtn" type="button"
-                    class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm">
-              ↻ Reload
-            </button>
-          </div>
-        </div>
-        <p class="text-xs text-zinc-500 mb-4">
-          Tell the bot which of a vendor's products is <em>our</em> product.
-          Routing matches by name on its own — set a match here when a vendor
-          names things differently (our <strong class="text-emerald-400">HGH 360IU</strong>
-          is her <strong class="text-emerald-400">H36</strong>), otherwise she
-          can fill the order but never gets quoted.
-        </p>
-        <div id="vendorsBody" class="text-sm text-zinc-400">Loading…</div>
-      </div>
-
       <!-- SUPPLIER SYNC (show-me-source prices + stock, workers/supplier-sync) -->
       <div id="syncPanel" class="hidden">
         <div class="panel-head">
@@ -593,9 +584,8 @@
           : 'tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors bg-zinc-900 text-zinc-300 border border-zinc-700 hover:border-zinc-500';
       });
       ordersPanel.classList.toggle('hidden', activeTab !== 'orders');
+      document.getElementById('placePanel')?.classList.toggle('hidden', activeTab !== 'place');
       productsPanel.classList.toggle('hidden', activeTab !== 'products');
-      const vp = document.getElementById('vendorsPanel');
-      if (vp) vp.classList.toggle('hidden', activeTab !== 'vendors');
       const sp = document.getElementById('syncPanel');
       if (sp) sp.classList.toggle('hidden', activeTab !== 'sync');
       if (reportPanel) reportPanel.classList.toggle('hidden', activeTab !== 'report');
@@ -605,15 +595,170 @@
       activeTab = tab;
       setTabStyles();
       if (tab === 'orders') await loadOrders();
+      if (tab === 'place') await loadPlaceQueue();
       if (tab === 'products') {
         await loadSuppliersCache();
-        await loadVendorCostIndex();
         await loadProducts();
       }
-      if (tab === 'vendors') await loadVendorMatch();
       if (tab === 'sync') await loadSupplierSync();
       if (tab === 'report') await loadReport();
     }
+
+    /* ---------- Place orders tab (queue of paid orders to place at show-me-source) ---------- */
+    function placeMsg(text, ok = true) {
+      const el = document.getElementById('placeMsg');
+      if (!el) return;
+      el.textContent = text;
+      el.className = `text-sm mb-4 ${ok ? 'text-emerald-400' : 'text-red-400'}`;
+      el.classList.remove('hidden');
+      if (ok) setTimeout(() => el.classList.add('hidden'), 3000);
+    }
+
+    function placeCopy(label, value) {
+      if (!value) return '';
+      return `<button type="button" data-place-copy="${escapeAttr(value)}" class="text-[11px] border border-zinc-600 text-zinc-300 hover:border-[#FDD700] px-2 py-0.5 rounded-lg shrink-0">${escapeHtml(label)}</button>`;
+    }
+
+    function placeField(label, value) {
+      return `<div class="flex items-center justify-between gap-2 py-0.5">
+        <span class="text-zinc-500 text-xs w-16 shrink-0">${escapeHtml(label)}</span>
+        <span class="flex-1 min-w-0 break-word text-white">${value ? escapeHtml(value) : '<span class="text-zinc-600">—</span>'}</span>
+        ${placeCopy('Copy', value)}</div>`;
+    }
+
+    function updatePlaceCount(n) {
+      const el = document.getElementById('placeCount');
+      if (!el) return;
+      el.textContent = String(n);
+      el.classList.toggle('hidden', !n);
+    }
+
+    async function refreshPlaceCount() {
+      try {
+        const res = await fetch('/api/admin/supplier-queue', { credentials: 'same-origin' });
+        if (res.ok) updatePlaceCount(((await res.json()).queue || []).length);
+      } catch {
+        /* badge is optional */
+      }
+    }
+
+    async function loadPlaceQueue() {
+      const body = document.getElementById('placeBody');
+      if (!body) return;
+      body.innerHTML = '<p class="text-zinc-500">Loading paid orders…</p>';
+      const res = await fetch('/api/admin/supplier-queue', { credentials: 'same-origin' });
+      if (res.status === 401) return showLogin();
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        body.innerHTML = `<p class="text-red-400">Could not load orders: ${escapeHtml(d.message || d.error || res.status)}</p>`;
+        return;
+      }
+      const q = d.queue || [];
+      updatePlaceCount(q.length);
+      const email = d.checkout_email || '';
+      let html = q.length
+        ? ''
+        : '<div class="admin-card p-5 text-center text-zinc-400">Nothing to place. Every paid order is placed at show-me-source.</div>';
+      q.forEach((r, i) => {
+        const a = r.address || {};
+        const cityLine = [a.city, a.state, a.postal].filter(Boolean).join(', ');
+        const fullAddr = [a.name, a.line1, a.line2, cityLine, a.phone].filter(Boolean).join('\n');
+        const itemsText = (r.items || [])
+          .map((it) => `${it.qty} x ${it.supplier_name || it.spbc_name} (${it.kind === 'vial' ? 'vial' : 'kit of 10'})`)
+          .join('\n');
+        const missing = (r.items || []).some((it) => !it.supplier_name);
+        html += `<div class="admin-card p-4 space-y-3" data-place-order="${escapeAttr(r.order_number)}">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <p class="font-bold text-white text-base">${i + 1}. ${escapeHtml(r.order_number)} <span class="text-zinc-400 font-normal">· ${escapeHtml(r.customer_name)}</span></p>
+            <p class="text-xs text-zinc-500">Paid ${escapeHtml(String(r.paid_at || r.created_at || '').slice(0, 16).replace('T', ' '))} · customer paid ${formatCents(r.customer_paid_cents || 0)}</p>
+          </div>
+
+          <div>
+            <p class="text-[11px] uppercase tracking-wide text-[#FDD700] mb-1">1 · Add to your show-me-source cart</p>
+            <ul class="space-y-1">${(r.items || [])
+              .map(
+                (it) => `<li class="flex justify-between gap-2"><span><strong class="text-white">${escapeHtml(it.supplier_name || it.spbc_name)}</strong>
+                  · <span class="${it.kind === 'kit' ? 'text-emerald-300' : 'text-sky-300'}">${it.kind === 'kit' ? 'KIT' : 'VIAL'} × ${escapeHtml(String(it.qty))}</span>
+                  ${it.supplier_name ? '' : ' <span class="text-amber-300">(not linked to a show-me-source product)</span>'}</span>
+                  <span class="text-zinc-500 tabular-nums">~$${(it.supplier_unit_cost * it.qty).toFixed(2)}</span></li>`
+              )
+              .join('')}</ul>
+            <div class="flex flex-wrap items-center gap-2 mt-1">${placeCopy('Copy item list', itemsText)}
+              <span class="text-xs text-zinc-500">Their cost ~$${Number(r.supplier_cost || 0).toFixed(2)} + their shipping</span></div>
+            ${missing ? '<p class="text-xs text-amber-300 mt-1">An item has no show-me-source match. Link it in Supplier sync or pick it by hand.</p>' : ''}
+          </div>
+
+          <div>
+            <p class="text-[11px] uppercase tracking-wide text-[#FDD700] mb-1">2 · Checkout: ship to the customer</p>
+            ${r.has_address ? '' : '<p class="text-xs text-red-400 mb-1">The customer has not entered a shipping address yet. Wait, or email them.</p>'}
+            ${email ? placeField('Email', email) : ''}
+            ${placeField('Name', a.name)}
+            ${placeField('Address', a.line1)}
+            ${a.line2 ? placeField('Apt/Unit', a.line2) : ''}
+            ${placeField('City', a.city)}
+            ${placeField('State', a.state)}
+            ${placeField('ZIP', a.postal)}
+            ${placeField('Phone', a.phone)}
+            <div class="mt-1">${placeCopy('Copy whole address', fullAddr)}</div>
+          </div>
+
+          <div>
+            <p class="text-[11px] uppercase tracking-wide text-[#FDD700] mb-1">3 · After you pay them</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <input data-place-ref type="text" placeholder="Their order #" class="admin-input text-xs max-w-[10rem]">
+              <input data-place-cost type="number" step="0.01" min="0" placeholder="What you paid them $" class="admin-input text-xs max-w-[11rem]">
+              <button type="button" data-place-done class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-1.5 rounded-lg text-xs">Mark placed</button>
+            </div>
+          </div>
+        </div>`;
+      });
+      const recent = d.recent || [];
+      if (recent.length) {
+        html += `<details class="admin-card p-4"><summary class="cursor-pointer text-zinc-300 font-semibold">Recently placed (${recent.length})</summary>
+          <ul class="mt-2 space-y-1 text-xs">${recent
+            .map(
+              (p) => `<li>${escapeHtml(p.order_number)} · ${escapeHtml(String(p.placed_at || '').slice(0, 16))}${p.sms_ref ? ` · their #${escapeHtml(p.sms_ref)}` : ''}${p.sms_cost != null ? ` · paid $${Number(p.sms_cost).toFixed(2)}` : ' · <span class="text-amber-300">cost not entered</span>'}</li>`
+            )
+            .join('')}</ul></details>`;
+      }
+      body.innerHTML = html;
+    }
+
+    document.getElementById('placeBody')?.addEventListener('click', async (e) => {
+      const copyBtn = e.target.closest('[data-place-copy]');
+      if (copyBtn) {
+        try {
+          await navigator.clipboard.writeText(copyBtn.dataset.placeCopy);
+          const before = copyBtn.textContent;
+          copyBtn.textContent = 'Copied';
+          setTimeout(() => (copyBtn.textContent = before), 1200);
+        } catch {
+          copyBtn.textContent = 'Copy failed';
+        }
+        return;
+      }
+      const done = e.target.closest('[data-place-done]');
+      if (!done) return;
+      const card = done.closest('[data-place-order]');
+      const orderNumber = card.dataset.placeOrder;
+      done.disabled = true;
+      const res = await fetch('/api/admin/supplier-orders', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_number: orderNumber,
+          placed: true,
+          sms_ref: card.querySelector('[data-place-ref]')?.value || '',
+          sms_cost: card.querySelector('[data-place-cost]')?.value ?? '',
+        }),
+      });
+      if (res.status === 401) return showLogin();
+      const r = await res.json().catch(() => ({}));
+      placeMsg(res.ok ? `${orderNumber} marked placed` : r.message || 'Failed', res.ok);
+      if (res.ok) await loadPlaceQueue();
+      else done.disabled = false;
+    });
 
     /* ---------- Place at show-me-source (order helper) ---------- */
     async function loadSmsPlaced() {
@@ -978,196 +1123,6 @@
       await loadSupplierSync();
     }
 
-    /* ---------- Vendor match (SPBC product → vendor's product) ---------- */
-
-    async function loadVendorMatch() {
-      const body = document.getElementById('vendorsBody');
-      if (!body) return;
-      body.textContent = 'Loading vendor catalogs…';
-      let data;
-      try {
-        const res = await fetch('/api/admin/vendor-links', {
-          credentials: 'same-origin',
-        });
-        if (res.status === 401) {
-          showLogin();
-          return;
-        }
-        data = await res.json();
-        if (!res.ok || !data.ok) {
-          body.innerHTML =
-            '<div class="text-amber-400">Could not reach the bot: ' +
-            escapeHtml(data.message || data.error || res.status) +
-            '</div>';
-          return;
-        }
-      } catch (e) {
-        body.innerHTML = '<div class="text-amber-400">Bot unreachable.</div>';
-        return;
-      }
-
-      // Must match the bot's key exactly: collapse whitespace, lower-case.
-      // Our catalog has names like "CAGRI  5MG" (double space) — comparing raw
-      // meant a saved match never showed up and looked like it hadn't saved.
-      const normKey = (s) => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
-
-      const vendors = data.vendors || [];
-      if (!vendors.length) {
-        body.innerHTML =
-          '<div class="text-zinc-500">No vendor shops with stock yet. ' +
-          'Set one up with /newvendor in the bot.</div>';
-        return;
-      }
-      // Our catalog drives the rows. Load it if the admin came straight here
-      // without opening Price list first (otherwise every table is empty).
-      if (!productsCache || !productsCache.length) {
-        try {
-          const pr = await fetch('/api/admin/products', { credentials: 'same-origin' });
-          if (pr.ok) {
-            const pd = await pr.json();
-            productsCache = pd.products || pd || [];
-          }
-        } catch (e) {
-          /* fall through to the empty-state message below */
-        }
-      }
-      const ours = (productsCache || [])
-        .filter((p) => p && p.name)
-        .map((p) => p.name)
-        .sort();
-      if (!ours.length) {
-        body.innerHTML =
-          '<div class="text-amber-400">Could not load the SPBC catalog — ' +
-          'open the Price list tab once, then come back.</div>';
-        return;
-      }
-      const html = vendors
-        .map((v) => {
-          const linked = new Map(
-            (v.links || []).map((l) => [normKey(l.spbc_name), l])
-          );
-          const optsFor = (selectedId) =>
-            v.products
-              .map(
-                (p) =>
-                  `<option value="${p.id}"${Number(p.id) === Number(selectedId) ? ' selected' : ''}>` +
-                  `${escapeHtml(p.name)} · $${p.price} · ${p.stock} in stock</option>`
-              )
-              .join('');
-          const rows = ours
-            .map((name) => {
-              const cur = linked.get(normKey(name));
-              const auto = v.products.find(
-                (p) => normKey(p.name) === normKey(name)
-              );
-              const status = cur
-                ? `<span class="text-emerald-400">matched → ${escapeHtml(cur.vendor_product_name || '?')}</span>`
-                : auto
-                  ? '<span class="text-zinc-500">auto (same name)</span>'
-                  : '<span class="text-zinc-600">not carried</span>';
-              return `<tr class="border-t border-zinc-800">
-                <td class="py-2 pr-3 text-zinc-200">${escapeHtml(name)}</td>
-                <td class="py-2 pr-3">${status}</td>
-                <td class="py-2">
-                  <select data-shop="${v.shop_chat_id}" data-name="${escapeHtml(name)}"
-                          class="vmatch bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs">
-                    <option value=""${cur ? '' : ' selected'}>— none —</option>${optsFor(cur ? cur.vendor_product_id : 0)}
-                  </select>
-                </td>
-              </tr>`;
-            })
-            .join('');
-          return `<div class="mb-8">
-            <h2 class="text-lg font-bold text-white mb-2">${escapeHtml(v.title)}
-              <span class="text-xs text-zinc-500">(${v.products.length} products)</span></h2>
-            <table class="w-full text-xs"><thead><tr class="text-zinc-500 text-left">
-              <th class="pb-2">Our product</th><th class="pb-2">Status</th><th class="pb-2">Their product</th>
-            </tr></thead><tbody>${rows}</tbody></table>
-          </div>`;
-        })
-        .join('');
-      body.innerHTML = html;
-
-      // Current matches are pre-selected in the markup above (the stored key
-      // is lower-cased, so a selector lookup by display name never matched).
-      body.querySelectorAll('select.vmatch').forEach((sel) => {
-        sel.addEventListener('change', async () => {
-          const payload = {
-            spbc_name: sel.dataset.name,
-            shop_chat_id: Number(sel.dataset.shop),
-          };
-          if (sel.value) payload.vendor_product_id = Number(sel.value);
-          else payload.clear = true;
-          sel.disabled = true;
-          try {
-            const res = await fetch('/api/admin/vendor-links', {
-              method: 'POST',
-              credentials: 'same-origin',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload),
-            });
-            const d = await res.json();
-            if (!res.ok || !d.ok) {
-              alert(d.message || d.error || 'Could not save that match');
-            }
-          } catch (e) {
-            alert('Bot unreachable — match not saved.');
-          } finally {
-            sel.disabled = false;
-            vendorCostIndex = null; // price list must reflect the new match
-            await loadVendorMatch();
-          }
-        });
-      });
-    }
-
-    document.getElementById('reloadVendorsBtn')?.addEventListener('click', loadVendorMatch);
-
-    document.getElementById('addVendorBtn')?.addEventListener('click', async () => {
-      const name = prompt("New vendor's name (e.g. Unicorn Magic Factory)");
-      if (!name || !name.trim()) return;
-      const btn = document.getElementById('addVendorBtn');
-      btn.disabled = true;
-      btn.textContent = 'Creating…';
-      try {
-        const res = await fetch('/api/admin/vendor-create', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name.trim() }),
-        });
-        const d = await res.json().catch(() => ({}));
-        if (!res.ok || !d.ok) {
-          alert(d.message || d.error || 'Could not create that vendor');
-          return;
-        }
-        // Their shop exists now and can be stocked before they ever claim it.
-        const body = document.getElementById('vendorsBody');
-        if (body) {
-          const note = document.createElement('div');
-          note.className =
-            'border border-emerald-500/40 rounded-xl p-3 bg-emerald-950/20 mb-6 text-xs';
-          note.innerHTML =
-            `<p class="font-bold text-emerald-300 mb-2">Created ${escapeHtml(d.title)}</p>` +
-            (d.panel_link
-              ? `<p class="mb-1">Stock it: <a class="text-emerald-300 underline" target="_blank" rel="noopener" href="${escapeHtml(d.panel_link)}">open their panel</a></p>`
-              : '') +
-            (d.handover_link
-              ? `<p>Send them this to claim it:<br><code class="text-zinc-300 break-all">${escapeHtml(d.handover_link)}</code></p>`
-              : '') +
-            `<p class="text-zinc-500 mt-2">Shop id ${d.shop_chat_id}</p>`;
-          body.prepend(note);
-        }
-        vendorCostIndex = null;
-        await loadVendorMatch();
-      } catch (e) {
-        alert('Bot unreachable — vendor not created.');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '+ Add vendor';
-      }
-    });
-
     /* ---------- Sales & profit report ---------- */
 
 
@@ -1372,6 +1327,7 @@
       appSection.classList.remove('hidden');
       headerActions.classList.remove('hidden');
       setTabStyles();
+      refreshPlaceCount();
     }
 
     /** No credential configured anywhere → offer first-run setup instead of a dead login. */
@@ -2074,79 +2030,6 @@
       products.forEach((p) => productList.appendChild(productCard(p)));
     }
 
-    /* ---- Vendor cost shown on each product card ---- */
-    // spbc product name (normalised) -> [{vendor, price, kit_price, stock, matched}]
-    let vendorCostIndex = null;
-
-    function vNormKey(s) {
-      return String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
-    }
-
-    async function loadVendorCostIndex(force) {
-      if (vendorCostIndex && !force) return vendorCostIndex;
-      const idx = new Map();
-      try {
-        const res = await fetch('/api/admin/vendor-links', { credentials: 'same-origin' });
-        if (res.ok) {
-          const data = await res.json();
-          (data.vendors || []).forEach((v) => {
-            const byId = new Map(v.products.map((p) => [Number(p.id), p]));
-            // explicit matches first — they win over a same-name guess
-            (v.links || []).forEach((l) => {
-              const vp = byId.get(Number(l.vendor_product_id));
-              if (!vp) return;
-              const k = vNormKey(l.spbc_name);
-              if (!idx.has(k)) idx.set(k, []);
-              idx.get(k).push({ vendor: v.title, ...vp, matched: true });
-            });
-            // then products whose name already lines up
-            v.products.forEach((vp) => {
-              const k = vNormKey(vp.name);
-              const list = idx.get(k) || [];
-              if (!list.some((e) => e.vendor === v.title)) {
-                list.push({ vendor: v.title, ...vp, matched: false });
-                idx.set(k, list);
-              }
-            });
-          });
-        }
-      } catch (e) {
-        /* vendor costs are advisory — never block the price list */
-      }
-      vendorCostIndex = idx;
-      return idx;
-    }
-
-    function vendorCostHtml(p) {
-      const entries = (vendorCostIndex && vendorCostIndex.get(vNormKey(p.name))) || [];
-      if (!entries.length) {
-        return `
-          <div class="border border-emerald-500/20 rounded-xl p-3 bg-emerald-950/10">
-            <p class="text-[11px] font-semibold text-emerald-300/70 uppercase tracking-wide mb-1">Vendor cost</p>
-            <p class="text-xs text-zinc-500">No vendor carries this yet.</p>
-          </div>`;
-      }
-      const cheapest = entries.reduce((a, b) => (Number(a.price) <= Number(b.price) ? a : b));
-      const rows = entries
-        .slice(0, 3)
-        .map((e) => {
-          const isLow = e === cheapest && entries.length > 1;
-          return `<div class="flex justify-between text-xs ${isLow ? 'text-emerald-200' : 'text-zinc-400'}">
-            <span>${escapeHtml(e.vendor)}${e.matched ? '' : ' <span class="text-zinc-600">(same name)</span>'}</span>
-            <span>$${Number(e.price).toFixed(2)}${e.kit_price ? ` · kit $${Number(e.kit_price).toFixed(2)}` : ''}
-              <span class="text-zinc-600">· ${e.stock}</span></span>
-          </div>`;
-        })
-        .join('');
-      return `
-        <div class="border border-emerald-500/40 rounded-xl p-3 bg-emerald-950/20">
-          <p class="text-[11px] font-semibold text-emerald-300 uppercase tracking-wide mb-1">
-            Vendor cost <span class="text-zinc-500 font-normal normal-case">(what you pay)</span>
-          </p>
-          ${rows}
-        </div>`;
-    }
-
     function productCard(p) {
       const card = document.createElement('article');
       card.className = 'bg-zinc-900 border border-[#FDD700]/25 rounded-2xl p-4 space-y-3';
@@ -2173,7 +2056,6 @@
                    class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm">
           </div>
         </div>
-        ${vendorCostHtml(p)}
         <div>
           <label class="block text-xs text-zinc-500 mb-1">
             Supplier <span class="text-amber-500/90">(admin only)</span>
@@ -2332,7 +2214,8 @@
     document.getElementById('tabOrders').addEventListener('click', () => switchTab('orders'));
     document.getElementById('tabProducts').addEventListener('click', () => switchTab('products'));
     document.getElementById('tabSuppliers')?.addEventListener('click', () => switchTab('suppliers'));
-    document.getElementById('tabVendors')?.addEventListener('click', () => switchTab('vendors'));
+    document.getElementById('tabPlace')?.addEventListener('click', () => switchTab('place'));
+    document.getElementById('placeReloadBtn')?.addEventListener('click', () => loadPlaceQueue());
     document.getElementById('tabSync')?.addEventListener('click', () => switchTab('sync'));
     document.getElementById('syncReloadBtn')?.addEventListener('click', () => loadSupplierSync());
     document.getElementById('tabReport')?.addEventListener('click', () => switchTab('report'));
@@ -2340,7 +2223,7 @@
     document.getElementById('reportRange')?.addEventListener('change', () => loadReport());
     document.getElementById('profitLoadBtn')?.addEventListener('click', () => loadProfit());
 
-    // Suppliers tab was retired (vendor shops replaced it). The suppliers API and
+    // Suppliers and Vendor match tabs were retired (show-me-source dropship). The suppliers API and
     // the Supplier dropdown on Price list still work, so existing product→supplier
     // assignments and cost/margin reporting are unaffected. The panel and its
     // handlers were removed; suppliersCache is still loaded for the Price list.
