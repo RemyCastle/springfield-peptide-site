@@ -746,6 +746,31 @@ const CART_KEY = "spbc_cart_draft";
             });
         }
 
+        /** Approved reviews from real buyers (Remy approves each one in the admin). */
+        async function loadReviews() {
+            try {
+                const res = await fetch('/api/review');
+                const d = await res.json();
+                if (!d.reviews || !d.reviews.length) return;
+                let box = document.getElementById('reviewsBox');
+                if (!box) {
+                    box = document.createElement('div');
+                    box.id = 'reviewsBox';
+                    box.className = 'mt-10';
+                    const after = document.getElementById('soldOutList') || document.getElementById('priceTable');
+                    after.parentNode.insertBefore(box, after.nextSibling);
+                }
+                const stars = (n) => '★★★★★'.slice(0, n) + '<span class="text-zinc-700">' + '★★★★★'.slice(0, 5 - n) + '</span>';
+                box.innerHTML = `<h3 class="price-group-heading">What members say <span class="text-sm text-zinc-400 font-normal">${d.average}★ from ${d.count} review${d.count === 1 ? '' : 's'}</span></h3>
+                    <div class="grid gap-3 sm:grid-cols-2">` +
+                    d.reviews.slice(0, 6).map((r) => `<figure class="depth-card p-4 space-y-1">
+                        <p class="text-[#EAB308] text-sm" aria-label="${Number(r.rating)} out of 5 stars">${stars(Number(r.rating))}</p>
+                        ${r.body ? `<blockquote class="text-sm text-zinc-200">${escapeHtml(r.body)}</blockquote>` : ''}
+                        <figcaption class="text-xs text-zinc-500">${escapeHtml(r.display_name)}${r.products ? ' · ' + escapeHtml(r.products) : ''}</figcaption>
+                    </figure>`).join('') + '</div>';
+            } catch (_) { /* reviews are optional */ }
+        }
+
         function renderProducts(products) {
             const root = document.getElementById('priceTable');
             root.innerHTML = '';
@@ -805,6 +830,7 @@ const CART_KEY = "spbc_cart_draft";
                 applyShopSettings(data);
                 renderProducts(data.products || []);
                 renderSoldOut(data.out_of_stock || []);
+                loadReviews();
             } catch (e) {
                 reportClientProblem('load_products', e && e.message);
                 root.innerHTML = `

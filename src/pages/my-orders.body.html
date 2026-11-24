@@ -1,0 +1,15 @@
+<main id="myorders-main" class="spbc-main spbc-section" tabindex="-1">
+  <div class="max-w-lg mx-auto">
+    <form id="myOrdersForm" class="depth-card p-5 sm:p-6 space-y-4" novalidate>
+      <h2 class="ducks-font text-3xl text-white text-center">Get my sign-in link</h2>
+      <div>
+        <label for="myEmail" class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Email you ordered with</label>
+        <input id="myEmail" type="email" autocomplete="email" required class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2.5 text-white">
+      </div>
+      <p id="myMsg" class="text-sm hidden" role="status"></p>
+      <button id="myBtn" type="submit" class="btn-primary inline-flex w-full justify-center py-3 rounded-xl text-sm font-bold">Email me a link</button>
+      <p class="text-[11px] text-zinc-500 text-center">The link works for 30 minutes. Have an order number? <a href="/track.html" class="text-[#EAB308] hover:underline">Track it here</a>.</p>
+    </form>
+    <div id="myOrdersList" class="space-y-4 mt-6 hidden" aria-live="polite"></div>
+  </div>
+</main>

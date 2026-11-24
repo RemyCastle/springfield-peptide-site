@@ -37,6 +37,7 @@ export async function onRequestPost({ request, env }) {
     name: String(it.name || ''),
     sku: String(it.sku || ''),
     qty: Number(it.qty) || 0,
+    unit_price_cents: Number(it.unit_price_cents) || 0,
   }));
   return json({
     ok: true,
@@ -45,6 +46,15 @@ export async function onRequestPost({ request, env }) {
     status_text: STATUS_WORDS[o.status] || o.status,
     created_at: o.created_at || null,
     total_cents: o.total_cents ?? null,
+    // For the printable receipt (no address or payment details).
+    receipt: {
+      customer_name: o.customer_name || '',
+      subtotal_cents: o.subtotal_cents ?? null,
+      shipping_cents: o.shipping_cents ?? null,
+      paid_at: o.paid_at || null,
+      paid_cents: o.paid_amount_cents ?? null,
+    },
+    can_cancel: o.status === 'pending_payment',
     tracking: o.tracking_number
       ? { number: o.tracking_number, carrier: o.tracking_carrier || null, url: o.tracking_url || null }
       : null,

@@ -7,6 +7,7 @@ import { sendEmail, emailReady, esc, siteUrl, wrap } from './email.js';
 import { ordersReady, listOrders, ordersApi, payUrl } from './orders.js';
 import { parseMoneyMail, smsOrders } from './money.js';
 import { findSmsMatch, paymentCandidates } from './match.js';
+import { wantsEmail, prefsFooter } from './customers.js';
 
 const HOUR = 3600 * 1000;
 
@@ -145,12 +146,15 @@ export async function priceDropAlerts(env, db, priceActions) {
     if (vialDrop) parts.push(`vial $${from.vial} → <strong>$${to.vial}</strong>`);
     if (kitDrop) parts.push(`kit $${from.kit} → <strong>$${to.kit}</strong>`);
     for (const w of results) {
+      if (!(await wantsEmail(db, w.email, 'price_alerts'))) continue;
+      const foot = await prefsFooter(db, env, w.email, 'You asked to hear about price drops on this product.');
       const ok = await sendEmail(env, {
         to: w.email,
         subject: `Price drop: ${a.spbc_name}`,
         html: wrap(`<p><strong>${esc(a.spbc_name)}</strong> just got cheaper: ${parts.join(', ')}.</p>
 <p><a href="${siteUrl(env)}/#prices" style="color:#b8860b">See the price list</a></p>
-<p style="font-size:12px;color:#666">You asked to hear about price drops on this product.</p>`),
+${foot.html}`),
+        headers: { 'List-Unsubscribe': `<${foot.url}>` },
       });
       if (ok) {
         await db.prepare("UPDATE price_watch SET last_notified_at = datetime('now') WHERE id = ?").bind(w.id).run();

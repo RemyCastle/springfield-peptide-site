@@ -15,6 +15,7 @@ import { ensureSyncSchema } from './schema.js';
 import { updateProductMeta, sendRestockEmails } from './extras.js';
 import { paymentReminders, dailyDigest, priceDropAlerts, autoMatch, computeBestSellers, syncBreakAlert } from './jobs.js';
 import { handleEmail } from './mailbox.js';
+import { reviewRequests, cleanupOldData } from './customers.js';
 import { healthCheck } from './health.js';
 import { partnerPriceList } from './partner.js';
 
@@ -180,12 +181,16 @@ export async function runScheduled(cron, env) {
   await ensureSyncSchema(db);
   if (cron === DIGEST_CRON) {
     await computeBestSellers(db).catch(() => null);
+    const cleaned = await cleanupOldData(db).catch((e) => ({ error: String(e.message || e) }));
+    if (!cleaned.skipped) await logEvent(db, { kind: 'cleanup', status: cleaned.error ? 'error' : 'done', detail: cleaned });
     const digest = await dailyDigest(env, db).catch((e) => ({ error: String(e.message || e) }));
     await logEvent(db, { kind: 'digest', status: digest.error ? 'error' : 'done', detail: digest });
     return { digest };
   }
   const sync = await runSync(env);
   await syncBreakAlert(env, db).catch(() => null);
+  const reviews = await reviewRequests(env, db).catch((e) => ({ error: String(e.message || e) }));
+  if (reviews.sent || reviews.error) await logEvent(db, { kind: 'reviews', status: reviews.error ? 'error' : 'done', detail: reviews });
   const reminders = await paymentReminders(env, db).catch((e) => ({ error: String(e.message || e) }));
   if (!reminders.skipped) {
     await logEvent(db, { kind: 'reminders', status: reminders.error ? 'error' : 'done', detail: reminders });

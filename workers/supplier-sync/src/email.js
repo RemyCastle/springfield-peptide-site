@@ -7,12 +7,12 @@ export function emailReady(env) {
   return !!(env.RESEND_API_KEY && env.RESTOCK_FROM);
 }
 
-export async function sendEmail(env, { to, subject, html }) {
+export async function sendEmail(env, { to, subject, html, headers }) {
   if (!emailReady(env)) return false;
   const res = await fetch(env.RESEND_API_URL || 'https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: env.RESTOCK_FROM, to: Array.isArray(to) ? to : [to], subject, html }),
+    body: JSON.stringify({ from: env.RESTOCK_FROM, to: Array.isArray(to) ? to : [to], subject, html, ...(headers ? { headers } : {}) }),
   });
   return res.ok;
 }

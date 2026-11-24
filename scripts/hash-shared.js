@@ -19,6 +19,7 @@ const pairs = [
   ['calculator.js', 'calculator'],
   ['track.js', 'track'],
   ['admin-tools.js', 'admin-tools'],
+  ['customer.js', 'customer'],
 ];
 
 const mapping = {};
@@ -53,6 +54,11 @@ const htmlFiles = [
   'track.html',
   'admin.html',
   'qr.html',
+  'my-orders.html',
+  'review.html',
+  'lab-reports.html',
+  'email-preferences.html',
+  'privacy.html',
 ];
 
 const rewrites = [
@@ -65,6 +71,7 @@ const rewrites = [
   [/\/shared\/calculator\.[a-f0-9]{8}\.js/g, `/shared/${mapping['calculator.js']}`],
   [/\/shared\/track\.[a-f0-9]{8}\.js/g, `/shared/${mapping['track.js']}`],
   [/\/shared\/admin-tools\.[a-f0-9]{8}\.js/g, `/shared/${mapping['admin-tools.js']}`],
+  [/\/shared\/customer\.[a-f0-9]{8}\.js/g, `/shared/${mapping['customer.js']}`],
   [/\/shared\/titration\.[a-f0-9]{8}\.js/g, `/shared/${mapping['titration.js']}`],
 ];
 

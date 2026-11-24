@@ -34,7 +34,7 @@ const OUT = path.join(ROOT, '.cf-pages');
 const TRASH = path.join(ROOT, '_trash');
 
 /** Generated pages (scripts/build-pages.js) and hand-written pages. */
-const PAGES = ['index.html', 'calculator.html', 'contact.html', 'titration.html', 'track.html', 'admin.html', 'qr.html'];
+const PAGES = ['index.html', 'calculator.html', 'contact.html', 'titration.html', 'track.html', 'admin.html', 'qr.html', 'my-orders.html', 'review.html', 'lab-reports.html', 'email-preferences.html', 'privacy.html'];
 
 /** Other root files that must be present in the deployed output. */
 const ROOT_FILES = ['favicon.svg', 'robots.txt', 'sitemap.xml', '_headers', '_redirects', 'admin-sw.js', 'admin.webmanifest'];

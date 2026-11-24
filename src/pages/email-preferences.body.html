@@ -1,0 +1,14 @@
+<main id="prefs-main" class="spbc-main spbc-section" tabindex="-1">
+  <div class="max-w-lg mx-auto">
+    <form id="prefsForm" class="depth-card p-5 sm:p-6 space-y-4 hidden">
+      <p id="prefsEmail" class="text-sm text-zinc-400 text-center"></p>
+      <label class="flex items-start gap-3 text-sm"><input type="checkbox" id="prefPrice" class="w-5 h-5 mt-0.5 accent-[#EAB308]"><span><strong class="text-white">Price drop alerts</strong><br><span class="text-zinc-400">For products you asked us to watch.</span></span></label>
+      <label class="flex items-start gap-3 text-sm"><input type="checkbox" id="prefReviews" class="w-5 h-5 mt-0.5 accent-[#EAB308]"><span><strong class="text-white">Review requests</strong><br><span class="text-zinc-400">One short email after an order arrives.</span></span></label>
+      <label class="flex items-start gap-3 text-sm"><input type="checkbox" id="prefNews" class="w-5 h-5 mt-0.5 accent-[#EAB308]"><span><strong class="text-white">Club news</strong><br><span class="text-zinc-400">New products and announcements (rare).</span></span></label>
+      <p id="prefsMsg" class="text-sm hidden" role="status"></p>
+      <button type="submit" class="btn-primary inline-flex w-full justify-center py-3 rounded-xl text-sm font-bold">Save my choices</button>
+      <button type="button" id="prefsAllOff" class="btn-secondary w-full">Unsubscribe from all of these</button>
+    </form>
+    <div id="prefsState" class="depth-card p-5 text-center text-sm text-zinc-300">Loading…</div>
+  </div>
+</main>

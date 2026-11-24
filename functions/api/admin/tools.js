@@ -51,6 +51,8 @@ export async function onRequestGet({ request, env }) {
       holds: (await one("SELECT COUNT(*) AS n FROM supplier_sync_events WHERE kind = 'hold_price' AND status = 'pending'")).n || 0,
       new_products: (await one("SELECT COUNT(*) AS n FROM supplier_sync_events WHERE kind = 'new_product' AND status = 'pending'")).n || 0,
       problems: (await one("SELECT COUNT(*) AS n FROM client_reports WHERE created_at > datetime('now', '-1 day')")).n || 0,
+      messages: (await one("SELECT COUNT(*) AS n FROM contact_messages WHERE status = 'new'")).n || 0,
+      reviews: (await one("SELECT COUNT(*) AS n FROM reviews WHERE status = 'pending'")).n || 0,
       last_sync: await one("SELECT status, created_at FROM supplier_sync_events WHERE kind = 'run' ORDER BY id DESC LIMIT 1"),
     });
   }
@@ -121,6 +123,14 @@ export async function onRequestGet({ request, env }) {
     const note = await db.prepare('SELECT note, tags, updated_at FROM customer_notes WHERE email = ?').bind(email).first();
     const messages = await all(db, 'SELECT order_number, template, subject, sent_ok, created_at FROM customer_messages WHERE email = ? ORDER BY id DESC LIMIT 20', email);
     return json({ email, note: note || null, messages });
+  }
+
+  if (view === 'reviews') {
+    return json({ reviews: await all(db, 'SELECT id, order_number, display_name, rating, body, products, status, created_at FROM reviews ORDER BY id DESC LIMIT 60') });
+  }
+
+  if (view === 'contact') {
+    return json({ messages: await all(db, 'SELECT id, name, email, order_number, body, status, created_at FROM contact_messages ORDER BY id DESC LIMIT 60') });
   }
 
   if (view === 'security') {
@@ -225,6 +235,18 @@ export async function onRequestPost({ request, env }) {
         changed += 1;
       }
       return json({ ok: true, message: `${changed} product${changed === 1 ? '' : 's'} changed (Undo is in Change log)` });
+    }
+
+    case 'review_set': {
+      const status = ['approved', 'hidden', 'pending'].includes(body.status) ? body.status : null;
+      if (!status) return json({ error: 'validation_failed' }, 400);
+      await db.prepare('UPDATE reviews SET status = ? WHERE id = ?').bind(status, parseInt(body.id, 10)).run();
+      return json({ ok: true, message: status === 'approved' ? 'Review is on the shop' : status === 'hidden' ? 'Review hidden' : 'Back to waiting' });
+    }
+
+    case 'contact_done': {
+      await db.prepare("UPDATE contact_messages SET status = ? WHERE id = ?").bind(body.undo ? 'new' : 'done', parseInt(body.id, 10)).run();
+      return json({ ok: true, message: body.undo ? 'Marked as new' : 'Marked as handled' });
     }
 
     case 'totp_start': {

@@ -24,7 +24,7 @@ const PAGES = path.join(SRC, 'pages');
 const STYLES = path.join(SRC, 'styles');
 const SCRIPTS = path.join(SRC, 'scripts');
 
-const PAGE_NAMES = ['index', 'calculator', 'contact', 'titration', 'track'];
+const PAGE_NAMES = ['index', 'calculator', 'contact', 'titration', 'track', 'my-orders', 'review', 'lab-reports', 'email-preferences', 'privacy'];
 
 function read(p) {
   return fs.readFileSync(p, 'utf8');
@@ -65,6 +65,7 @@ function assetTokens() {
     calculator_js: tryHashed('calculator', 'js'),
     track_js: tryHashed('track', 'js'),
     titration_js: tryHashed('titration', 'js'),
+    customer_js: tryHashed('customer', 'js'),
   };
 }
 
@@ -189,6 +190,11 @@ function buildPage(pageName) {
     calculator: assets.calculator_js,
     track: assets.track_js,
     titration: '', // retired notice only — do not load the old planner JS
+    contact: assets.customer_js,
+    'my-orders': assets.customer_js,
+    review: assets.customer_js,
+    'lab-reports': assets.customer_js,
+    'email-preferences': assets.customer_js,
   };
   const tokens = {
     ...assets,

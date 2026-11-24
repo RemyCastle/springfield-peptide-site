@@ -13,7 +13,7 @@ import { json, requireAdmin } from '../../lib/auth.js';
 import { ensureSyncSchema, getSetting, setSetting, getSettings } from '../../../workers/supplier-sync/src/schema.js';
 import { logChange } from '../../lib/adminTables.js';
 
-const SWITCHES = ['reminders_on', 'digest_on', 'price_alerts_on', 'auto_match_on', 'vacation_on', 'tax_on'];
+const SWITCHES = ['reminders_on', 'digest_on', 'price_alerts_on', 'auto_match_on', 'vacation_on', 'tax_on', 'reviews_on'];
 const NUMBERS = {
   reminder_hours: [1, 336],
   auto_cancel_days: [0, 60],
@@ -23,6 +23,8 @@ const NUMBERS = {
   ship_standard: [0, 100],
   ship_priority: [0, 200],
   tax_rate: [0, 15],
+  review_days: [3, 60],
+  cleanup_months: [0, 120],
 };
 const DECIMALS = new Set(['sms_ship_cost', 'ship_standard', 'ship_priority', 'tax_rate']);
 const TEXTS = { vacation_message: 300, announcement: 300 };

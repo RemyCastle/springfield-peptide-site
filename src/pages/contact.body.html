@@ -6,6 +6,19 @@
       Email us — we typically reply within one business day.
     </p>
 
+    <form id="contactForm" class="depth-card p-5 sm:p-6 space-y-4 text-left mb-6" novalidate>
+      <h3 class="text-white font-bold text-lg">Send us a message</h3>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div><label for="cName" class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Name</label><input id="cName" autocomplete="name" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2.5 text-white"></div>
+        <div><label for="cEmail" class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Email</label><input id="cEmail" type="email" autocomplete="email" required class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2.5 text-white"></div>
+      </div>
+      <div><label for="cOrder" class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Order number (if you have one)</label><input id="cOrder" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2.5 text-white uppercase"></div>
+      <div><label for="cMessage" class="block text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Message</label><textarea id="cMessage" rows="5" maxlength="4000" required class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2.5 text-white"></textarea></div>
+      <div id="contactTurnstile" class="flex justify-center hidden"></div>
+      <p id="cMsg" class="text-sm hidden" role="status"></p>
+      <button id="cBtn" type="submit" class="btn-primary inline-flex w-full justify-center py-3 rounded-xl text-sm font-bold">Send message</button>
+    </form>
+    <p class="text-xs text-zinc-500 mb-3">Or email us directly:</p>
     <div class="depth-card p-5 sm:p-6 space-y-4 text-left">
       <div>
         <p class="text-[10px] tracking-[0.2em] uppercase text-zinc-500 mb-1">Email</p>

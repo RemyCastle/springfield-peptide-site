@@ -87,6 +87,53 @@ const TABLES = [
     sms_ref TEXT,
     note TEXT
   )`,
+  // Email preferences: one private token per email for the "email preferences" link.
+  `CREATE TABLE IF NOT EXISTS email_prefs (
+    email TEXT PRIMARY KEY,
+    token TEXT NOT NULL UNIQUE,
+    no_price_alerts INTEGER NOT NULL DEFAULT 0,
+    no_reviews INTEGER NOT NULL DEFAULT 0,
+    no_news INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  // Review requests (one per order) and the reviews customers wrote.
+  `CREATE TABLE IF NOT EXISTS review_requests (
+    order_number TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    name TEXT,
+    items TEXT,
+    token TEXT NOT NULL UNIQUE,
+    sent_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_number TEXT UNIQUE,
+    display_name TEXT,
+    rating INTEGER NOT NULL,
+    body TEXT,
+    products TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  // "My orders" sign-in links (only a hash of the token is stored).
+  `CREATE TABLE IF NOT EXISTS login_links (
+    token_hash TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    ip TEXT,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS contact_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    email TEXT,
+    order_number TEXT,
+    body TEXT,
+    ip TEXT,
+    status TEXT NOT NULL DEFAULT 'new',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
   // Checkout problems the shop reported (no names, emails or addresses).
   `CREATE TABLE IF NOT EXISTS client_reports (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -156,6 +203,9 @@ export const DEFAULT_SETTINGS = {
   tax_on: '0', // collect sales tax
   tax_state: 'MO', // ...on orders shipping to this state
   tax_rate: '0', // ...at this percent
+  reviews_on: '0', // ask buyers for a review after shipping
+  review_days: '10', // ...this many days after it shipped
+  cleanup_months: '0', // delete old personal data after this many months (0 = keep)
 };
 
 export async function getSettings(db) {

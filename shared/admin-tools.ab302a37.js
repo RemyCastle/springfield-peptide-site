@@ -85,8 +85,11 @@
         chip(d.unpaid, 'Waiting for payment', 'orders') +
         chip(d.holds + d.new_products, 'Supplier items to check', 'sync') +
         (d.problems ? chip(d.problems, 'Checkout problems today', 'sync', true) : '') +
+        `<button type="button" data-todo-open="messages" class="px-3 py-1.5 rounded-full border ${d.messages ? 'border-[#FDD700] text-[#FDD700]' : 'border-zinc-700 text-zinc-500'}">Messages: <strong>${d.messages ?? 0}</strong></button>` +
+        `<button type="button" data-todo-open="reviews" class="px-3 py-1.5 rounded-full border ${d.reviews ? 'border-[#FDD700] text-[#FDD700]' : 'border-zinc-700 text-zinc-500'}">Reviews to approve: <strong>${d.reviews ?? 0}</strong></button>` +
         (syncBad ? '<button type="button" data-todo-tab="sync" class="px-3 py-1.5 rounded-full border border-red-500 text-red-300">Supplier check failing</button>' : '');
       bar.querySelectorAll('[data-todo-tab]').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.todoTab)));
+      bar.querySelectorAll('[data-todo-open]').forEach((b) => b.addEventListener('click', () => (b.dataset.todoOpen === 'messages' ? messagesModal() : reviewsModal())));
     } catch (_) {
       bar.innerHTML = '';
     }
@@ -416,6 +419,73 @@
           <td class="text-right">${o.diff == null ? '<span class="text-zinc-600">can\'t tell</span>' : (o.diff > 0 ? '+' : '') + money(o.diff).replace('$-', '-$')}</td></tr>`).join('')}</tbody></table>`;
     }
     body.appendChild(div);
+  }
+
+  /* ---------------- Contact messages + reviews ---------------- */
+  function modalShell(id, title) {
+    $(id)?.remove();
+    const modal = document.createElement('div');
+    modal.id = id;
+    modal.className = 'fixed inset-0 z-[150] bg-black/80 flex items-start sm:items-center justify-center p-4 overflow-auto';
+    modal.innerHTML = `<div class="w-full max-w-2xl bg-zinc-900 border border-[#FDD700]/30 rounded-2xl p-5 space-y-3 text-sm">
+      <div class="flex justify-between items-start"><h2 class="ducks-font text-2xl text-[#FDD700]">${escapeHtml(title)}</h2>
+      <button type="button" data-close="1" class="text-zinc-400 hover:text-white text-2xl leading-none">&times;</button></div><div data-body><p class="text-zinc-400">Loading…</p></div></div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal || e.target.dataset.close) modal.remove();
+    });
+    return modal.querySelector('[data-body]');
+  }
+
+  async function messagesModal() {
+    const body = modalShell('messagesModal', 'Contact messages');
+    try {
+      const d = await api('/api/admin/tools?view=contact');
+      body.innerHTML = d.messages.length
+        ? d.messages.map((m) => `<div class="border-t border-zinc-800 py-2 ${m.status === 'done' ? 'opacity-50' : ''}">
+            <p><strong class="text-white">${escapeHtml(m.name || '(no name)')}</strong> · <a class="text-[#FDD700] underline" href="mailto:${escapeAttr(m.email)}?subject=${encodeURIComponent('Re: your message to SPBC')}">${escapeHtml(m.email)}</a>
+            ${m.order_number ? ` · ${escapeHtml(m.order_number)}` : ''} <span class="text-zinc-500 text-xs">${escapeHtml(String(m.created_at).slice(0, 16))}</span></p>
+            <p class="text-zinc-300 whitespace-pre-wrap">${escapeHtml(m.body)}</p>
+            <button type="button" data-msg-done="${Number(m.id)}" data-undo="${m.status === 'done' ? '1' : ''}" class="mt-1 border border-zinc-600 text-zinc-300 px-2 py-0.5 rounded-lg text-xs">${m.status === 'done' ? 'Mark as new' : 'Mark handled'}</button></div>`).join('')
+        : '<p class="text-zinc-500">No messages yet.</p>';
+      body.querySelectorAll('[data-msg-done]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          await api('/api/admin/tools', { action: 'contact_done', id: b.dataset.msgDone, undo: b.dataset.undo === '1' }).catch((e) => toast(e.message, false));
+          messagesModal();
+          loadTodo();
+        })
+      );
+    } catch (e) {
+      body.innerHTML = `<p class="text-red-400">${escapeHtml(e.message)}</p>`;
+    }
+  }
+
+  async function reviewsModal() {
+    const body = modalShell('reviewsModal', 'Reviews');
+    try {
+      const d = await api('/api/admin/tools?view=reviews');
+      const word = { pending: 'Waiting', approved: 'On the shop', hidden: 'Hidden' };
+      body.innerHTML = d.reviews.length
+        ? d.reviews.map((r) => `<div class="border-t border-zinc-800 py-2">
+            <p><span class="text-[#FDD700]">${'★'.repeat(Number(r.rating))}</span><span class="text-zinc-700">${'★'.repeat(5 - Number(r.rating))}</span>
+            <strong class="text-white ml-1">${escapeHtml(r.display_name)}</strong> · ${escapeHtml(r.order_number)} · <span class="text-xs ${r.status === 'approved' ? 'text-emerald-300' : 'text-zinc-400'}">${escapeHtml(word[r.status] || r.status)}</span></p>
+            ${r.body ? `<p class="text-zinc-300">${escapeHtml(r.body)}</p>` : ''}
+            ${r.products ? `<p class="text-xs text-zinc-500">${escapeHtml(r.products)}</p>` : ''}
+            <div class="flex gap-2 mt-1">
+              ${r.status !== 'approved' ? `<button type="button" data-rev="${Number(r.id)}" data-st="approved" class="bg-emerald-600 text-white font-bold px-2 py-0.5 rounded-lg text-xs">Show on shop</button>` : ''}
+              ${r.status !== 'hidden' ? `<button type="button" data-rev="${Number(r.id)}" data-st="hidden" class="border border-zinc-600 text-zinc-300 px-2 py-0.5 rounded-lg text-xs">Hide</button>` : ''}
+            </div></div>`).join('')
+        : '<p class="text-zinc-500">No reviews yet. Turn on "Ask buyers for a review" in Supplier sync, Automations.</p>';
+      body.querySelectorAll('[data-rev]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          await api('/api/admin/tools', { action: 'review_set', id: b.dataset.rev, status: b.dataset.st }).catch((e) => toast(e.message, false));
+          reviewsModal();
+          loadTodo();
+        })
+      );
+    } catch (e) {
+      body.innerHTML = `<p class="text-red-400">${escapeHtml(e.message)}</p>`;
+    }
   }
 
   /* ---------------- Two-step login ---------------- */

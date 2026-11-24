@@ -148,7 +148,7 @@ async function stockProblem(env, items) {
   return null;
 }
 
-async function turnstileOk(env, token, ip) {
+export async function turnstileOk(env, token, ip) {
   if (!env.TURNSTILE_SECRET) return true; // not set up yet
   if (!token) return false;
   try {
