@@ -176,7 +176,9 @@ export async function createOrder(env, input) {
     return { status: 500, body: { error: 'server_misconfigured', message: 'ORDER_WEBHOOK_SECRET not set on Pages' } };
   }
   const s = await shopSettings(env);
-  if (s.vacation_on === '1' && !input.fromAdmin) {
+  // The health check's probe (email without "@") never becomes an order, so it passes the
+  // pause and bot check and still tests the order system's signature.
+  if (s.vacation_on === '1' && !input.fromAdmin && String(input.email || '').includes('@')) {
     return { status: 503, body: { error: 'paused', message: s.vacation_message || 'Ordering is paused for a few days. Please check back soon.' } };
   }
   // The 2-hourly health check sends an email with no "@": spbc-orders always rejects that, so it can
@@ -235,8 +237,9 @@ export async function createOrder(env, input) {
         status: 409,
         body: {
           error: 'possible_duplicate',
-          order_number: dup.order_number,
-          message: `You placed the same order (${dup.order_number}) a few minutes ago. Place another one anyway?`,
+          // No order number here: anyone can type an email, so this must not confirm details
+          // of someone else's order. The real customer has it in their order email.
+          message: 'It looks like this same order was just placed a few minutes ago (check your email for it). Place another one anyway?',
         },
       };
     }
