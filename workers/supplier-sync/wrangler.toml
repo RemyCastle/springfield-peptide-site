@@ -2,6 +2,8 @@
 # Deploy from this folder: npx wrangler deploy   (iCloud Cloudflare account, same as springfieldpeps)
 # Secrets, set by Remy only:  npx wrangler secret put SMS_SITE_KEY
 #                             npx wrangler secret put SMS_PRICING_CODE
+# supplier@springfieldpbc.com mailbox: Remy sets the senders allowed to forward (his Outlook):
+#   npx wrangler secret put ALLOWED_FORWARDERS
 # Optional, for all emails (restock, price drop, payment reminder, digest):
 #   npx wrangler secret put RESEND_API_KEY   and set RESTOCK_FROM below.
 # Optional, for payment reminders + digest (same values as the springfieldpeps Pages settings):

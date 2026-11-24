@@ -57,6 +57,22 @@ const TABLES = [
     last_notified_at TEXT,
     UNIQUE (spbc_name, email)
   )`,
+  // Emails Remy forwards to supplier@springfieldpbc.com (show-me-source receipts and
+  // shipping notices, payment notices). Read by the matching jobs.
+  `CREATE TABLE IF NOT EXISTS supplier_mail (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_id TEXT UNIQUE,
+    received_at TEXT NOT NULL DEFAULT (datetime('now')),
+    sent_at TEXT,
+    envelope_from TEXT,
+    from_addr TEXT,
+    subject TEXT,
+    kind TEXT,
+    text_body TEXT,
+    html_body TEXT,
+    processed_at TEXT,
+    result TEXT
+  )`,
   // Which SPBC orders Remy has placed at show-me-source.
   `CREATE TABLE IF NOT EXISTS supplier_orders (
     order_number TEXT PRIMARY KEY,

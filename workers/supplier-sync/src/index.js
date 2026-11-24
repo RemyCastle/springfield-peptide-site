@@ -14,6 +14,7 @@ import { planSync, feedProblem } from './plan.js';
 import { ensureSyncSchema } from './schema.js';
 import { updateProductMeta, sendRestockEmails } from './extras.js';
 import { paymentReminders, dailyDigest, priceDropAlerts } from './jobs.js';
+import { handleEmail } from './mailbox.js';
 
 export { ensureSyncSchema };
 
@@ -193,6 +194,10 @@ const DIGEST_CRON = '0 13 * * *'; // not exported: a Worker's main module may on
 export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(runScheduled(event.cron, env));
+  },
+  /** supplier@springfieldpbc.com (Cloudflare Email Routing rule -> this Worker). */
+  async email(message, env) {
+    await handleEmail(message, env);
   },
   async fetch() {
     return new Response('spbc-supplier-sync: runs on a schedule. See the SPBC admin, Supplier sync tab.', {
