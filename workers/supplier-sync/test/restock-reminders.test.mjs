@@ -49,6 +49,7 @@ assert.equal(mails.length, 1);
 assert.match(mails[0].html, /\/\?cart=[A-Za-z0-9_-]+/);
 assert.match(mails[0].html, /SEMA 10MG · 1 kit/);
 assert.deepEqual(await restockReminders(env, db), { sent: 0 }, 'sent once only');
+assert.equal(db.raw.prepare('SELECT COUNT(*) AS n FROM restock_reminders').get().n, 0, 'row removed after sending');
 
 assert.equal(await post({ order_number: 'SP1', email: 'buyer@example.com', days: 0 }), 200);
 assert.equal(db.raw.prepare('SELECT COUNT(*) AS n FROM restock_reminders').get().n, 0);

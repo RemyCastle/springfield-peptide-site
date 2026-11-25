@@ -103,6 +103,7 @@ export async function cleanupOldData(db) {
     client_reports: await run("DELETE FROM client_reports WHERE created_at < datetime('now', ?)"),
     restock_requests: await run("DELETE FROM restock_requests WHERE notified_at IS NOT NULL AND notified_at < datetime('now', ?)"),
     price_watch: await run("DELETE FROM price_watch WHERE created_at < datetime('now', ?)"),
+    restock_reminders: await run("DELETE FROM restock_reminders WHERE created_at < datetime('now', ?)"),
   };
   out.login_links = await db.prepare("DELETE FROM login_links WHERE expires_at < datetime('now', '-1 day')").run().then((r) => r.meta?.changes || 0).catch(() => 0);
   return out;
@@ -127,7 +128,8 @@ export async function restockReminders(env, db) {
     .all();
   let sent = 0;
   for (const r of results || []) {
-    await db.prepare("UPDATE restock_reminders SET sent_at = datetime('now') WHERE order_number = ?").bind(r.order_number).run();
+    // Gone before sending: sent once only, and nothing about it is kept afterwards.
+    await db.prepare('DELETE FROM restock_reminders WHERE order_number = ?').bind(r.order_number).run();
     if (!(await wantsEmail(db, r.email, 'news'))) continue;
     let cart = {};
     try { cart = JSON.parse(r.cart_json || '{}') || {}; } catch { cart = {}; }
