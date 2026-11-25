@@ -84,6 +84,7 @@
         history.replaceState(null, '', location.pathname); // keep the link out of the address bar
         $('myOrdersForm').classList.add('hidden');
         list.innerHTML = `<p class="text-sm text-zinc-400 text-center">Orders for <span class="text-white">${esc(r.d.email)}</span></p>` +
+            (r.d.credit_cents > 0 ? `<p class="text-sm text-emerald-400 text-center">You have ${money(r.d.credit_cents)} store credit. It comes off your next order automatically.</p>` : '') +
             (r.d.orders.length ? r.d.orders.map((o, i) => `<div class="depth-card p-4 space-y-2">
                 <div class="flex justify-between gap-2"><p class="text-white font-bold">${esc(o.order_number)}</p><p class="text-sm text-[#EAB308] font-semibold">${esc(o.status_text)}</p></div>
                 <p class="text-xs text-zinc-500">${esc(String(o.created_at || '').slice(0, 10))} · ${money(o.total_cents)}</p>
@@ -98,9 +99,10 @@
     function orderAgain(items) {
         const draft = {};
         items.forEach((it) => {
-            if (it.sku === 'SALES-TAX') return;
+            if (it.sku === 'SALES-TAX' || /^ADJ-/i.test(it.sku || '')) return; // tax, code discount, store credit
             const isVial = /\(\s*Vial\s*\)\s*$/i.test(it.name) || /-VIAL$/i.test(it.sku || '');
-            const name = it.name.replace(/\s+\((?:10-Pack \/ Kit|Kit|Vial)\)\s*$/i, '').trim();
+            // Kits are named "X (Kit (10))" by the shop, "X (Kit)" / "X (10-Pack / Kit)" on older orders.
+            const name = it.name.replace(/\s+\((?:10-Pack \/ Kit|Kit \(10\)|Kit|Vial)\)\s*$/i, '').trim();
             if (!name || !it.qty) return;
             draft[name] = draft[name] || { vial: 0, pack: 0 };
             if (isVial) draft[name].vial += it.qty;

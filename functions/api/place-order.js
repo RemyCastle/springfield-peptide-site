@@ -48,6 +48,7 @@ export async function onRequestPost({ request, env }) {
     deliveryNotes: body.delivery_notes,
     confirmDuplicate: body.confirm_duplicate === true,
     turnstileToken: body.turnstile_token,
+    code: typeof body.code === 'string' ? body.code.slice(0, 40) : undefined,
     ip: request.headers.get('CF-Connecting-IP') || '',
   });
   return json(result.body, result.status);

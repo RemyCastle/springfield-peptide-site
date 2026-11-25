@@ -182,6 +182,15 @@
                         <textarea id="deliveryNotes" aria-label="Delivery notes (optional)" rows="2" maxlength="300" placeholder="Delivery notes (optional), like &quot;leave at back door&quot;"
                                   class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3 text-sm"></textarea>
                     </div>
+                    <div>
+                        <div class="flex gap-2">
+                            <input type="text" id="discountCode" aria-label="Discount or referral code (optional)" placeholder="Discount or referral code (optional)" maxlength="24" autocomplete="off"
+                                   class="flex-1 bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3 text-sm uppercase">
+                            <button type="button" id="applyCodeBtn" class="px-4 py-3 rounded-2xl text-sm font-bold border border-zinc-600 hover:border-[#FDDC0E]">Apply</button>
+                        </div>
+                        <p id="codeMsg" class="text-xs mt-1 hidden" aria-live="polite"></p>
+                        <p class="text-[11px] text-zinc-500 mt-1">Store credit on your email comes off automatically when you order.</p>
+                    </div>
                     <div id="turnstileBox" class="flex justify-center hidden"></div>
 
                     <label class="flex items-start gap-3 text-sm cursor-pointer select-none">

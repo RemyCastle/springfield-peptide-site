@@ -7,7 +7,8 @@
  * credential still lives in env vars there is nothing to check against, so a valid
  * session is the gate and this call migrates the credential into D1.
  */
-import { json, requireAdmin } from '../../lib/auth.js';
+import { json, requireAdmin, revokeAllSessions, createSessionCookie } from '../../lib/auth.js';
+import { ensureSyncSchema } from '../../../workers/supplier-sync/src/schema.js';
 import {
   getCredential,
   setCredential,
@@ -43,11 +44,22 @@ export async function onRequestPost({ request, env }) {
     return json({ error: 'invalid_input', message: result.error }, 400);
   }
 
-  return json({
+  // A new password ends every other session; this browser gets a fresh cookie.
+  let cookie = null;
+  try {
+    await ensureSyncSchema(env.DB);
+    await revokeAllSessions(env);
+    cookie = await createSessionCookie(env);
+  } catch {
+    cookie = null;
+  }
+  const res = json({
     ok: true,
     username,
     message: existing
       ? 'Password updated.'
       : 'Password saved to the database. The ADMIN_PASSWORD / MASTER_ADMIN_PASSWORD secrets are no longer used and can be deleted.',
   });
+  if (cookie) res.headers.append('Set-Cookie', cookie);
+  return res;
 }

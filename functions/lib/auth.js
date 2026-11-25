@@ -110,7 +110,29 @@ async function verifySession(request, env) {
   if (role !== 'admin') return false;
   const exp = parseInt(expStr, 10);
   if (!Number.isFinite(exp) || exp < Math.floor(Date.now() / 1000)) return false;
+  // "Sign out everywhere" / password change: cookies issued before then stop working.
+  if (exp - MAX_AGE_SEC < (await sessionEpoch(env))) return false;
   return true;
+}
+
+/** Unix seconds of the last "sign out everywhere" (0 = never). */
+async function sessionEpoch(env) {
+  if (!env || !env.DB) return 0;
+  try {
+    const r = await env.DB.prepare("SELECT value FROM site_settings WHERE key = 'admin_session_epoch'").first();
+    return Number(r && r.value) || 0;
+  } catch {
+    return 0; // table not created yet
+  }
+}
+
+/** End every admin session (all devices). The caller then issues a fresh cookie if it wants one. */
+async function revokeAllSessions(env, atSec = Math.floor(Date.now() / 1000)) {
+  await env.DB.prepare(
+    "INSERT INTO site_settings (key, value) VALUES ('admin_session_epoch', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')"
+  )
+    .bind(String(atSec))
+    .run();
 }
 
 async function requireAdmin(request, env) {
@@ -158,6 +180,7 @@ export {
   json,
   createSessionCookie,
   clearSessionCookie,
+  revokeAllSessions,
   verifySession,
   requireAdmin,
   timingSafeEqualStr,

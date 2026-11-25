@@ -18,6 +18,8 @@ import { handleEmail } from './mailbox.js';
 import { reviewRequests, cleanupOldData } from './customers.js';
 import { healthCheck } from './health.js';
 import { partnerPriceList } from './partner.js';
+import { settleCodes } from './codes.js';
+import { ordersApi, ordersReady } from './orders.js';
 
 export { ensureSyncSchema };
 
@@ -197,6 +199,16 @@ export async function runScheduled(cron, env) {
   }
   const matched = await autoMatch(env, db).catch((e) => ({ error: String(e.message || e) }));
   const texts = await placeTexts(env, db).catch((e) => ({ error: String(e.message || e) }));
+  // Referral credit is earned (and store credit kept or given back) once the order's status is final.
+  if (ordersReady(env)) {
+    const codes = await settleCodes(db, async (n) => {
+      const d = await ordersApi(env, `/admin/orders/${encodeURIComponent(n)}`);
+      return d && d.order ? d.order.status : null;
+    }).catch((e) => ({ error: String(e.message || e) }));
+    if (codes.error || codes.earned || codes.voided || codes.kept || codes.released) {
+      await logEvent(db, { kind: 'codes', status: codes.error ? 'error' : 'done', detail: codes });
+    }
+  }
   if (texts.sent || texts.error) await logEvent(db, { kind: 'place_texts', status: texts.error ? 'error' : 'done', detail: texts });
   if (!matched.skipped && (matched.error || matched.paid || matched.shipped)) {
     await logEvent(db, { kind: 'auto_match', status: matched.error ? 'error' : 'done', detail: matched });

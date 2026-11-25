@@ -17,6 +17,7 @@
  */
 import { normalizeOrderItems, lineKind, stripLineSuffix } from './orderItems.js';
 import { proxyOrdersAdmin } from './ordersProxy.js';
+import { applyCode, creditBalance, ensureCodeTables, normalizeCode, recordOrderCodes } from '../../workers/supplier-sync/src/codes.js';
 
 export const DEFAULT_ORDERS_URL = 'https://spbc-orders.remycastle.workers.dev';
 export const TAX_SKU = 'SALES-TAX';
@@ -168,7 +169,7 @@ export async function turnstileOk(env, token, ip) {
  * @param {object} env
  * @param {{ name: string, email: string, items: object[], shipping?: object, notes?: string, eventId?: string,
  *           currency?: string, speed?: 'standard'|'priority', deliveryNotes?: string, confirmDuplicate?: boolean,
- *           turnstileToken?: string, ip?: string, fromAdmin?: boolean }} input
+ *           turnstileToken?: string, ip?: string, fromAdmin?: boolean, code?: string }} input
  * @returns {Promise<{ status: number, body: object }>}
  */
 export async function createOrder(env, input) {
@@ -209,9 +210,34 @@ export async function createOrder(env, input) {
   if (stock) return { status: 409, body: { error: 'not_enough_stock', message: stock } };
 
   const productsSubtotal = priced.items.reduce((sum, it) => sum + it.qty * it.unit_price_cents, 0);
+
+  // Discount code: a percentage and/or custom prices, never below cost (workers/supplier-sync/src/codes.js).
+  let codeResult = null;
+  const codeIn = normalizeCode(input.code);
+  if (codeIn) {
+    await ensureCodeTables(env.DB);
+    codeResult = await applyCode(env.DB, codeIn, priced.items, email, {
+      kindOf: (it) => lineKind(it),
+      productOf: (it) => stripLineSuffix(it.name),
+    });
+    if (!codeResult.ok) return { status: 400, body: { error: 'bad_code', message: codeResult.message } };
+  }
+  const codeDiscount = codeResult ? codeResult.discount_cents : 0;
+  const productsAfterCode = productsSubtotal - codeDiscount;
+  // Store credit (e.g. referral credit) comes off the customer's own products, never shipping.
+  let creditCents = 0;
+  if (!input.fromAdmin && String(email).includes('@')) {
+    try {
+      await ensureCodeTables(env.DB);
+      creditCents = Math.min(await creditBalance(env.DB, email), productsAfterCode);
+    } catch {
+      creditCents = 0;
+    }
+  }
+
   const table = shippingTable(s);
   const speed = input.speed === 'priority' ? 'priority' : 'standard';
-  const overThreshold = table.freeOver > 0 && productsSubtotal >= table.freeOver;
+  const overThreshold = table.freeOver > 0 && productsAfterCode >= table.freeOver;
   const repeat = overThreshold ? false : await repeatBuyerFreeShipping(env, s, email);
   const free = overThreshold || repeat;
   const shipping = free ? (speed === 'priority' ? Math.max(0, table.priority - table.standard) : 0) : table[speed];
@@ -233,7 +259,15 @@ export async function createOrder(env, input) {
       lines.push({ sku: TAX_SKU, name: `Sales tax (${String(s.tax_state).toUpperCase()} ${rate}%)`, qty: 1, unit_price_cents: taxCents });
     }
   }
-  const subtotal = productsSubtotal + taxCents;
+  if (codeDiscount > 0) {
+    const c = codeResult.code;
+    const what = c.label ? String(c.label).slice(0, 60) : Number(c.pct_off) > 0 ? `${Number(c.pct_off)}% off` : 'special pricing';
+    lines.push({ sku: 'ADJ-CODE', name: `Code ${c.code} (${what})`, qty: 1, unit_price_cents: -codeDiscount });
+  }
+  if (creditCents > 0) {
+    lines.push({ sku: 'ADJ-CREDIT', name: 'Store credit', qty: 1, unit_price_cents: -creditCents });
+  }
+  const subtotal = productsSubtotal + taxCents - codeDiscount - creditCents;
   const total = subtotal + shipping;
 
   if (!input.confirmDuplicate) {
@@ -300,6 +334,15 @@ export async function createOrder(env, input) {
   }
   const orderNumber = data.order_number;
 
+  // Remember the code use (referral credit is earned once the order is paid) and hold the credit spent.
+  if (orderNumber && !data.duplicate && (codeResult || creditCents > 0)) {
+    try {
+      await recordOrderCodes(env.DB, { orderNumber, email, codeResult, creditCents });
+    } catch (e) {
+      console.error(JSON.stringify({ msg: 'order_codes.record_failed', order_number: orderNumber, error: String((e && e.message) || e) }));
+    }
+  }
+
   // Shipping address, forwarded server-side. Failure still returns the order (the customer gets a shipping link).
   let shipping_saved = false;
   const ship = {
@@ -335,6 +378,9 @@ export async function createOrder(env, input) {
       order_number: orderNumber,
       status: data.status || 'pending_payment',
       subtotal_cents: productsSubtotal,
+      code: codeResult ? codeResult.code.code : null,
+      discount_cents: codeDiscount,
+      credit_cents: creditCents,
       tax_cents: taxCents,
       shipping_cents: shipping,
       shipping_speed: speed,

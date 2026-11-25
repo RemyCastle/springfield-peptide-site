@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.bc01e255.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.b3937344.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -400,7 +400,82 @@
                 class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
           Sales and Profit
         </button>
+        <button type="button" data-tab="checkpay" id="tabCheckpay" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+          Payments to Check <span id="checkpayCount" class="hidden ml-1 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-amber-400 text-black text-[11px]"></span>
+        </button>
+        <button type="button" data-tab="codes" id="tabCodes" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+          Codes &amp; Referrals
+        </button>
+        <button type="button" data-tab="tools" id="tabTools" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+          Tools
+        </button>
       </nav>
+
+      <!-- PAYMENTS TO CHECK -->
+      <div id="checkpayPanel" class="hidden">
+        <div class="panel-head"><h1 class="ducks-font text-3xl text-[#FDD700]">Payments to Check</h1></div>
+        <p class="text-sm text-zinc-400 mb-4">Payments that could not be matched by themselves: no order code, wrong amount, a payment for a cancelled order, or a customer saying "I've paid". Check your app, then mark the order paid or remove the entry.</p>
+        <p id="checkpayMsg" class="text-sm mb-3 hidden"></p>
+        <div id="checkpayList" class="space-y-3 text-sm">Loading…</div>
+      </div>
+
+      <!-- CODES & REFERRALS -->
+      <div id="codesPanel" class="hidden">
+        <div class="panel-head"><h1 class="ducks-font text-3xl text-[#FDD700]">Codes &amp; Referrals</h1></div>
+        <p id="codesMsg" class="text-sm mb-3 hidden"></p>
+        <section class="admin-card p-5 mb-5 max-w-3xl space-y-3">
+          <h2 class="font-bold text-[#FDD700]">Make or change a code</h2>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <label class="text-sm">Code (what people type)<input id="cdCode" class="admin-input w-full uppercase" maxlength="24" placeholder="BUDDY15"></label>
+            <label class="text-sm">Name shown at checkout<input id="cdLabel" class="admin-input w-full" maxlength="80" placeholder="Buddy's 15% off"></label>
+            <label class="text-sm">% off every product<input id="cdPct" type="number" min="0" max="90" step="0.5" class="admin-input w-full" placeholder="15"></label>
+            <label class="text-sm">Referral credit for the owner (% of each paid order)<input id="cdCredit" type="number" min="0" max="50" step="0.5" class="admin-input w-full" placeholder="5"></label>
+            <label class="text-sm">Owner name<input id="cdOwner" class="admin-input w-full" maxlength="80"></label>
+            <label class="text-sm">Owner email (credit goes here)<input id="cdEmail" type="email" class="admin-input w-full"></label>
+          </div>
+          <label class="flex items-center gap-2 text-sm"><input id="cdActive" type="checkbox" checked class="w-5 h-5 accent-[#FDD700]"> Code works</label>
+          <p class="text-xs text-zinc-500">Prices never go below your cost. A referral code cannot be used by its own owner; their credit comes off their own orders automatically.</p>
+          <button id="cdSave" type="button" class="bg-[#FDD700] hover:bg-white text-black font-bold px-5 py-3 rounded-2xl">Save code</button>
+        </section>
+        <section class="admin-card p-5 mb-5 max-w-3xl">
+          <h2 class="font-bold text-[#FDD700] mb-2">Your codes</h2>
+          <div id="codesList" class="text-sm overflow-x-auto">Loading…</div>
+        </section>
+        <section id="cdPricesBox" class="admin-card p-5 mb-5 max-w-3xl hidden">
+          <h2 class="font-bold text-[#FDD700] mb-1">Custom prices for <span id="cdPricesCode"></span></h2>
+          <p class="text-xs text-zinc-500 mb-3">Leave blank to use the % off (or the normal price). You cannot save a price below your cost.</p>
+          <div id="cdPricesTable" class="overflow-x-auto text-sm"></div>
+          <button id="cdPricesSave" type="button" class="mt-3 bg-[#FDD700] hover:bg-white text-black font-bold px-5 py-3 rounded-2xl">Save these prices</button>
+        </section>
+        <section class="admin-card p-5 mb-5 max-w-3xl">
+          <h2 class="font-bold text-[#FDD700] mb-2">Store credit</h2>
+          <div id="creditList" class="text-sm overflow-x-auto mb-3">Loading…</div>
+          <div class="flex flex-wrap gap-2 items-end">
+            <label class="text-sm">Email<input id="crEmail" type="email" class="admin-input"></label>
+            <label class="text-sm">Amount $ (minus to remove)<input id="crAmt" type="number" step="0.01" class="admin-input !w-32"></label>
+            <button id="crSave" type="button" class="bg-zinc-800 border border-zinc-600 hover:border-[#FDD700] font-bold px-4 py-2.5 rounded-2xl text-sm">Change credit</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- TOOLS -->
+      <div id="toolsPanel" class="hidden">
+        <div class="panel-head"><h1 class="ducks-font text-3xl text-[#FDD700]">Tools</h1></div>
+        <section class="admin-card p-5 mb-5 max-w-3xl">
+          <h2 class="font-bold text-[#FDD700] mb-2">Is everything working?</h2>
+          <div id="healthBox" class="text-sm space-y-1">Loading…</div>
+        </section>
+        <section class="admin-card p-5 mb-5 max-w-3xl">
+          <div class="flex items-center justify-between"><h2 class="font-bold text-[#FDD700] mb-2">Customers</h2>
+            <a href="/api/admin/customers?format=csv" class="text-xs underline text-zinc-300">Download all (CSV)</a></div>
+          <div id="customersBox" class="text-sm overflow-x-auto">Loading…</div>
+        </section>
+        <section class="admin-card p-5 mb-5 max-w-3xl space-y-2">
+          <h2 class="font-bold text-[#FDD700]">Security</h2>
+          <p class="text-sm text-zinc-300">Lost a phone or think someone else is signed in? This signs you out everywhere, including here. Changing your password does the same for other devices.</p>
+          <button id="signOutAllBtn" type="button" class="bg-red-950 hover:bg-red-900 border border-red-700 text-red-200 font-bold px-5 py-3 rounded-2xl">Sign out on every device</button>
+        </section>
+      </div>
 
       <!-- PLACE ORDERS AT SHOW-ME-SOURCE -->
       <div id="placePanel" class="hidden">
@@ -762,7 +837,7 @@
     const orderDetail = document.getElementById('orderDetail');
 
     const TAB_KEY = 'spbcAdminTab';
-    const TABS = ['orders', 'place', 'products', 'sync', 'money', 'report'];
+    const TABS = ['orders', 'place', 'products', 'sync', 'money', 'report', 'checkpay', 'codes', 'tools'];
     let activeTab = (() => { try { const t = (location.hash || '').slice(1) || localStorage.getItem(TAB_KEY); return TABS.includes(t) ? t : 'orders'; } catch (_) { return 'orders'; } })();
     let ordersPage = 1;
     const ordersLimit = 25;
@@ -827,6 +902,7 @@
       const sp = document.getElementById('syncPanel');
       if (sp) sp.classList.toggle('hidden', activeTab !== 'sync');
       if (reportPanel) reportPanel.classList.toggle('hidden', activeTab !== 'report');
+      for (const t of ['checkpay', 'codes', 'tools']) document.getElementById(t + 'Panel')?.classList.toggle('hidden', activeTab !== t);
     }
 
     async function switchTab(tab) {
@@ -844,6 +920,183 @@
       }
       if (tab === 'sync') await loadSupplierSync();
       if (tab === 'report') await loadReport();
+      if (tab === 'checkpay') await loadCheckpay();
+      if (tab === 'codes') await loadCodes();
+      if (tab === 'tools') await loadTools();
+    }
+
+    /* ---------- Payments to check / Codes & Referrals / Tools ---------- */
+    const usd = (c) => (c == null ? '—' : (c < 0 ? '-$' : '$') + (Math.abs(Number(c)) / 100).toFixed(2));
+    async function getJ(url) {
+      const r = await fetch(url, { credentials: 'same-origin' });
+      if (r.status === 401) { showLogin(); return null; }
+      return r.ok ? r.json().catch(() => null) : null;
+    }
+    async function postJ(url, body) {
+      const r = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+      const d = await r.json().catch(() => ({}));
+      return { ok: r.ok, status: r.status, d };
+    }
+    function flashMsg(id, text, ok = true) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'text-sm mb-3 ' + (ok ? 'text-emerald-400' : 'text-red-400');
+    }
+    const WHY = {
+      order_not_found: 'The code in the note matches no order', no_order_code: 'No order code in the note',
+      underpaid: 'Paid less than the order total', amount_mismatch: 'Paid well over the order total',
+      no_amount: 'No amount could be read', order_cancelled: 'The order was cancelled',
+      already_paid: 'The order was already paid (second payment?)', unverified_sender: 'Could not prove the email came from the payment app',
+      customer_says_paid: 'The customer says they paid. Check your app.',
+    };
+    async function loadCheckpay() {
+      const box = document.getElementById('checkpayList');
+      const d = await getJ('/api/admin/receipts');
+      const rows = (d && d.receipts) || [];
+      const badge = document.getElementById('checkpayCount');
+      if (badge) { badge.textContent = rows.length; badge.classList.toggle('hidden', !rows.length); }
+      if (!d) { box.textContent = 'Could not load.'; return; }
+      box.innerHTML = rows.length ? rows.map((r) => {
+        const opts = (r.options || []).map((o) => o.order_number);
+        const guess = r.suggested_order_number || (opts.length === 1 ? opts[0] : '');
+        return '<div class="admin-card p-4" data-rc="' + escapeAttr(String(r.id)) + '"><div class="flex flex-wrap justify-between gap-2"><strong>' + usd(r.amount_cents) + ' · ' + escapeHtml(r.source || '') + '</strong><span class="text-xs text-zinc-500">' + escapeHtml(r.created_at || '') + '</span></div>' +
+          '<p class="text-amber-300 text-xs mt-1">' + escapeHtml(WHY[r.reason] || 'Could not apply it automatically') + '</p>' +
+          (r.subject ? '<p class="text-xs text-zinc-500 mt-1">' + escapeHtml(r.subject) + '</p>' : '') +
+          '<div class="flex flex-wrap gap-2 mt-3 items-center"><input class="admin-input !w-40 text-xs" data-rc-order value="' + escapeAttr(guess) + '" placeholder="Order code" aria-label="Order code">' +
+          '<button type="button" data-rc-ok class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-2 rounded-xl text-xs">Mark that order paid</button>' +
+          '<button type="button" data-rc-no class="text-xs underline text-zinc-400">Not a payment for an order</button></div></div>';
+      }).join('') : '<p class="text-zinc-400">Nothing to check.</p>';
+    }
+    document.getElementById('checkpayList')?.addEventListener('click', async (e) => {
+      const card = e.target.closest('[data-rc]');
+      if (!card) return;
+      const id = card.dataset.rc;
+      if (e.target.closest('[data-rc-ok]')) {
+        const order = (card.querySelector('[data-rc-order]').value || '').trim().toUpperCase();
+        if (!order) return flashMsg('checkpayMsg', 'Type the order code first.', false);
+        if (!confirm('Mark order ' + order + ' paid? The customer gets a payment-confirmed email.')) return;
+        const r = await postJ('/api/admin/receipts', { action: 'confirm', id, order_number: order });
+        flashMsg('checkpayMsg', r.ok ? 'Order ' + order + ' marked paid.' : (r.d.message || r.d.error || 'Could not mark it paid.'), r.ok);
+      } else if (e.target.closest('[data-rc-no]')) {
+        if (!confirm('Remove this from the list without marking anything paid?')) return;
+        const r = await postJ('/api/admin/receipts', { action: 'dismiss', id });
+        flashMsg('checkpayMsg', r.ok ? 'Removed.' : 'Could not remove it.', r.ok);
+      } else return;
+      loadCheckpay();
+    });
+
+    let codesData = null;
+    async function loadCodes() {
+      codesData = await getJ('/api/admin/codes');
+      const list = document.getElementById('codesList');
+      if (!codesData) { list.textContent = 'Could not load.'; return; }
+      list.innerHTML = codesData.codes.length ? '<table class="w-full text-xs min-w-[560px]"><thead class="text-zinc-500 text-left"><tr><th class="py-1">Code</th><th>Gives</th><th>Owner</th><th>Paid orders</th><th>Sales</th><th>Credit earned</th><th></th></tr></thead><tbody>' +
+        codesData.codes.map((c) => '<tr class="border-t border-zinc-800"><td class="py-2 font-mono">' + escapeHtml(c.code) + (Number(c.active) ? '' : ' <span class="text-red-400">(off)</span>') + '</td><td>' +
+          (Number(c.pct_off) ? Number(c.pct_off) + '% off' : '') + ((codesData.prices[c.code] || []).length ? ' + ' + codesData.prices[c.code].length + ' custom' : '') +
+          (Number(c.credit_pct) ? '<br><span class="text-emerald-400">' + Number(c.credit_pct) + '% credit</span>' : '') + '</td><td>' + escapeHtml(c.owner_name || '') + '<div class="text-zinc-500">' + escapeHtml(c.owner_email || '') + '</div></td><td>' + Number(c.uses || 0) + '</td><td>' + usd(c.sales_cents) + '</td><td>' + usd(c.credit_earned_cents) + '</td>' +
+          '<td class="whitespace-nowrap"><button type="button" data-cd-edit="' + escapeAttr(c.code) + '" class="underline">Edit</button> · <button type="button" data-cd-prices="' + escapeAttr(c.code) + '" class="underline">Prices</button></td></tr>').join('') + '</tbody></table>'
+        : '<p class="text-zinc-400">No codes yet.</p>';
+      const cr = document.getElementById('creditList');
+      const bals = (codesData.balances || []).filter((b) => Number(b.balance_cents) || Number(b.earned_cents));
+      cr.innerHTML = bals.length ? '<table class="w-full text-xs"><thead class="text-zinc-500 text-left"><tr><th class="py-1">Email</th><th>Balance</th><th>Earned all time</th></tr></thead><tbody>' +
+        bals.map((b) => '<tr class="border-t border-zinc-800"><td class="py-1">' + escapeHtml(b.email) + '</td><td>' + usd(b.balance_cents) + '</td><td>' + usd(b.earned_cents) + '</td></tr>').join('') + '</tbody></table>'
+        : '<p class="text-zinc-400">No store credit yet.</p>';
+    }
+    document.getElementById('codesList')?.addEventListener('click', (e) => {
+      const ed = e.target.closest('[data-cd-edit]');
+      const pr = e.target.closest('[data-cd-prices]');
+      if (ed) {
+        const c = codesData.codes.find((x) => x.code === ed.dataset.cdEdit);
+        document.getElementById('cdCode').value = c.code;
+        document.getElementById('cdLabel').value = c.label || '';
+        document.getElementById('cdPct').value = Number(c.pct_off) || '';
+        document.getElementById('cdCredit').value = Number(c.credit_pct) || '';
+        document.getElementById('cdOwner').value = c.owner_name || '';
+        document.getElementById('cdEmail').value = c.owner_email || '';
+        document.getElementById('cdActive').checked = !!Number(c.active);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (pr) {
+        const code = pr.dataset.cdPrices;
+        const have = new Map((codesData.prices[code] || []).map((x) => [x.product, x]));
+        const cell = (cents) => (cents == null ? '' : (cents / 100).toFixed(2));
+        document.getElementById('cdPricesCode').textContent = code;
+        document.getElementById('cdPricesBox').dataset.code = code;
+        document.getElementById('cdPricesTable').innerHTML = '<table class="w-full text-xs min-w-[620px]"><thead class="text-zinc-500 text-left"><tr><th class="py-1">Product</th><th>Vial: normal / your cost / code price</th><th>Kit: normal / your cost / code price</th></tr></thead><tbody>' +
+          codesData.products.map((p) => {
+            const h = have.get(p.name) || {};
+            const inp = (kind, val, normal) => normal == null ? '—' : '<input type="number" step="0.01" min="0" data-cp="' + escapeAttr(p.name) + '" data-kind="' + kind + '" value="' + cell(val) + '" class="admin-input !w-24 text-xs" placeholder="' + cell(normal) + '">';
+            const cost = (c) => (c == null ? '<span class="text-amber-400">cost ?</span>' : usd(c));
+            return '<tr class="border-t border-zinc-800"><td class="py-1">' + escapeHtml(p.name) + '</td><td>' + usd(p.vial_cents) + ' / ' + cost(p.vial_cost) + ' / ' + inp('vial', h.vial_cents, p.vial_cents) + '</td><td>' + usd(p.kit_cents) + ' / ' + cost(p.kit_cost) + ' / ' + inp('kit', h.kit_cents, p.kit_cents) + '</td></tr>';
+          }).join('') + '</tbody></table>';
+        document.getElementById('cdPricesBox').classList.remove('hidden');
+        document.getElementById('cdPricesBox').scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+    document.getElementById('cdSave')?.addEventListener('click', async () => {
+      const r = await postJ('/api/admin/codes', {
+        action: 'save', code: document.getElementById('cdCode').value, label: document.getElementById('cdLabel').value,
+        pct_off: Number(document.getElementById('cdPct').value) || 0, credit_pct: Number(document.getElementById('cdCredit').value) || 0,
+        owner_name: document.getElementById('cdOwner').value, owner_email: document.getElementById('cdEmail').value,
+        active: document.getElementById('cdActive').checked,
+      });
+      flashMsg('codesMsg', r.d.message || r.d.error || (r.ok ? 'Saved.' : 'Could not save.'), r.ok);
+      if (r.ok) loadCodes();
+    });
+    document.getElementById('cdPricesSave')?.addEventListener('click', async () => {
+      const code = document.getElementById('cdPricesBox').dataset.code;
+      const by = new Map();
+      document.querySelectorAll('#cdPricesTable input[data-cp]').forEach((i) => {
+        const row = by.get(i.dataset.cp) || { product: i.dataset.cp, vial_cents: null, kit_cents: null };
+        if (i.value.trim() !== '') row[i.dataset.kind + '_cents'] = Math.round(Number(i.value) * 100);
+        by.set(i.dataset.cp, row);
+      });
+      const r = await postJ('/api/admin/codes', { action: 'prices', code, prices: [...by.values()] });
+      flashMsg('codesMsg', r.d.message || r.d.error || (r.ok ? 'Saved.' : 'Could not save.'), r.ok);
+      if (r.ok) loadCodes();
+    });
+    document.getElementById('crSave')?.addEventListener('click', async () => {
+      const email = document.getElementById('crEmail').value.trim();
+      const cents = Math.round(Number(document.getElementById('crAmt').value) * 100);
+      if (!confirm('Change store credit for ' + email + ' by ' + usd(cents) + '?')) return;
+      const r = await postJ('/api/admin/codes', { action: 'adjust_credit', email, cents });
+      flashMsg('codesMsg', r.d.message || r.d.error || (r.ok ? 'Saved.' : 'Could not save.'), r.ok);
+      if (r.ok) loadCodes();
+    });
+
+    async function loadTools() {
+      const h = await getJ('/api/admin/health');
+      const hb = document.getElementById('healthBox');
+      if (!h) hb.textContent = 'Could not check right now.';
+      else {
+        const hh = h.health || {};
+        const line = (ok, t) => '<div>' + (ok ? '<span class="text-emerald-400">✓</span> ' : '<span class="text-amber-400">!</span> ') + t + '</div>';
+        const hrs = (iso) => (iso ? (Date.now() - Date.parse(String(iso).replace(' ', 'T') + (String(iso).endsWith('Z') ? '' : 'Z'))) / 3600000 : null);
+        const syncAge = hrs(h.sync_last_event);
+        hb.innerHTML = line(h.orders_service === 'ok', 'Orders system: ' + escapeHtml(h.orders_service)) +
+          line(syncAge != null && syncAge < 3, 'Supplier sync last ran: ' + (h.sync_last_event ? escapeHtml(h.sync_last_event) + ' UTC' : 'never')) +
+          line(!h.sync_errors_24h, 'Sync errors in the last 24 hours: ' + Number(h.sync_errors_24h || 0) + (h.sync_last_error ? ' (last: ' + escapeHtml(h.sync_last_error.kind) + ')' : '')) +
+          line(!(hh.email && Number(hh.email.failed_7d) > 0), 'Emails in the last 7 days: ' + Number((hh.email && hh.email.sent_7d) || 0) + ' sent, ' + Number((hh.email && hh.email.failed_7d) || 0) + ' failed') +
+          line(true, 'Daily orders job last ran: ' + (hh.last_cron ? escapeHtml(hh.last_cron) : 'not yet')) +
+          line(!(hh.receipts && Number(hh.receipts.to_check) > 0), 'Payments to check: ' + Number((hh.receipts && hh.receipts.to_check) || 0));
+      }
+      const c = await getJ('/api/admin/customers');
+      const cb = document.getElementById('customersBox');
+      if (!c) cb.textContent = 'Could not load.';
+      else {
+        const sm = c.summary || {};
+        cb.innerHTML = '<p class="mb-2">' + Number(sm.buyers || 0) + ' buyers · ' + Number(sm.repeat_buyers || 0) + ' came back (' + Number(sm.repeat_rate_pct || 0) + '%)</p>' +
+          '<table class="w-full text-xs min-w-[480px]"><thead class="text-zinc-500 text-left"><tr><th class="py-1">Customer</th><th>Paid orders</th><th>Spent</th><th>Last order</th></tr></thead><tbody>' +
+          (c.customers || []).slice(0, 50).map((x) => '<tr class="border-t border-zinc-800"><td class="py-1">' + escapeHtml(x.name || '') + '<div class="text-zinc-500">' + escapeHtml(x.email || '') + '</div></td><td>' + Number(x.paid_orders || 0) + '</td><td>' + usd(x.spent_cents) + '</td><td>' + escapeHtml(String(x.last_order || '').slice(0, 10)) + '</td></tr>').join('') + '</tbody></table>';
+      }
+    }
+    document.getElementById('signOutAllBtn')?.addEventListener('click', async () => {
+      if (!confirm('Sign out on every device, including this one?')) return;
+      await postJ('/api/admin/sign-out-everywhere', {});
+      showLogin();
+    });
+    for (const t of ['checkpay', 'codes', 'tools']) {
+      document.getElementById('tab' + t[0].toUpperCase() + t.slice(1))?.addEventListener('click', () => switchTab(t));
     }
 
     /* ---------- Quick order ---------- */

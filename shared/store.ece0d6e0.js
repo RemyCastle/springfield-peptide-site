@@ -1044,6 +1044,55 @@ const CART_KEY = "spbc_cart_draft";
             return Math.round(Number(d) * 100);
         }
 
+        // Discount / referral code: { code, label, prices: { productName: { vial_cents, kit_cents } } }.
+        // Display only; the server applies the code again (never below cost) when the order is placed.
+        let ACTIVE_CODE = null;
+        function codeUnitCents(name, kind, listCents) {
+            if (!ACTIVE_CODE || !ACTIVE_CODE.prices) return listCents;
+            const p = ACTIVE_CODE.prices[name];
+            const v = p ? (kind === 'vial' ? p.vial_cents : p.kit_cents) : null;
+            return v == null ? listCents : Math.min(listCents, v);
+        }
+        function showCodeMsg(text, ok) {
+            const el = document.getElementById('codeMsg');
+            if (!el) return;
+            el.textContent = text;
+            el.className = 'text-xs mt-1 ' + (ok ? 'text-emerald-400' : 'text-red-400');
+        }
+        async function applyCode(raw, quiet) {
+            const code = String(raw || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
+            if (!code) { ACTIVE_CODE = null; showCodeMsg('', true); updateOrder(); return; }
+            try {
+                const r = await fetch('/api/code?c=' + encodeURIComponent(code), { credentials: 'same-origin' });
+                const d = await r.json().catch(() => ({}));
+                if (!r.ok) {
+                    ACTIVE_CODE = null;
+                    if (!quiet) showCodeMsg(d.message || 'That code is not valid.', false);
+                } else {
+                    ACTIVE_CODE = d;
+                    showCodeMsg('Code ' + d.code + ' applied: ' + d.label, true);
+                    try { sessionStorage.setItem('spbc_code', d.code); } catch (_) {}
+                }
+            } catch (_) {
+                if (!quiet) showCodeMsg('Could not check the code. Try again.', false);
+            }
+            updateOrder();
+        }
+        document.getElementById('applyCodeBtn')?.addEventListener('click', () => applyCode(document.getElementById('discountCode').value));
+        document.getElementById('discountCode')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); applyCode(e.target.value); }
+        });
+        // Referral links: springfieldpbc.com/?code=BUDDY15 fills and applies the code.
+        (function () {
+            let c = '';
+            try { c = new URLSearchParams(location.search).get('code') || sessionStorage.getItem('spbc_code') || ''; } catch (_) {}
+            if (c) {
+                const el = document.getElementById('discountCode');
+                if (el) el.value = c.toUpperCase();
+                setTimeout(() => applyCode(c, true), 0);
+            }
+        })();
+
         function tallyOrder() {
             let singleVials = 0;
             let kitCount = 0;
@@ -1110,8 +1159,17 @@ const CART_KEY = "spbc_cart_draft";
             const kitDiscount = 0;
             const kitDiscountPct = 0;
             const subtotal = vialSubtotal + packSubtotal + nonDiscountSubtotal;
+            // Code discount (dollars): normal price minus the code price on each line.
+            let codeDiscount = 0;
+            for (const r of rawLines) {
+                const list = dollarsToCents(r.unit_price_dollars);
+                const baseName = r.name.replace(/\s+\((?:Vial|Kit(?: \(10\))?)\)$/, '');
+                codeDiscount += ((list - codeUnitCents(baseName, r.kind === 'vial' ? 'vial' : 'kit', list)) * r.qty) / 100;
+            }
+            codeDiscount = Math.round(codeDiscount * 100) / 100;
+            if (codeDiscount > 0) lines.push({ kind: 'code', text: `Code ${ACTIVE_CODE.code} (${ACTIVE_CODE.label}) — -$${money(codeDiscount)}` });
             const hasAny = singleVials > 0 || kitCount > 0;
-            const freeShip = freeShipOver > 0 && subtotal >= freeShipOver;
+            const freeShip = freeShipOver > 0 && subtotal - codeDiscount >= freeShipOver;
             const speed = shippingSpeed();
             // Free shipping covers Standard; Priority then costs only the difference.
             const shipping = !hasAny ? 0 : freeShip
@@ -1121,7 +1179,7 @@ const CART_KEY = "spbc_cart_draft";
             const tax = hasAny && shopTax && shipState === shopTax.state
                 ? Math.round(subtotal * shopTax.rate) / 100
                 : 0;
-            const total = subtotal + shipping + tax;
+            const total = subtotal - codeDiscount + shipping + tax;
             const minimumMet = kitCount >= 1 || singleVials >= MIN_ORDER_VIALS;
 
             const items = rawLines.map((r) => {
@@ -1144,6 +1202,7 @@ const CART_KEY = "spbc_cart_draft";
                 kitRate,
                 kitDiscountPct,
                 subtotal,
+                codeDiscount,
                 shipping,
                 speed,
                 freeShip,
@@ -1283,6 +1342,7 @@ const CART_KEY = "spbc_cart_draft";
                 if (t.packSubtotal > 0) {
                     orderText += `\n10-pack / kit subtotal: $${money(t.packSubtotal)}`;
                 }
+                if (t.codeDiscount > 0) orderText += `\nCode ${ACTIVE_CODE.code}: -$${money(t.codeDiscount)}`;
                 orderText += `\nShipping (${t.speed === 'priority' ? 'Priority' : 'Standard'}): $${money(t.shipping)}`;
                 if (t.tax) orderText += `\nSales tax: $${money(t.tax)}`;
                 orderText += `\n\nESTIMATED TOTAL: $${money(t.total)}`;
@@ -1531,6 +1591,7 @@ const CART_KEY = "spbc_cart_draft";
                         delivery_notes: (document.getElementById('deliveryNotes')?.value || '').trim() || undefined,
                         confirm_duplicate: confirmDuplicate || undefined,
                         turnstile_token: turnstileToken || undefined,
+                        code: ACTIVE_CODE ? ACTIVE_CODE.code : undefined,
                     }),
                 });
                 const data = await res.json().catch(() => ({}));
@@ -1542,7 +1603,7 @@ const CART_KEY = "spbc_cart_draft";
                 if (!res.ok || !data.ok) {
                     // The server calls a failed bot check 'bot_check_failed' (older builds said 'turnstile_failed').
                     const botFail = data.error === 'bot_check_failed' || data.error === 'turnstile_failed';
-                    if (!['not_enough_stock', 'paused', 'validation_failed', 'order_minimum', 'rate_limited'].includes(data.error) && !botFail) {
+                    if (!['not_enough_stock', 'paused', 'validation_failed', 'order_minimum', 'rate_limited', 'bad_code'].includes(data.error) && !botFail) {
                         reportClientProblem('place_order', `${res.status} ${data.error || ''}`);
                     }
                     if (botFail) resetTurnstile();

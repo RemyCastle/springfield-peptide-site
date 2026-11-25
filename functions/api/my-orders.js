@@ -11,6 +11,7 @@ import { ensureSyncSchema } from '../../workers/supplier-sync/src/schema.js';
 import { randomToken, sha256Hex } from '../../workers/supplier-sync/src/customers.js';
 import { esc, wrap, siteUrl } from '../../workers/supplier-sync/src/email.js';
 import { siteMail, siteMailReady, clientIp, overLimit } from '../lib/siteMail.js';
+import { creditBalance, ensureCodeTables } from '../../workers/supplier-sync/src/codes.js';
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
 const STATUS_WORDS = {
@@ -81,7 +82,14 @@ export async function onRequestPost({ request, env }) {
         items: ((d.ok && d.data.items) || []).map((it) => ({ name: String(it.name || ''), sku: String(it.sku || ''), qty: Number(it.qty) || 0 })),
       });
     }
-    return json({ ok: true, email, orders });
+    let credit_cents = 0;
+    try {
+      await ensureCodeTables(env.DB);
+      credit_cents = await creditBalance(env.DB, email);
+    } catch {
+      credit_cents = 0;
+    }
+    return json({ ok: true, email, orders, credit_cents });
   }
 
   return json({ error: 'bad_action' }, 400);
