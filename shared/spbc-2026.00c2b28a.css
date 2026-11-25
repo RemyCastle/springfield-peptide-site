@@ -598,3 +598,18 @@ body.spbc26 #orderForm legend, body.spbc26 #orderForm p[class*="uppercase"] { fo
 .remind-btns { display: flex; justify-content: center; gap: 0.5rem; margin-top: 0.45rem; }
 .remind-btns button { border: 1px solid rgba(110,231,183,0.45); color: #a7f3d0; background: none; border-radius: 9999px; padding: 0.3rem 0.8rem; font-size: 0.8rem; font-weight: 600; min-height: 36px; cursor: pointer; }
 .remind-btns button[aria-pressed="true"] { background: #065f46; color: #fff; }
+
+/* Customer app (end of site-header.js): banners, install offer, installed-app bottom bar. */
+.app-banner { position: fixed; left: 50%; transform: translateX(-50%); top: calc(124px + env(safe-area-inset-top)); z-index: 95; display: flex; align-items: center; gap: 0.75rem; max-width: calc(100vw - 24px); background: #0f2a1b; color: #fff; border: 1px solid rgba(234,179,8,0.5); border-radius: 0.75rem; padding: 0.55rem 0.8rem; font-size: 0.85rem; line-height: 1.35; box-shadow: 0 10px 24px rgba(0,0,0,0.45); }
+.app-banner button { flex: 0 0 auto; background: #EAB308; color: #000; border: 0; border-radius: 9999px; padding: 0.35rem 0.9rem; font-weight: 700; min-height: 34px; cursor: pointer; }
+.app-banner button[data-x] { background: none; color: #EAB308; font-size: 1.2rem; padding: 0 0.3rem; }
+.app-install { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(16,185,129,0.25); font-size: 0.8rem; color: #d4d4d8; }
+.app-install button { margin-top: 0.45rem; background: none; border: 1px solid rgba(234,179,8,0.6); color: #EAB308; border-radius: 9999px; padding: 0.35rem 1rem; font-weight: 600; min-height: 38px; cursor: pointer; }
+.app-bar { display: none; }
+.is-app .app-bar { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; background: rgba(11,31,20,0.97); border-top: 1px solid rgba(234,179,8,0.35); padding: 0.3rem 0 max(0.3rem, env(safe-area-inset-bottom)); backdrop-filter: blur(8px); }
+.is-app .app-bar a { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 48px; justify-content: center; color: #d4d4d8; font-size: 0.7rem; font-weight: 600; text-decoration: none; }
+.is-app .app-bar a[aria-current="page"] { color: #EAB308; }
+.is-app .app-bar svg { width: 22px; height: 22px; }
+.is-app body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+.is-app #stickyOrderBar { bottom: calc(58px + env(safe-area-inset-bottom)); }
+.is-app .pp-top { display: none; }

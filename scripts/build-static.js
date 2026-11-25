@@ -37,7 +37,7 @@ const TRASH = path.join(ROOT, '_trash');
 const PAGES = ['index.html', 'calculator.html', 'contact.html', 'titration.html', 'track.html', 'admin.html', 'qr.html', 'my-orders.html', 'review.html', 'lab-reports.html', 'email-preferences.html', 'privacy.html', 'faq.html'];
 
 /** Other root files that must be present in the deployed output. */
-const ROOT_FILES = ['404.html', 'favicon.svg', 'robots.txt', 'sitemap.xml', '_headers', '_redirects', 'admin-sw.js', 'admin.webmanifest'];
+const ROOT_FILES = ['404.html', 'favicon.svg', 'robots.txt', 'sitemap.xml', '_headers', '_redirects', 'admin-sw.js', 'admin.webmanifest', 'shop-sw.js', 'shop.webmanifest'];
 
 const HASHED = /\.[a-f0-9]{8}\.(css|js)$/;
 /** Files under assets/ that are tools, not site content. */
@@ -87,6 +87,17 @@ function main() {
     copied.push(name);
   }
   if (missing.length) throw new Error(`Missing required files: ${missing.join(', ')}`);
+
+  // shop-sw.js build id: changes whenever any page or shared file changes, so the installed
+  // app offers a one-tap update after each deploy.
+  {
+    const crypto = require('crypto');
+    const h = crypto.createHash('sha256');
+    for (const name of PAGES) h.update(fs.readFileSync(path.join(ROOT, name)));
+    for (const f of fs.readdirSync(path.join(ROOT, 'shared')).filter((x) => HASHED.test(x)).sort()) h.update(f);
+    const sw = path.join(OUT, 'shop-sw.js');
+    fs.writeFileSync(sw, fs.readFileSync(sw, 'utf8').split('__BUILD_ID__').join(h.digest('hex').slice(0, 12)));
+  }
 
   const sharedOut = path.join(OUT, 'shared');
   fs.mkdirSync(sharedOut, { recursive: true });

@@ -1,0 +1,47 @@
+{
+  "name": "Springfield Peptide Buyers Club",
+  "short_name": "SPBC",
+  "id": "/",
+  "start_url": "/?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#113623",
+  "theme_color": "#113623",
+  "description": "The SPBC price list, your orders and tracking, and the dosage calculator.",
+  "icons": [
+    {
+      "src": "/assets/brand/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/brand/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Price list",
+      "short_name": "Prices",
+      "url": "/?source=app#prices"
+    },
+    {
+      "name": "My orders",
+      "short_name": "Orders",
+      "url": "/my-orders"
+    },
+    {
+      "name": "Track an order",
+      "short_name": "Track",
+      "url": "/track"
+    },
+    {
+      "name": "Calculator",
+      "short_name": "Calculator",
+      "url": "/calculator"
+    }
+  ]
+}
