@@ -1139,7 +1139,8 @@ const CART_KEY = "spbc_cart_draft";
                 } else {
                     ACTIVE_CODE = d;
                     showCodeMsg('Code ' + d.code + ' applied: ' + d.label, true);
-                    try { sessionStorage.setItem('spbc_code', d.code); } catch (_) {}
+                    // Codes from shared links stick for 30 days on this device.
+                    try { localStorage.setItem('spbc_code', JSON.stringify({ code: d.code, until: Date.now() + 30 * 86400000 })); } catch (_) {}
                 }
             } catch (_) {
                 if (!quiet) showCodeMsg('Could not check the code. Try again.', false);
@@ -1153,7 +1154,14 @@ const CART_KEY = "spbc_cart_draft";
         // Referral links: springfieldpbc.com/?code=BUDDY15 fills and applies the code.
         (function () {
             let c = '';
-            try { c = new URLSearchParams(location.search).get('code') || sessionStorage.getItem('spbc_code') || ''; } catch (_) {}
+            try {
+                c = new URLSearchParams(location.search).get('code') || '';
+                if (!c) {
+                    const saved = JSON.parse(localStorage.getItem('spbc_code') || 'null');
+                    if (saved && saved.code && saved.until > Date.now()) c = saved.code;
+                    else c = sessionStorage.getItem('spbc_code') || '';
+                }
+            } catch (_) {}
             if (c) {
                 const el = document.getElementById('discountCode');
                 if (el) el.value = c.toUpperCase();
@@ -2292,6 +2300,105 @@ const CART_KEY = "spbc_cart_draft";
     });
   }
 
+  /* ---------- paste a list: "BPC-157 x3, tirz 30 kit" -> preview -> add ---------- */
+  const loose = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  function parseList(text) {
+    const all = cards().map((c) => ({ card: c, name: c.dataset.name, key: loose(c.dataset.name), base: loose(String(c.dataset.name).replace(/\d[\d.]*\s*(mg|ml|mcg|iu)\b/ig, '')) }));
+    return String(text || '').split(/[\n,;]+/).map((raw) => raw.trim()).filter(Boolean).slice(0, 40).map((raw) => {
+      const l = loose(raw);
+      // Longest full name (with dose) inside the line wins; else a name without the dose if only one size exists.
+      let hit = all.filter((p) => p.key && l.includes(p.key)).sort((a, b) => b.key.length - a.key.length)[0];
+      if (!hit) {
+        const byBase = all.filter((p) => p.base && l.includes(p.base));
+        const doseM = raw.match(/(\d[\d.]*)\s*(mg|ml|mcg|iu)?\b/i);
+        if (byBase.length === 1) hit = byBase[0];
+        else if (byBase.length > 1 && doseM) hit = byBase.find((p) => loose(p.name).includes(loose(doseM[1] + (doseM[2] || 'mg'))));
+      }
+      if (!hit) {
+        // Short names: "tirz", "reta", "sema" match the start of the full name.
+        const word = loose((raw.toLowerCase().match(/[a-z][a-z+-]{2,}/) || [''])[0]);
+        const byPrefix = word.length >= 3 ? all.filter((p) => p.base.startsWith(word)) : [];
+        const doseN = (raw.match(/(\d[\d.]*)\s*(mg|ml|mcg|iu)?\b/i) || [])[1];
+        if (byPrefix.length === 1) hit = byPrefix[0];
+        else if (byPrefix.length > 1 && doseN) hit = byPrefix.find((p) => new RegExp('(^|[^\\d.])' + doseN.replace('.', '\\.') + '\\s*(mg|ml|mcg|iu)', 'i').test(p.name));
+      }
+      if (!hit) return { raw, ok: false };
+      const kitWanted = /\bkits?\b|\b10.?pack\b/i.test(raw);
+      let rest = raw.replace(/\d[\d.]*\s*(mg|ml|mcg|iu)\b/ig, ' ').replace(/\b(?!x\d)[a-z]+-?\d+\b/ig, ' ').replace(/\b\d+-[a-z]+\b/ig, ' ');
+      // "tirz 30 kit": the 30 is the size, not how many.
+      const sizeM = String(hit.name).match(/(\d[\d.]*)\s*(mg|ml|mcg|iu)\b/i);
+      if (sizeM) rest = rest.replace(new RegExp('(^|[^\\d.])' + sizeM[1].replace('.', '\\.') + '(?![\\d.])'), '$1 ');
+      const qm = rest.match(/(?:^|[^\d])(\d{1,2})(?!\d)/);
+      const qty = Math.max(1, Math.min(20, qm ? parseInt(qm[1], 10) : 1));
+      const vialSel = $('select[data-kind="vial"]', hit.card);
+      const packSel = $('select[data-kind="pack"]', hit.card);
+      const sel = kitWanted ? (packSel || vialSel) : (vialSel || packSel);
+      const kind = sel === packSel ? 'kit' : 'vial';
+      return { raw, ok: !!sel, name: hit.name, sel, qty, kind };
+    });
+  }
+  function openPasteList() {
+    let d = $('#ppPaste');
+    if (!d) {
+      d = document.createElement('dialog');
+      d.id = 'ppPaste';
+      d.className = 'pp-sheet';
+      d.setAttribute('aria-labelledby', 'ppPasteTitle');
+      d.innerHTML = '<div class="pp-sheet-inner">' +
+        '<button type="button" class="pp-sheet-x" aria-label="Close">×</button>' +
+        '<h2 id="ppPasteTitle" class="pp-sheet-title">Paste a list</h2>' +
+        '<label for="ppPasteText" class="pp-compare-label">One product per line. Add a number for how many, and "kit" for kits.</label>' +
+        '<textarea id="ppPasteText" class="pp-paste-text" rows="5" placeholder="BPC-157 x3&#10;Tirzepatide 30mg kit"></textarea>' +
+        '<div id="ppPasteOut" class="pp-paste-out" aria-live="polite"></div>' +
+        '<div class="pp-sheet-actions"><button type="button" class="pp-act" id="ppPasteAdd" disabled>Add to cart</button></div>' +
+        '</div>';
+      document.body.appendChild(d);
+      $('.pp-sheet-x', d).addEventListener('click', () => d.close());
+      d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+      const ta = $('#ppPasteText', d);
+      const out = $('#ppPasteOut', d);
+      const add = $('#ppPasteAdd', d);
+      let rows = [];
+      ta.addEventListener('input', () => {
+        rows = parseList(ta.value);
+        out.innerHTML = rows.map((r) => r.ok
+          ? '<p class="ok">✓ ' + esc(r.name) + ' · ' + r.qty + ' ' + r.kind + (r.qty === 1 ? '' : 's') + '</p>'
+          : '<p class="no">Not found: ' + esc(r.raw) + '</p>').join('');
+        add.disabled = !rows.some((r) => r.ok);
+      });
+      add.addEventListener('click', () => {
+        let n = 0;
+        rows.filter((r) => r.ok).forEach((r) => {
+          for (let i = 0; i < r.qty; i++) {
+            const before = r.sel.value;
+            stepQty(r.sel, 1);
+            if (r.sel.value === before) break; // hit the most allowed
+            n += 1;
+          }
+        });
+        if (typeof saveCartDraft === 'function') saveCartDraft();
+        d.close();
+        ta.value = '';
+        out.innerHTML = '';
+        add.disabled = true;
+        toast(n ? 'Added to your cart' : 'Nothing could be added');
+      });
+    }
+    d.showModal();
+    setTimeout(() => { const ta = $('#ppPasteText'); if (ta) ta.focus(); }, 50);
+  }
+  function addPasteLink() {
+    const row = $('.pp-sort-row');
+    if (!row || $('#ppPasteBtn')) return;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.id = 'ppPasteBtn';
+    b.className = 'pp-paste';
+    b.textContent = 'Paste a list';
+    b.addEventListener('click', openPasteList);
+    row.insertBefore(b, row.firstChild);
+  }
+
   /* ---------- run after every (re)render of the list ---------- */
   let queued = false;
   function afterRender() {
@@ -2300,6 +2407,7 @@ const CART_KEY = "spbc_cart_draft";
     setTimeout(() => {
       queued = false;
       addSortMenu();
+      addPasteLink();
       wireSearchAdd();
       decorate();
       applySort();
