@@ -545,8 +545,8 @@ body.spbc26 #orderForm legend, body.spbc26 #orderForm p[class*="uppercase"] { fo
 
 /* Shop extras (end of store.js): sort, quick look, favorites, back to top, cart helpers. */
 .kit-save { display: block; font-size: 11px; font-weight: 600; color: #6ee7b7; line-height: 1.2; }
-.pp-ql-title { cursor: pointer; }
-.pp-ql-title:focus-visible { outline: 2px solid var(--color-brand, #EAB308); outline-offset: 2px; border-radius: 4px; }
+.pp-ql-btn { all: unset; cursor: pointer; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; }
+.pp-ql-btn:focus-visible { outline: 2px solid var(--color-brand, #EAB308); outline-offset: 2px; border-radius: 4px; }
 .pp-chev { margin-left: 0.3rem; color: var(--color-ink-3, #a1a1aa); font-weight: 400; }
 .card-fav { color: #EAB308; }
 .pp-sort-row { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; margin-top: 0.6rem; }

@@ -2049,14 +2049,16 @@ const CART_KEY = "spbc_cart_draft";
       const name = card.getAttribute('data-name');
       const title = $('.price-card-title', card);
       if (title && !title.dataset.ql) {
+        // A real button inside the heading, so the heading stays a heading.
         title.dataset.ql = '1';
-        title.classList.add('pp-ql-title');
-        title.setAttribute('role', 'button');
-        title.setAttribute('tabindex', '0');
-        title.setAttribute('aria-label', 'More about ' + name);
-        title.insertAdjacentHTML('beforeend', '<span class="pp-chev" aria-hidden="true">›</span>');
-        title.addEventListener('click', () => openQuickLook(name));
-        title.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openQuickLook(name); } });
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pp-ql-btn';
+        btn.setAttribute('aria-label', 'More about ' + name);
+        while (title.firstChild) btn.appendChild(title.firstChild);
+        btn.insertAdjacentHTML('beforeend', '<span class="pp-chev" aria-hidden="true">›</span>');
+        btn.addEventListener('click', () => openQuickLook(name));
+        title.appendChild(btn);
       }
       let star = $('.card-fav', card);
       if (favs.has(name)) {
@@ -2065,7 +2067,8 @@ const CART_KEY = "spbc_cart_draft";
           star.className = 'card-fav';
           star.setAttribute('aria-label', 'In your favorites');
           star.textContent = '★ ';
-          title.insertBefore(star, title.firstChild);
+          const host = $('.pp-ql-btn', title) || title;
+          host.insertBefore(star, host.firstChild);
         }
       } else if (star) star.remove();
     });
