@@ -832,7 +832,7 @@ const CART_KEY = "spbc_cart_draft";
                     d.reviews.slice(0, 6).map((r) => `<figure class="depth-card p-4 space-y-1">
                         <p class="text-[#EAB308] text-sm" aria-label="${Number(r.rating)} out of 5 stars">${stars(Number(r.rating))}</p>
                         ${r.body ? `<blockquote class="text-sm text-zinc-200">${escapeHtml(r.body)}</blockquote>` : ''}
-                        <figcaption class="text-xs text-zinc-500">${escapeHtml(r.display_name)}${r.products ? ' · ' + escapeHtml(r.products) : ''}</figcaption>
+                        <figcaption class="text-xs text-zinc-400">${escapeHtml(r.display_name)} <span class="text-emerald-300 font-semibold whitespace-nowrap">✓ Verified buyer</span>${r.products ? ' · ' + escapeHtml(r.products) : ''}</figcaption>
                     </figure>`).join('') + '</div>';
             } catch (_) { /* reviews are optional */ }
         }
