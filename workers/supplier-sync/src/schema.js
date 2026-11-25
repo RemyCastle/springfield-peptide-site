@@ -147,6 +147,19 @@ const TABLES = [
     page TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+  // Paying show-me-source in stablecoins on Solana (one row per SPBC order). Remy approves each
+  // payment in his own wallet; this only remembers the request and the TXID found on-chain.
+  `CREATE TABLE IF NOT EXISTS sms_crypto_payments (
+    order_number TEXT PRIMARY KEY,
+    token TEXT NOT NULL,
+    amount_cents INTEGER NOT NULL,
+    recipient TEXT NOT NULL,
+    reference TEXT NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'pending',
+    signature TEXT UNIQUE,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    paid_at TEXT
+  )`,
 ];
 
 const LATE_COLUMNS = [

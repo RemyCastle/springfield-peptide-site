@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/shared/tailwind.070e22a1.css?v=2">
+    <link rel="stylesheet" href="/shared/tailwind.37976ba9.css?v=2">
   <link rel="stylesheet" href="/shared/site-header.f464e980.css">
   <link rel="stylesheet" href="/shared/site-atmosphere.cf852092.css">
   <style>
@@ -1664,6 +1664,33 @@
               <button type="button" data-place-fill="${escapeAttr(r.order_number)}" class="text-[11px] bg-[#FDD700] text-black font-bold px-2 py-0.5 rounded-lg">Fill at show-me-source ↗</button></div>
           </div>
 
+          <details data-cpay="${escapeAttr(r.order_number)}" class="rounded-xl border border-zinc-700 p-3">
+            <summary class="cursor-pointer text-[11px] uppercase tracking-wide text-[#FDD700]">Pay show-me-source in crypto (Solana)</summary>
+            <div class="mt-2 space-y-2 text-xs">
+              <p class="text-zinc-400">Use the <strong>exact amount and wallet on their payment screen</strong>. You approve it in your own wallet; nothing is sent from here.</p>
+              <div class="flex flex-wrap gap-2 items-center">
+                <input data-cpay-amt type="text" inputmode="decimal" placeholder="Exact amount $" class="admin-input text-xs max-w-[9rem]" aria-label="Exact amount">
+                <select data-cpay-tok class="admin-input text-xs max-w-[7rem]" aria-label="Coin"><option value="usdc">USDC</option><option value="usdt">USDT</option><option value="pyusd">PYUSD</option></select>
+              </div>
+              <input data-cpay-to type="text" spellcheck="false" autocomplete="off" class="admin-input text-xs w-full font-mono" aria-label="Their wallet (Solana)" placeholder="Their Solana wallet">
+              <p class="text-zinc-500">Check this wallet matches their payment screen (first and last 4 characters at least).</p>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" data-cpay-start class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-1.5 rounded-lg">Open in my wallet</button>
+                <button type="button" data-cpay-check class="border border-zinc-600 text-zinc-300 px-3 py-1.5 rounded-lg">I sent it: check now</button>
+              </div>
+              <p data-cpay-msg class="text-zinc-300" role="status" aria-live="polite"></p>
+              <div data-cpay-done class="hidden rounded-lg border border-emerald-700 bg-emerald-950/30 p-2">
+                <p class="text-emerald-300 font-semibold">Paid. TXID for their "Paste transaction hash" box:</p>
+                <p data-cpay-sig class="font-mono break-all text-white my-1"></p>
+                <button type="button" data-cpay-copy class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg">Copy TXID</button>
+              </div>
+              <details class="text-zinc-400"><summary class="cursor-pointer">Paid another way? Paste the TXID</summary>
+                <div class="flex flex-wrap gap-2 mt-1"><input data-cpay-txid type="text" spellcheck="false" class="admin-input text-xs flex-1 min-w-[12rem] font-mono" placeholder="Transaction ID" aria-label="Transaction ID">
+                <button type="button" data-cpay-save class="border border-zinc-600 text-zinc-300 px-3 py-1.5 rounded-lg">Check and save</button></div>
+              </details>
+            </div>
+          </details>
+
           <div>
             <p class="text-[11px] uppercase tracking-wide text-[#FDD700] mb-1">3 · After you pay them</p>
             <div class="flex flex-wrap items-center gap-2">
@@ -1719,6 +1746,79 @@
         btn.textContent = 'Copy failed';
       }
     });
+    // ---- Pay show-me-source in crypto (functions/api/admin/sms-pay.js). Remy approves in his wallet.
+    const cpayTimers = {};
+    function cpayShowPaid(box, sig) {
+      box.querySelector('[data-cpay-sig]').textContent = sig;
+      box.querySelector('[data-cpay-done]').classList.remove('hidden');
+      box.querySelector('[data-cpay-msg]').textContent = '';
+      const n = box.dataset.cpay;
+      clearInterval(cpayTimers[n]);
+    }
+    async function cpayPost(body) {
+      const r = await fetch('/api/admin/sms-pay', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (r.status === 401) { showLogin(); return { ok: false, d: {} }; }
+      return { ok: r.ok, d: await r.json().catch(() => ({})) };
+    }
+    async function cpayCheck(box, manual) {
+      const msg = box.querySelector('[data-cpay-msg]');
+      const x = await cpayPost({ action: 'check', order_number: box.dataset.cpay });
+      const d = x.d || {};
+      if (d.status === 'paid') return cpayShowPaid(box, d.signature);
+      if (d.status === 'short') { msg.textContent = `Only ${d.received} arrived; ${d.needed} was needed. Send the rest or check the amount.`; return; }
+      if (manual) msg.textContent = x.ok ? 'Not on the blockchain yet. Solana usually takes under a minute; this keeps checking while the box is open.' : (d.message || 'Could not check right now.');
+    }
+    document.getElementById('placeBody')?.addEventListener('toggle', async (e) => {
+      const box = e.target;
+      if (!box.matches || !box.matches('details[data-cpay]') || !box.open || box.dataset.loaded) return;
+      box.dataset.loaded = '1';
+      const r = await fetch('/api/admin/sms-pay?order=' + encodeURIComponent(box.dataset.cpay), { credentials: 'same-origin' });
+      if (r.status === 401) return showLogin();
+      const d = await r.json().catch(() => ({}));
+      const to = box.querySelector('[data-cpay-to]');
+      const p = d.payment;
+      to.value = (p && p.recipient) || d.default_wallet || '';
+      if (p) {
+        box.querySelector('[data-cpay-amt]').value = (p.amount_cents / 100).toFixed(2);
+        box.querySelector('[data-cpay-tok]').value = p.token;
+        if (p.status === 'paid') cpayShowPaid(box, p.signature);
+      }
+    }, true);
+    document.getElementById('placeBody')?.addEventListener('click', async (e) => {
+      const box = e.target.closest('details[data-cpay]');
+      if (!box) return;
+      const msg = box.querySelector('[data-cpay-msg]');
+      const n = box.dataset.cpay;
+      if (e.target.closest('[data-cpay-start]')) {
+        const x = await cpayPost({
+          action: 'start',
+          order_number: n,
+          amount: box.querySelector('[data-cpay-amt]').value,
+          token: box.querySelector('[data-cpay-tok]').value,
+          recipient: box.querySelector('[data-cpay-to]').value.trim(),
+        });
+        if (!x.ok) { msg.textContent = (x.d && x.d.message) || 'Could not start the payment.'; if (x.d && x.d.payment && x.d.payment.signature) cpayShowPaid(box, x.d.payment.signature); return; }
+        const d = x.d;
+        msg.textContent = `Opening your wallet: ${d.amount} ${d.token_label} to ${d.recipient.slice(0, 4)}…${d.recipient.slice(-4)}. In Phantom, check the amount and wallet, then approve. On a computer, open this admin on your phone instead.`;
+        clearInterval(cpayTimers[n]);
+        let tries = 0;
+        cpayTimers[n] = setInterval(() => { if (!box.open || ++tries > 40) return clearInterval(cpayTimers[n]); cpayCheck(box, false); }, 10000);
+        location.href = d.url;
+        return;
+      }
+      if (e.target.closest('[data-cpay-check]')) return cpayCheck(box, true);
+      if (e.target.closest('[data-cpay-save]')) {
+        const x = await cpayPost({ action: 'txid', order_number: n, signature: box.querySelector('[data-cpay-txid]').value.trim() });
+        if (x.ok && x.d.status === 'paid') return cpayShowPaid(box, x.d.signature);
+        msg.textContent = (x.d && x.d.message) || 'Could not save that TXID.';
+        return;
+      }
+      if (e.target.closest('[data-cpay-copy]')) {
+        const sig = box.querySelector('[data-cpay-sig]').textContent;
+        try { await navigator.clipboard.writeText(sig); e.target.textContent = 'Copied'; } catch { prompt('Copy the TXID:', sig); }
+      }
+    });
+
     document.getElementById('placeBody')?.addEventListener('click', async (e) => {
       const copyBtn = e.target.closest('[data-place-copy]');
       if (copyBtn) {
