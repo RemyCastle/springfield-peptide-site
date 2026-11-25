@@ -57,6 +57,15 @@ export async function onRequestGet({ request, env }) {
     });
   }
 
+  // Checkout problem reports from shoppers' browsers (last 7 days). No names/emails are stored.
+  if (view === 'problems') {
+    const rows = await all(
+      db,
+      "SELECT id, kind, detail, page, created_at FROM client_reports WHERE created_at > datetime('now', '-7 day') ORDER BY created_at DESC LIMIT 50"
+    );
+    return json({ problems: rows });
+  }
+
   if (view === 'search') {
     const q = String(url.searchParams.get('q') || '').trim().slice(0, 80);
     if (q.length < 2) return json({ orders: [], notes: [] });

@@ -84,12 +84,14 @@
         chip(d.to_place, 'To place', 'place') +
         chip(d.unpaid, 'Waiting for payment', 'orders') +
         chip(d.holds + d.new_products, 'Supplier items to check', 'sync') +
-        (d.problems ? chip(d.problems, 'Checkout problems today', 'sync', true) : '') +
+        (d.problems ? `<button type="button" data-todo-open="problems" class="px-3 py-1.5 rounded-full border border-red-500 text-red-300">Checkout problems today: <strong>${d.problems}</strong></button>` : '') +
         `<button type="button" data-todo-open="messages" class="px-3 py-1.5 rounded-full border ${d.messages ? 'border-[#FDD700] text-[#FDD700]' : 'border-zinc-700 text-zinc-500'}">Messages: <strong>${d.messages ?? 0}</strong></button>` +
         `<button type="button" data-todo-open="reviews" class="px-3 py-1.5 rounded-full border ${d.reviews ? 'border-[#FDD700] text-[#FDD700]' : 'border-zinc-700 text-zinc-500'}">Reviews to Approve: <strong>${d.reviews ?? 0}</strong></button>` +
         (syncBad ? '<button type="button" data-todo-tab="sync" class="px-3 py-1.5 rounded-full border border-red-500 text-red-300">Supplier check failing</button>' : '');
       bar.querySelectorAll('[data-todo-tab]').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.todoTab)));
-      bar.querySelectorAll('[data-todo-open]').forEach((b) => b.addEventListener('click', () => (b.dataset.todoOpen === 'messages' ? messagesModal() : reviewsModal())));
+      bar.querySelectorAll('[data-todo-open]').forEach((b) =>
+        b.addEventListener('click', () => (b.dataset.todoOpen === 'messages' ? messagesModal() : b.dataset.todoOpen === 'problems' ? problemsModal() : reviewsModal()))
+      );
     } catch (_) {
       bar.innerHTML = '';
     }
@@ -470,6 +472,31 @@
           loadTodo();
         })
       );
+    } catch (e) {
+      body.innerHTML = `<p class="text-red-400">${escapeHtml(e.message)}</p>`;
+    }
+  }
+
+  // What each kind of report means, in plain words.
+  const PROBLEM_WORDS = {
+    load_products: "A shopper's browser could not load the product list (usually a dropped connection; nothing was ordered).",
+    place_order: 'A shopper tried to place an order and it failed. Check Orders: they may have tried again.',
+    js_error: "The shop page hit a script error in a shopper's browser.",
+  };
+  async function problemsModal() {
+    const body = modalShell('problemsModal', 'Checkout problems (last 7 days)');
+    try {
+      const d = await api('/api/admin/tools?view=problems');
+      body.innerHTML = d.problems.length
+        ? d.problems
+            .map(
+              (p) => `<div class="border-t border-zinc-800 py-2">
+            <p><strong class="text-white">${escapeHtml(new Date(String(p.created_at).replace(' ', 'T') + 'Z').toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}</strong> <span class="text-zinc-500 text-xs">${escapeHtml(p.page || '')}</span></p>
+            <p class="text-zinc-300">${escapeHtml(PROBLEM_WORDS[p.kind] || p.kind)}</p>
+            ${p.detail ? `<p class="text-zinc-500 text-xs">Browser said: ${escapeHtml(p.detail)}</p>` : ''}</div>`
+            )
+            .join('')
+        : '<p class="text-zinc-500">No problems reported in the last 7 days.</p>';
     } catch (e) {
       body.innerHTML = `<p class="text-red-400">${escapeHtml(e.message)}</p>`;
     }
