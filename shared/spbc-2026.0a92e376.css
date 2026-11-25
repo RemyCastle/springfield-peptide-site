@@ -542,3 +542,47 @@ body.spbc26 #orderForm legend, body.spbc26 #orderForm p[class*="uppercase"] { fo
 .price-card-share svg { width: 18px; height: 18px; }
 .price-card.is-linked { box-shadow: 0 0 0 2px var(--color-brand, #EAB308); }
 .spbc-share-toast { position: fixed; left: 50%; bottom: calc(1.25rem + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 80; background: #18181b; color: #fafafa; border: 1px solid rgba(255,255,255,0.12); border-radius: 9999px; padding: 0.5rem 1rem; font-size: 0.85rem; }
+
+/* Shop extras (end of store.js): sort, quick look, favorites, back to top, cart helpers. */
+.kit-save { display: block; font-size: 11px; font-weight: 600; color: #6ee7b7; line-height: 1.2; }
+.pp-ql-title { cursor: pointer; }
+.pp-ql-title:focus-visible { outline: 2px solid var(--color-brand, #EAB308); outline-offset: 2px; border-radius: 4px; }
+.pp-chev { margin-left: 0.3rem; color: var(--color-ink-3, #a1a1aa); font-weight: 400; }
+.card-fav { color: #EAB308; }
+.pp-sort-row { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; margin-top: 0.6rem; }
+.pp-sort-label { font-size: 0.8rem; color: #d4d4d8; }
+.pp-sort { background: #0b1f14; color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 0.6rem; padding: 0.4rem 0.6rem; font-size: 0.85rem; min-height: 36px; }
+.pp-usual { margin-top: 0.6rem; text-align: center; }
+.pp-usual button { background: none; border: 1px dashed rgba(234,179,8,0.6); color: #EAB308; border-radius: 9999px; padding: 0.45rem 1rem; font-size: 0.85rem; font-weight: 600; min-height: 40px; cursor: pointer; }
+.pp-usual button span { color: #d4d4d8; font-weight: 500; }
+.pp-top { position: fixed; left: 14px; z-index: 70; width: 44px; height: 44px; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; background: rgba(11,31,20,0.92); color: #EAB308; border: 1px solid rgba(234,179,8,0.5); cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+.pp-top svg { width: 20px; height: 20px; }
+.pp-top[hidden] { display: none; }
+.sticky-line { display: flex; align-items: center; gap: 0.6rem; }
+.sticky-mini-step { display: inline-flex; align-items: center; gap: 0.15rem; flex: 0 0 auto; }
+.sticky-mini-step button { width: 28px; height: 28px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #EAB308; font-weight: 700; line-height: 1; cursor: pointer; }
+.sticky-mini-step span { min-width: 1.4rem; text-align: center; font-variant-numeric: tabular-nums; color: #fff; font-size: 0.85rem; }
+.pp-suggest { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.5rem 0.1rem 0.2rem; font-size: 0.8rem; color: #d4d4d8; border-top: 1px dashed rgba(255,255,255,0.15); margin-top: 0.35rem; }
+.pp-suggest button { background: none; border: 1px solid rgba(234,179,8,0.55); color: #EAB308; border-radius: 9999px; padding: 0.25rem 0.75rem; font-weight: 600; min-height: 32px; cursor: pointer; }
+.pp-share-cart { flex: 0 0 auto; width: 40px; display: inline-flex; align-items: center; justify-content: center; background: none; border: 1px solid rgba(234,179,8,0.45); color: #EAB308; border-radius: 0.5rem; cursor: pointer; }
+.pp-share-cart svg { width: 16px; height: 16px; }
+.pp-sheet { width: min(520px, 100vw); max-width: 100vw; max-height: 92vh; margin: auto auto 0; padding: 0; border: 1px solid rgba(234,179,8,0.4); border-radius: 1rem 1rem 0 0; background: #0f2a1b; color: #f4f4f5; }
+@media (min-width: 640px) { .pp-sheet { margin: auto; border-radius: 1rem; } }
+.pp-sheet::backdrop { background: rgba(0,0,0,0.65); }
+.pp-sheet-inner { position: relative; padding: 1.1rem 1.1rem 1.4rem; overflow-y: auto; max-height: 92vh; }
+.pp-sheet-x { position: absolute; top: 0.5rem; right: 0.6rem; width: 40px; height: 40px; font-size: 1.6rem; line-height: 1; background: none; border: 0; color: #EAB308; cursor: pointer; }
+.pp-sheet-title { font-family: var(--font-display, inherit); font-size: 1.35rem; font-weight: 700; color: #fff; text-align: center; margin: 0.6rem 2rem 0.3rem; }
+.pp-sheet-stars { text-align: center; color: #EAB308; font-size: 0.85rem; margin: 0 0 0.5rem; }
+.pp-sheet-prices { margin: 0.6rem 0 0.9rem; }
+.pp-sheet-prices div { display: flex; justify-content: space-between; gap: 1rem; padding: 0.45rem 0; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; }
+.pp-sheet-prices dt { color: #d4d4d8; }
+.pp-sheet-prices dd { margin: 0; color: #EAB308; font-weight: 600; text-align: right; }
+.pp-sheet-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.9rem; }
+.pp-act { flex: 1 1 calc(50% - 0.5rem); text-align: center; background: none; border: 1px solid rgba(234,179,8,0.45); color: #EAB308; border-radius: 0.6rem; padding: 0.55rem 0.5rem; font-size: 0.85rem; font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer; }
+.pp-compare-label { display: block; font-size: 0.75rem; color: #d4d4d8; margin: 0.2rem 0 0.3rem; }
+.pp-sheet #ppCompare { width: 100%; }
+.pp-compare { width: 100%; margin-top: 0.6rem; border-collapse: collapse; font-size: 0.8rem; }
+.pp-compare th, .pp-compare td { padding: 0.4rem 0.35rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: left; vertical-align: top; }
+.pp-compare thead th { color: #EAB308; font-weight: 600; }
+.pp-compare tbody th { color: #d4d4d8; font-weight: 500; }
+.pp-sheet-note { margin-top: 0.9rem; font-size: 0.72rem; color: #a1a1aa; text-align: center; }

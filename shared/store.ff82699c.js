@@ -741,7 +741,7 @@ const CART_KEY = "spbc_cart_draft";
             if (showPack && packOpts.length > 1) {
                 body += `
                     <div class="price-row">
-                        <span class="price-label">${trueKitOnly ? 'Kit' : 'Kit (10)'}</span>
+                        <span class="price-label">${trueKitOnly ? 'Kit' : 'Kit (10)'}${!trueKitOnly && hasPositivePrice(p.vial_price) && p.vial_price * 10 - p.pack_price >= 1 ? `<span class="kit-save">Save $${formatPrice(p.vial_price * 10 - p.pack_price)}</span>` : ''}</span>
                         <div class="price-controls">
                             <span class="price-amount tabular-nums">$${formatPrice(p.pack_price)}</span>
                             ${buildStepper('pack', packOpts, savedPack, name + ' kit qty')}
@@ -838,6 +838,7 @@ const CART_KEY = "spbc_cart_draft";
         }
 
         function renderProducts(products) {
+            window.ppProducts = products;
             const root = document.getElementById('priceTable');
             root.innerHTML = '';
             if (!products.length) {
@@ -1188,7 +1189,7 @@ const CART_KEY = "spbc_cart_draft";
                         singleVials += vialQty;
                         vialSubtotal += line;
                     }
-                    lines.push({ kind: 'vial', text: `${vialQty}x ${name} (Vial) — $${money(line)}` });
+                    lines.push({ kind: 'vial', name, qty: vialQty, text: `${vialQty}x ${name} (Vial) — $${money(line)}` });
                     rawLines.push({
                         kind: 'vial',
                         name: `${name} (Vial)`,
@@ -1207,7 +1208,7 @@ const CART_KEY = "spbc_cart_draft";
                         kitCount += kitQty;
                         packSubtotal += line;
                     }
-                    lines.push({ kind: 'pack', text: `${kitQty}x ${name} (${label}) — $${money(line)}` });
+                    lines.push({ kind: 'pack', name, qty: kitQty, text: `${kitQty}x ${name} (${label}) — $${money(line)}` });
                     rawLines.push({
                         kind: 'pack',
                         name: `${name} (${label})`,
@@ -1363,8 +1364,21 @@ const CART_KEY = "spbc_cart_draft";
             if (linesEl) {
                 linesEl.innerHTML = t.lines.map(l => {
                     const parts = l.text.split(' — ');
-                    return `<div class="sticky-line"><span class="break-word min-w-0">${escapeHtml(parts[0] || '')}</span><span class="text-[#EAB308] tabular-nums shrink-0">${escapeHtml(parts[1] || '')}</span></div>`;
+                    const label = String(parts[0] || '').replace(/^\d+x\s+/, '');
+                    const step = l.name
+                        ? `<span class="sticky-mini-step"><button type="button" data-dir="-1" aria-label="One less ${escapeHtml(label)}">−</button><span>${escapeHtml(String(l.qty))}</span><button type="button" data-dir="1" aria-label="One more ${escapeHtml(label)}">+</button></span>`
+                        : '';
+                    return `<div class="sticky-line" data-name="${escapeHtml(l.name || '')}" data-kind="${escapeHtml(l.kind || '')}">${step}<span class="break-word min-w-0 flex-1">${escapeHtml(l.name ? label : (parts[0] || ''))}</span><span class="text-[#EAB308] tabular-nums shrink-0">${escapeHtml(parts[1] || '')}</span></div>`;
                 }).join('');
+                linesEl.querySelectorAll('.sticky-mini-step button').forEach((btn) => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const line = btn.closest('.sticky-line');
+                        const card = Array.from(document.querySelectorAll('#priceTable .price-card')).find((c) => c.getAttribute('data-name') === line.getAttribute('data-name'));
+                        const sel = card && card.querySelector('select[data-kind="' + (line.getAttribute('data-kind') === 'pack' ? 'pack' : 'vial') + '"]');
+                        if (sel) stepQty(sel, parseInt(btn.getAttribute('data-dir'), 10) || 0);
+                    });
+                });
             }
 
             const formClear = document.getElementById('clearCartFormBtn');
@@ -1903,3 +1917,409 @@ const CART_KEY = "spbc_cart_draft";
         });
 
         onStorefrontReady();
+
+/* ---------- Shop extras (2026-11-25): same set as Patriotic's shop-extras.js ----------
+ * Sort, favorites, quick look (tap a product name: per-mg prices, compare two, calculator,
+ * lab report, reviews), Enter-to-add from search, back to top, BAC water suggestion in the
+ * cart, share-cart link, order your usual again. Cards stay as they are apart from a small
+ * chevron on the name and a star when you favorite one.
+ */
+(function () {
+  'use strict';
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  const esc = (s) => (typeof escapeHtml === 'function' ? escapeHtml(s) : String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])));
+  const fmt = (n) => (Number(n) % 1 ? Number(n).toFixed(2) : String(Number(n)));
+  const store = {
+    get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (_) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} },
+  };
+  const FAV_KEY = 'spbc_favorites';
+  const SORT_KEY = 'spbc_sort';
+  const USUAL_KEY = 'spbc_usual';
+  const cartKey = typeof CART_KEY === 'string' ? CART_KEY : 'spbc_cart_draft';
+
+  function toast(msg) {
+    if (typeof shareToast === 'function') return shareToast(msg);
+  }
+
+  /* ---------- products as rendered ---------- */
+  function cards() { return $$('#priceTable .price-card'); }
+  function cardFor(name) { return cards().find((c) => c.getAttribute('data-name') === name) || null; }
+  function productFor(name) {
+    const list = window.ppProducts || [];
+    return list.find((p) => (typeof displayProductName === 'function' ? displayProductName(p.name) : p.name) === name) || null;
+  }
+  function mgOf(name) {
+    const m = String(name).match(/(\d[\d.]*)\s*mg\b/i);
+    return m ? Number(m[1]) : null;
+  }
+  function unitPrice(card) {
+    return Number(card.getAttribute('data-vial') || card.getAttribute('data-kit') || card.getAttribute('data-pack') || 0);
+  }
+
+  /* ---------- favorites (star on the photo corner, float to the top) ---------- */
+  const favs = new Set(store.get(FAV_KEY, []));
+  function toggleFav(name) {
+    if (favs.has(name)) favs.delete(name); else favs.add(name);
+    store.set(FAV_KEY, Array.from(favs));
+    decorate();
+    applySort();
+  }
+
+  /* ---------- sort ---------- */
+  function addSortMenu() {
+    const search = $('#productSearch');
+    if (!search || $('#ppSort')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'pp-sort-row';
+    wrap.innerHTML =
+      '<label for="ppSort" class="pp-sort-label">Sort</label>' +
+      '<select id="ppSort" class="pp-sort">' +
+      '<option value="featured">Featured</option>' +
+      '<option value="low">Price: low to high</option>' +
+      '<option value="high">Price: high to low</option>' +
+      '<option value="az">Name A to Z</option>' +
+      '</select>';
+    // Outside the search box wrapper, so an icon positioned inside it stays put.
+    const anchor = search.parentElement && search.parentElement.querySelector('.absolute') ? search.parentElement : search;
+    anchor.insertAdjacentElement('afterend', wrap);
+    const sel = $('#ppSort');
+    sel.value = store.get(SORT_KEY, 'featured');
+    sel.addEventListener('change', () => { store.set(SORT_KEY, sel.value); applySort(); });
+  }
+  let sorting = false;
+  function applySort() {
+    const mode = ($('#ppSort') && $('#ppSort').value) || 'featured';
+    const by = {
+      featured: (a, b) => (favs.has(b.dataset.name) - favs.has(a.dataset.name)) || (a.dataset.origIndex - b.dataset.origIndex),
+      low: (a, b) => unitPrice(a) - unitPrice(b),
+      high: (a, b) => unitPrice(b) - unitPrice(a),
+      az: (a, b) => a.dataset.name.localeCompare(b.dataset.name),
+    }[mode];
+    sorting = true;
+    $$('#priceTable .price-group-grid').forEach((grid) => {
+      const list = $$('.price-card', grid);
+      list.forEach((c, i) => { if (!c.dataset.origIndex) c.dataset.origIndex = String(i); });
+      const sorted = list.slice().sort(by);
+      if (!sorted.every((c, i) => c === list[i])) sorted.forEach((c) => grid.appendChild(c));
+    });
+    sorting = false;
+  }
+
+  /* ---------- per-card touches (photo opens quick look, favorite star) ---------- */
+  function decorate() {
+    cards().forEach((card) => {
+      const name = card.getAttribute('data-name');
+      const title = $('.price-card-title', card);
+      if (title && !title.dataset.ql) {
+        title.dataset.ql = '1';
+        title.classList.add('pp-ql-title');
+        title.setAttribute('role', 'button');
+        title.setAttribute('tabindex', '0');
+        title.setAttribute('aria-label', 'More about ' + name);
+        title.insertAdjacentHTML('beforeend', '<span class="pp-chev" aria-hidden="true">›</span>');
+        title.addEventListener('click', () => openQuickLook(name));
+        title.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openQuickLook(name); } });
+      }
+      let star = $('.card-fav', card);
+      if (favs.has(name)) {
+        if (!star && title) {
+          star = document.createElement('span');
+          star.className = 'card-fav';
+          star.setAttribute('aria-label', 'In your favorites');
+          star.textContent = '★ ';
+          title.insertBefore(star, title.firstChild);
+        }
+      } else if (star) star.remove();
+    });
+  }
+
+  /* ---------- quick look sheet ---------- */
+  let reviews = null;
+  async function loadReviews() {
+    if (reviews) return reviews;
+    try { const r = await fetch('/api/review'); reviews = r.ok ? ((await r.json()).reviews || []) : []; } catch (_) { reviews = []; }
+    return reviews;
+  }
+  function ensureSheet() {
+    let d = $('#ppQuickLook');
+    if (d) return d;
+    d = document.createElement('dialog');
+    d.id = 'ppQuickLook';
+    d.className = 'pp-sheet';
+    d.setAttribute('aria-labelledby', 'ppQlTitle');
+    document.body.appendChild(d);
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+    d.addEventListener('close', () => { if (location.hash === '#look') history.back(); });
+    return d;
+  }
+  function priceLines(card) {
+    const out = [];
+    const v = card.getAttribute('data-vial');
+    const pk = card.getAttribute('data-pack');
+    const kit = card.getAttribute('data-kit');
+    const mg = mgOf(card.dataset.name);
+    if (v) out.push(['Single vial', '$' + fmt(v) + (mg ? ' · $' + (v / mg).toFixed(2) + '/mg' : '')]);
+    if (pk) out.push(['Kit (10)', '$' + fmt(pk) + (mg ? ' · $' + (pk / (mg * 10)).toFixed(2) + '/mg' : '')]);
+    if (kit) out.push(['Kit', '$' + fmt(kit)]);
+    return out;
+  }
+  async function openQuickLook(name) {
+    const card = cardFor(name);
+    if (!card) return;
+    const d = ensureSheet();
+    const p = productFor(name) || {};
+    const img = $('.card-vial', card);
+    const lab = $('a[href*="lab-report"]', card);
+    const others = cards().map((c) => c.dataset.name).filter((n) => n !== name);
+    d.innerHTML =
+      '<div class="pp-sheet-inner">' +
+      '<button type="button" class="pp-sheet-x" aria-label="Close">×</button>' +
+      (img ? '<img class="pp-sheet-img" src="' + esc(img.getAttribute('src')) + '" alt="">' : '') +
+      '<h2 id="ppQlTitle" class="pp-sheet-title">' + esc(name) + '</h2>' +
+      '<p class="pp-sheet-stars" hidden></p>' +
+      '<dl class="pp-sheet-prices">' + priceLines(card).map((l) => '<div><dt>' + l[0] + '</dt><dd>' + l[1] + '</dd></div>').join('') + '</dl>' +
+      '<div class="pp-sheet-actions">' +
+      '<button type="button" class="pp-act" data-act="fav">' + (favs.has(name) ? '★ Favorite' : '☆ Add to favorites') + '</button>' +
+      '<button type="button" class="pp-act" data-act="share">Share</button>' +
+      '<a class="pp-act" href="/calculator.html?p=' + encodeURIComponent(name) + '">Dose calculator</a>' +
+      (lab ? '<a class="pp-act" href="' + esc(lab.getAttribute('href')) + '" target="_blank" rel="noopener noreferrer">Lab report</a>' : '') +
+      '</div>' +
+      (others.length ? '<label class="pp-compare-label" for="ppCompare">Compare with</label><select id="ppCompare" class="pp-sort"><option value="">Pick a product…</option>' +
+        others.map((n) => '<option>' + esc(n) + '</option>').join('') + '</select><div id="ppCompareOut"></div>' : '') +
+      '<p class="pp-sheet-note">For laboratory research only.</p>' +
+      '</div>';
+    $('.pp-sheet-x', d).addEventListener('click', () => d.close());
+    $('[data-act="fav"]', d).addEventListener('click', (e) => {
+      toggleFav(name);
+      e.currentTarget.textContent = favs.has(name) ? '★ Favorite' : '☆ Add to favorites';
+    });
+    $('[data-act="share"]', d).addEventListener('click', () => { if (typeof shareProduct === 'function') shareProduct(name); });
+    const cmp = $('#ppCompare', d);
+    if (cmp) cmp.addEventListener('change', () => renderCompare(name, cmp.value));
+    if (!d.open) {
+      d.showModal();
+      history.pushState({ ppLook: 1 }, '', '#look');
+    }
+    // Stars only when this product has reviews.
+    const list = (await loadReviews()).filter((r) => String(r.products || '').toUpperCase().includes(name.toUpperCase()));
+    if (list.length && d.open) {
+      const avg = list.reduce((a, r) => a + Number(r.rating || 0), 0) / list.length;
+      const s = $('.pp-sheet-stars', d);
+      s.textContent = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg)) + '  ' + avg.toFixed(1) + ' (' + list.length + ' review' + (list.length === 1 ? '' : 's') + ')';
+      s.setAttribute('aria-label', avg.toFixed(1) + ' out of 5 stars from ' + list.length + ' reviews');
+      s.hidden = false;
+    }
+  }
+  function renderCompare(a, b) {
+    const out = $('#ppCompareOut');
+    if (!out) return;
+    if (!b) { out.innerHTML = ''; return; }
+    const ca = cardFor(a); const cb = cardFor(b);
+    if (!ca || !cb) return;
+    const rows = (c) => {
+      const mg = mgOf(c.dataset.name);
+      const v = Number(c.getAttribute('data-vial') || 0);
+      const k = Number(c.getAttribute('data-pack') || c.getAttribute('data-kit') || 0);
+      return [
+        mg ? mg + ' mg' : '—',
+        v ? '$' + fmt(v) : '—',
+        v && mg ? '$' + (v / mg).toFixed(2) : '—',
+        k ? '$' + fmt(k) : '—',
+        $('a[href*="lab-report"]', c) ? 'Yes' : '—',
+      ];
+    };
+    const labels = ['Amount', 'Vial', 'Per mg (vial)', 'Kit', 'Lab report'];
+    const ra = rows(ca); const rb = rows(cb);
+    out.innerHTML = '<table class="pp-compare"><thead><tr><th></th><th>' + esc(a) + '</th><th>' + esc(b) + '</th></tr></thead><tbody>' +
+      labels.map((l, i) => '<tr><th scope="row">' + l + '</th><td>' + ra[i] + '</td><td>' + rb[i] + '</td></tr>').join('') + '</tbody></table>';
+  }
+  // Phone back button closes the sheet instead of leaving the page.
+  window.addEventListener('popstate', () => { const d = $('#ppQuickLook'); if (d && d.open) d.close(); });
+
+  /* ---------- quick add from search: Enter with exactly one match adds it ---------- */
+  function wireSearchAdd() {
+    const input = $('#productSearch');
+    if (!input || input.dataset.quickAdd) return;
+    input.dataset.quickAdd = '1';
+    input.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      const shown = cards().filter((c) => !c.classList.contains('hidden'));
+      if (shown.length !== 1 || !input.value.trim()) return;
+      e.preventDefault();
+      const card = shown[0];
+      const sel = $('select[data-kind="vial"]', card) || $('select[data-kind="pack"]', card);
+      if (!sel || typeof stepQty !== 'function') return;
+      stepQty(sel, 1);
+      toast('Added ' + card.dataset.name);
+    });
+    input.setAttribute('aria-describedby', 'ppSearchTip');
+    const tip = document.createElement('p');
+    tip.id = 'ppSearchTip';
+    tip.className = 'sr-only';
+    tip.textContent = 'When only one product matches, press Enter to add it to your cart.';
+    (input.parentElement || input).appendChild(tip);
+  }
+
+  /* ---------- back to top ---------- */
+  function addBackToTop() {
+    if ($('#ppTop')) return;
+    const b = document.createElement('button');
+    b.id = 'ppTop';
+    b.type = 'button';
+    b.className = 'pp-top';
+    b.setAttribute('aria-label', 'Back to top');
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>';
+    b.hidden = true;
+    b.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    document.body.appendChild(b);
+    const place = () => {
+      b.hidden = window.scrollY < window.innerHeight * 2;
+      const bar = $('#stickyOrderBar');
+      const barUp = bar && bar.getAttribute('aria-hidden') === 'false';
+      const covered = barUp ? Math.max(0, window.innerHeight - bar.getBoundingClientRect().top) : 0;
+      b.style.bottom = covered ? (covered + 12) + 'px' : 'calc(16px + env(safe-area-inset-bottom))';
+    };
+    window.addEventListener('scroll', place, { passive: true });
+    window.addEventListener('resize', place);
+    window.ppPlaceTop = place;
+    place();
+  }
+
+  /* ---------- cart drawer: one suggestion (BAC water) + share this cart ---------- */
+  function suggestInCart() {
+    const lines = $('#stickyLines');
+    if (!lines) return;
+    const old = $('.pp-suggest', lines);
+    if (old) old.remove();
+    const inCart = $$('.sticky-line', lines).map((l) => l.getAttribute('data-name') || '');
+    if (!inCart.length || inCart.some((n) => /bac/i.test(n))) return;
+    const bac = cards().find((c) => /bac\s*water/i.test(c.dataset.name));
+    if (!bac) return;
+    const sel = $('select[data-kind="vial"]', bac) || $('select[data-kind="pack"]', bac);
+    if (!sel) return;
+    const row = document.createElement('div');
+    row.className = 'pp-suggest';
+    row.innerHTML = '<span>Need ' + esc(bac.dataset.name) + '?</span><button type="button">+ Add</button>';
+    $('button', row).addEventListener('click', (e) => { e.stopPropagation(); stepQty(sel, 1); });
+    lines.appendChild(row);
+  }
+  function addShareCart() {
+    const actions = $('.sticky-actions');
+    if (!actions || $('#ppShareCart')) return;
+    const b = document.createElement('button');
+    b.id = 'ppShareCart';
+    b.type = 'button';
+    b.className = 'pp-share-cart';
+    b.setAttribute('aria-label', 'Share this cart');
+    b.title = 'Share this cart';
+    b.innerHTML = typeof SHARE_ICON === 'string' ? SHARE_ICON : 'Share';
+    b.addEventListener('click', async () => {
+      const draft = store.get(cartKey, {});
+      if (!Object.keys(draft).length) return;
+      const code = btoa(unescape(encodeURIComponent(JSON.stringify(draft)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const url = location.origin + '/?cart=' + code;
+      if (navigator.share) { try { await navigator.share({ title: 'My SPBC cart', url }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+      try { await navigator.clipboard.writeText(url); toast('Cart link copied'); } catch (_) { window.prompt('Copy this link:', url); }
+    });
+    actions.insertBefore(b, actions.firstChild);
+  }
+  // Opening a shared cart link: load it into this device's cart before the list renders.
+  (function takeSharedCart() {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('cart');
+    if (!code) return;
+    try {
+      const json = decodeURIComponent(escape(atob(code.replace(/-/g, '+').replace(/_/g, '/'))));
+      const draft = JSON.parse(json);
+      const clean = {};
+      Object.keys(draft || {}).slice(0, 40).forEach((k) => {
+        const v = Number(draft[k] && draft[k].vial) || 0;
+        const p = Number(draft[k] && draft[k].pack) || 0;
+        if ((v > 0 || p > 0) && v <= 50 && p <= 50) clean[String(k).slice(0, 80)] = { vial: v, pack: p };
+      });
+      if (Object.keys(clean).length) { store.set(cartKey, clean); window.ppSharedCartLoaded = true; }
+    } catch (_) { /* bad link: ignore */ }
+    params.delete('cart');
+    history.replaceState(null, '', location.pathname + (params.toString() ? '?' + params : '') + location.hash);
+  })();
+
+  /* ---------- your usual: last order, one tap to load it again when the cart is empty ---------- */
+  function wireUsual() {
+    const form = $('#orderForm');
+    if (form && !form.dataset.usual) {
+      form.dataset.usual = '1';
+      form.addEventListener('submit', () => { window.ppPendingUsual = store.get(cartKey, {}); }, true);
+      const ok = $('#orderSuccess');
+      if (ok) new MutationObserver(() => {
+        if (!ok.classList.contains('hidden') && window.ppPendingUsual && Object.keys(window.ppPendingUsual).length) {
+          store.set(USUAL_KEY, window.ppPendingUsual);
+          window.ppPendingUsual = null;
+        }
+      }).observe(ok, { attributes: true, attributeFilter: ['class'] });
+    }
+    showUsual();
+  }
+  function showUsual() {
+    const usual = store.get(USUAL_KEY, {});
+    const names = Object.keys(usual).filter((n) => cardFor(n));
+    const cartEmpty = !Object.keys(store.get(cartKey, {})).length;
+    let row = $('#ppUsual');
+    if (!names.length || !cartEmpty) { if (row) row.remove(); return; }
+    if (!row) {
+      row = document.createElement('div');
+      row.id = 'ppUsual';
+      row.className = 'pp-usual';
+      const sortRow = $('.pp-sort-row');
+      (sortRow || $('#productSearch')).insertAdjacentElement('afterend', row);
+    }
+    row.innerHTML = '<button type="button">Order your usual again <span>(' + names.length + ' item' + (names.length === 1 ? '' : 's') + ')</span></button>';
+    $('button', row).addEventListener('click', () => {
+      names.forEach((n) => {
+        const card = cardFor(n);
+        ['vial', 'pack'].forEach((kind) => {
+          const want = Number(usual[n][kind]) || 0;
+          const sel = card && $('select[data-kind="' + kind + '"]', card);
+          if (!sel || !want) return;
+          let guard = 0;
+          while ((parseInt(sel.value, 10) || 0) < want && guard++ < 60) stepQty(sel, 1);
+        });
+      });
+      if (typeof saveCartDraft === 'function') saveCartDraft();
+      row.remove();
+      toast('Your usual is in the cart');
+    });
+  }
+
+  /* ---------- run after every (re)render of the list ---------- */
+  let queued = false;
+  function afterRender() {
+    if (queued) return;
+    queued = true;
+    setTimeout(() => {
+      queued = false;
+      addSortMenu();
+      wireSearchAdd();
+      decorate();
+      applySort();
+      wireUsual();
+      addShareCart();
+      if (window.ppSharedCartLoaded) { window.ppSharedCartLoaded = false; toast('Shared cart loaded'); }
+    }, 0);
+  }
+  function start() {
+    const table = $('#priceTable');
+    if (table) new MutationObserver(() => { if (!sorting) afterRender(); }).observe(table, { childList: true });
+    const lines = $('#stickyLines');
+    if (lines) new MutationObserver((m) => {
+      if (m.some((x) => Array.from(x.addedNodes).some((n) => n.classList && n.classList.contains('pp-suggest')))) return;
+      suggestInCart();
+      showUsual();
+      if (window.ppPlaceTop) setTimeout(window.ppPlaceTop, 350);
+    }).observe(lines, { childList: true });
+    addBackToTop();
+    afterRender();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
