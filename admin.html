@@ -257,6 +257,21 @@
     }
     body.admin-shell .admin-tabs .tab-btn { border-radius: 999px !important; border: 1px solid var(--a-line-2) !important; background: var(--a-paper-2) !important; color: var(--a-ink-2) !important; }
     body.admin-shell .admin-tabs .tab-btn.bg-\[\#FDD700\] { background: var(--a-accent) !important; border-color: var(--a-accent) !important; color: var(--a-accent-ink) !important; }
+    /* Every tab visible at once: no hidden sideways scrolling (Tools used to fall off the edge).
+       Wider screens: tabs wrap onto a second row. Phones: an even 3-across grid, not sticky
+       (three rows pinned to the top would eat the screen). */
+    body.admin-shell .admin-tabs { flex-wrap: wrap; overflow: visible; row-gap: 0.5rem; }
+    body.admin-shell .admin-tabs .tab-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; }
+    @media (max-width: 639px) {
+      body.admin-shell .admin-tabs {
+        position: static; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem;
+        margin: 0 0 1rem; padding: 0 0 0.75rem; background: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+      }
+      body.admin-shell .admin-tabs .tab-btn {
+        white-space: normal; text-align: center; line-height: 1.15; padding: 0.45rem 0.35rem !important;
+        font-size: 0.78rem !important; border-radius: 14px !important; min-height: 44px;
+      }
+    }
 
     /* Install button + sheet, account menu */
     .btn-install-admin {
