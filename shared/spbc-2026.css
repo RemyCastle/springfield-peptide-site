@@ -593,3 +593,8 @@ body.spbc26 #orderForm legend, body.spbc26 #orderForm p[class*="uppercase"] { fo
 .pp-paste-out .ok { color: #6ee7b7; margin: 0.2rem 0; }
 .pp-paste-out .no { color: #fca5a5; margin: 0.2rem 0; }
 .pp-act:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.remind-row { padding-top: 0.6rem; border-top: 1px solid rgba(16,185,129,0.25); }
+.remind-btns { display: flex; justify-content: center; gap: 0.5rem; margin-top: 0.45rem; }
+.remind-btns button { border: 1px solid rgba(110,231,183,0.45); color: #a7f3d0; background: none; border-radius: 9999px; padding: 0.3rem 0.8rem; font-size: 0.8rem; font-weight: 600; min-height: 36px; cursor: pointer; }
+.remind-btns button[aria-pressed="true"] { background: #065f46; color: #fff; }

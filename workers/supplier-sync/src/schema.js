@@ -48,6 +48,16 @@ const TABLES = [
     reminded_at TEXT,
     cancelled_at TEXT
   )`,
+  // "Remind me to restock in N days", asked for by the customer after ordering (one per order).
+  `CREATE TABLE IF NOT EXISTS restock_reminders (
+    order_number TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    name TEXT,
+    due_at TEXT NOT NULL,
+    cart_json TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    sent_at TEXT
+  )`,
   // "Tell me if the price drops" follows.
   `CREATE TABLE IF NOT EXISTS price_watch (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

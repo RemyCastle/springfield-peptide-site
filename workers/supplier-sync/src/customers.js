@@ -107,3 +107,51 @@ export async function cleanupOldData(db) {
   out.login_links = await db.prepare("DELETE FROM login_links WHERE expires_at < datetime('now', '-1 day')").run().then((r) => r.meta?.changes || 0).catch(() => 0);
   return out;
 }
+
+/**
+ * Restock reminders the customer asked for after ordering: one email when due, with a link
+ * that opens the shop with the same items in the cart. "News" emails off also stops these.
+ */
+function cartCode(map) {
+  const json = JSON.stringify(map || {});
+  const bytes = new TextEncoder().encode(json);
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+export async function restockReminders(env, db) {
+  if (!emailReady(env)) return { skipped: true };
+  const { results } = await db
+    .prepare("SELECT * FROM restock_reminders WHERE sent_at IS NULL AND due_at <= datetime('now') ORDER BY due_at LIMIT 25")
+    .all();
+  let sent = 0;
+  for (const r of results || []) {
+    await db.prepare("UPDATE restock_reminders SET sent_at = datetime('now') WHERE order_number = ?").bind(r.order_number).run();
+    if (!(await wantsEmail(db, r.email, 'news'))) continue;
+    let cart = {};
+    try { cart = JSON.parse(r.cart_json || '{}') || {}; } catch { cart = {}; }
+    const names = Object.keys(cart);
+    const link = names.length ? `${siteUrl(env)}/?cart=${cartCode(cart)}` : `${siteUrl(env)}/#prices`;
+    const first = String(r.name || '').trim().split(/\s+/)[0] || 'there';
+    const list = names.length
+      ? `<ul style="padding-left:18px;margin:8px 0">${names.slice(0, 12).map((n) => {
+          const c = cart[n] || {};
+          const parts = [c.vial ? `${c.vial} vial${c.vial === 1 ? '' : 's'}` : '', c.pack ? `${c.pack} kit${c.pack === 1 ? '' : 's'}` : ''].filter(Boolean).join(' + ');
+          return `<li>${esc(n)} · ${esc(parts)}</li>`;
+        }).join('')}</ul>`
+      : '';
+    const foot = await prefsFooter(db, env, r.email, 'You asked for this reminder at SPBC.');
+    const ok = await sendEmail(env, {
+      to: r.email,
+      subject: 'Time to restock?',
+      html: wrap(`<p>Hi ${esc(first)},</p><p>You asked us to remind you about reordering. Last time you got:</p>${list}
+<p><a href="${link}" style="display:inline-block;background:#EAB308;color:#000;font-weight:bold;padding:12px 20px;border-radius:10px;text-decoration:none">Reorder in one tap</a></p>
+<p style="font-size:13px;color:#444">The button opens the shop with those items in your cart, at today's prices. Nothing is ordered until you place it.</p>
+${foot.html}`),
+      headers: { 'List-Unsubscribe': `<${foot.url}>` },
+    });
+    if (ok) sent += 1;
+  }
+  return { sent };
+}

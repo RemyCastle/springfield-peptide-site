@@ -226,6 +226,15 @@
                         <a id="successShipLink" href="#" class="border border-zinc-600 hover:border-[#EAB308] text-zinc-200 font-semibold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Edit Shipping Address</a>
                         <a id="successTrackLink" href="/track.html" class="border border-zinc-600 hover:border-[#EAB308] text-zinc-200 font-semibold py-3.5 rounded-2xl min-h-[3rem] flex items-center justify-center">Track This Order</a>
                     </div>
+                    <div id="remindRow" class="remind-row" role="group" aria-labelledby="remindLabel">
+                        <p id="remindLabel" class="text-xs text-zinc-300">Want a reminder to reorder? We'll email you once.</p>
+                        <div class="remind-btns">
+                            <button type="button" data-days="30">30 days</button>
+                            <button type="button" data-days="45">45 days</button>
+                            <button type="button" data-days="60">60 days</button>
+                        </div>
+                        <p id="remindMsg" class="text-xs text-emerald-300 hidden" role="status"></p>
+                    </div>
                     <p class="text-xs text-zinc-500">Payment handles and full steps are on the payment page only</p>
                 </div>
             </div>

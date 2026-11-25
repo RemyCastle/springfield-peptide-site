@@ -15,7 +15,7 @@ import { ensureSyncSchema } from './schema.js';
 import { updateProductMeta, sendRestockEmails } from './extras.js';
 import { paymentReminders, dailyDigest, priceDropAlerts, autoMatch, computeBestSellers, syncBreakAlert, placeTexts } from './jobs.js';
 import { handleEmail } from './mailbox.js';
-import { reviewRequests, cleanupOldData } from './customers.js';
+import { reviewRequests, cleanupOldData, restockReminders } from './customers.js';
 import { healthCheck } from './health.js';
 import { partnerPriceList } from './partner.js';
 import { settleCodes } from './codes.js';
@@ -187,6 +187,8 @@ export async function runScheduled(cron, env) {
     if (!cleaned.skipped) await logEvent(db, { kind: 'cleanup', status: cleaned.error ? 'error' : 'done', detail: cleaned });
     const digest = await dailyDigest(env, db).catch((e) => ({ error: String(e.message || e) }));
     await logEvent(db, { kind: 'digest', status: digest.error ? 'error' : 'done', detail: digest });
+    const restock = await restockReminders(env, db).catch((e) => ({ error: String(e.message || e) }));
+    if (restock.sent || restock.error) await logEvent(db, { kind: 'restock_reminders', status: restock.error ? 'error' : 'done', detail: restock });
     return { digest };
   }
   const sync = await runSync(env);

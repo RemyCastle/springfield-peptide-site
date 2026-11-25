@@ -2399,6 +2399,34 @@ const CART_KEY = "spbc_cart_draft";
     row.insertBefore(b, row.firstChild);
   }
 
+  /* ---------- restock reminder picker on the order-placed screen ---------- */
+  function wireRemind() {
+    const row = $('#remindRow');
+    if (!row || row.dataset.wired) return;
+    row.dataset.wired = '1';
+    $$('button[data-days]', row).forEach((b) => b.addEventListener('click', async () => {
+      const order = ($('#successOrderNumber') && $('#successOrderNumber').textContent || '').trim();
+      const email = ($('#email') && $('#email').value || '').trim() || (store.get('spbc_last_email', '') || '');
+      const days = Number(b.dataset.days);
+      const msg = $('#remindMsg');
+      try {
+        const r = await fetch('/api/restock-reminder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_number: order, email, days }) });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.message || 'failed');
+        $$('button[data-days]', row).forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+        const when = new Date(Date.now() + days * 86400000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        msg.textContent = 'Done. We\'ll email you around ' + when + '.';
+        msg.classList.remove('hidden');
+      } catch (e) {
+        msg.textContent = 'That did not save. Please try again.';
+        msg.classList.remove('hidden');
+      }
+    }));
+    // The form clears after ordering; keep the email for this picker.
+    const form = $('#orderForm');
+    if (form) form.addEventListener('submit', () => { const e = $('#email'); if (e && e.value) store.set('spbc_last_email', e.value.trim()); }, true);
+  }
+
   /* ---------- run after every (re)render of the list ---------- */
   let queued = false;
   function afterRender() {
@@ -2427,6 +2455,7 @@ const CART_KEY = "spbc_cart_draft";
       if (window.ppPlaceTop) setTimeout(window.ppPlaceTop, 350);
     }).observe(lines, { childList: true });
     addBackToTop();
+    wireRemind();
     afterRender();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
