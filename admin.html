@@ -625,6 +625,17 @@
           </div>
         </div>
 
+        <details id="priceListBox" class="admin-card p-4 mb-4">
+          <summary class="cursor-pointer font-bold text-[#FDD700]">Text a Price List</summary>
+          <p class="text-xs text-zinc-500 mt-2 mb-3">Today's prices from the store (sold-out items left out). Edit it if you like, then copy or text it.</p>
+          <textarea id="plText" rows="10" class="w-full bg-black border border-zinc-700 rounded-xl p-2 text-sm text-white" aria-label="Price list to send">Loading…</textarea>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <button id="plCopy" type="button" class="bg-[#FDD700] hover:bg-white text-black font-bold px-4 py-2 rounded-xl text-sm">Copy</button>
+            <a id="plSms" href="#" class="border border-zinc-600 text-zinc-200 px-4 py-2 rounded-xl text-sm">Text it</a>
+            <button id="plRefresh" type="button" class="border border-zinc-600 text-zinc-300 px-4 py-2 rounded-xl text-sm">Refresh prices</button>
+          </div>
+        </details>
+
         <details id="quickOrderBox" class="admin-card p-4 mb-4">
           <summary class="cursor-pointer font-bold text-[#FDD700]">+ Quick Order for a Customer Who Texted or Venmo'd You</summary>
           <p class="text-xs text-zinc-500 mt-2 mb-3">
@@ -1115,6 +1126,41 @@
     for (const t of ['checkpay', 'codes', 'tools']) {
       document.getElementById('tab' + t[0].toUpperCase() + t.slice(1))?.addEventListener('click', () => switchTab(t));
     }
+
+    /* ---------- Text a price list (live store prices, sold-out left out) ---------- */
+    (function () {
+      const box = document.getElementById('priceListBox');
+      if (!box) return;
+      const $d = (n) => '$' + (Number.isInteger(Number(n)) ? Number(n) : Number(n).toFixed(2));
+      async function build() {
+        const t = document.getElementById('plText');
+        t.value = 'Loading…';
+        const res = await fetch('/api/products?member=1', { credentials: 'same-origin', cache: 'no-store' });
+        const d = await res.json().catch(() => ({}));
+        const list = (d.products || []).filter((p) => p.active !== 0 && p.active !== false);
+        if (!res.ok || !list.length) { t.value = 'Could not load prices. Tap Refresh prices.'; return; }
+        const day = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        const lines = list.map((p) => {
+          const vial = Number(p.vial_price) > 0 && !p.kit_only ? `${$d(p.vial_price)} vial` : '';
+          const kit = Number(p.pack_price) > 0 ? `${$d(p.pack_price)} kit of 10` : '';
+          return [vial, kit].filter(Boolean).length ? `${p.name}: ${[vial, kit].filter(Boolean).join(', ')}` : '';
+        }).filter(Boolean);
+        const free = Number(d.free_ship_over) > 0 ? `Free shipping over ${$d(d.free_ship_over)}. ` : '';
+        t.value = [`SPBC prices (${day}):`, ...lines, '', `${free}Order at springfieldpbc.com`].join('\n');
+        sms();
+      }
+      function sms() {
+        const body = document.getElementById('plText').value;
+        document.getElementById('plSms').href = 'sms:' + (/iPhone|iPad|iPod/.test(navigator.userAgent) ? '&' : '?') + 'body=' + encodeURIComponent(body);
+      }
+      box.addEventListener('toggle', () => { if (box.open) build(); });
+      document.getElementById('plRefresh').addEventListener('click', build);
+      document.getElementById('plText').addEventListener('input', sms);
+      document.getElementById('plCopy').addEventListener('click', async (e) => {
+        try { await navigator.clipboard.writeText(document.getElementById('plText').value); e.target.textContent = 'Copied'; setTimeout(() => { e.target.textContent = 'Copy'; }, 1500); }
+        catch { document.getElementById('plText').select(); }
+      });
+    })();
 
     /* ---------- Quick order ---------- */
     let qoProducts = null;
