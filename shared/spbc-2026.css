@@ -532,3 +532,13 @@ body.spbc26 form, body.spbc26 #labList, body.spbc26 .terms-scroll { text-align: 
 /* One capitalisation rule: Title Case words as written; no forced ALL CAPS (product names stay as named) */
 body.spbc26 [class*="uppercase"]:not(.price-card-title), body.spbc26 .btn-clear-cart, body.spbc26 #orderForm legend, body.spbc26 .copy-btn { text-transform: none !important; letter-spacing: 0 !important; }
 body.spbc26 #orderForm legend, body.spbc26 #orderForm p[class*="uppercase"] { font-size: var(--text-sm) !important; font-weight: 700; color: var(--color-ink) !important; }
+
+/* Share icon on product cards: quiet, top-right, never competes with prices. */
+.price-card { position: relative; }
+.price-card.has-share .price-card-title { padding-right: 2.25rem; }
+.price-card-share { position: absolute; top: 0.4rem; right: 0.4rem; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; color: var(--color-ink-3, #a1a1aa); background: transparent; border: 0; opacity: 0.75; cursor: pointer; }
+.price-card-share:hover, .price-card-share:focus-visible { opacity: 1; color: var(--color-brand, #EAB308); }
+.price-card-share:focus-visible { outline: 2px solid var(--color-brand, #EAB308); outline-offset: 1px; }
+.price-card-share svg { width: 18px; height: 18px; }
+.price-card.is-linked { box-shadow: 0 0 0 2px var(--color-brand, #EAB308); }
+.spbc-share-toast { position: fixed; left: 50%; bottom: calc(1.25rem + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 80; background: #18181b; color: #fafafa; border: 1px solid rgba(255,255,255,0.12); border-radius: 9999px; padding: 0.5rem 1rem; font-size: 0.85rem; }

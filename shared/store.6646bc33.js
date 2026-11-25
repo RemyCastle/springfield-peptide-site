@@ -615,6 +615,69 @@ const CART_KEY = "spbc_cart_draft";
             });
         }
 
+        /* ---------- One link per product (/p/<slug>) + native share ---------- */
+        const SHARE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+
+        function productSlug(name) {
+            return String(name || '').toLowerCase().replace(/\+/g, ' plus ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        }
+
+        function shareToast(msg) {
+            let t = document.getElementById('spbcShareToast');
+            if (!t) {
+                t = document.createElement('div');
+                t.id = 'spbcShareToast';
+                t.className = 'spbc-share-toast';
+                t.setAttribute('role', 'status');
+                document.body.appendChild(t);
+            }
+            t.textContent = msg;
+            t.hidden = false;
+            clearTimeout(shareToast.timer);
+            shareToast.timer = setTimeout(function () { t.hidden = true; }, 2200);
+        }
+
+        async function shareProduct(name) {
+            const url = location.origin + '/p/' + productSlug(name);
+            const data = { title: name + ' | Springfield Peptide Buyers Club', url: url };
+            if (navigator.share) {
+                try { await navigator.share(data); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+            }
+            try {
+                await navigator.clipboard.writeText(url);
+                shareToast('Link copied');
+            } catch (_) {
+                window.prompt('Copy this link:', url);
+            }
+        }
+
+        /** Arrived via /p/<slug>: scroll to that product and outline it once. */
+        function openLinkedProduct() {
+            const meta = document.querySelector('meta[name="spbc-open-product"]');
+            const want = meta ? meta.getAttribute('content') : '';
+            if (!want || openLinkedProduct.done) return;
+            let ageOk = false;
+            try { ageOk = localStorage.getItem('spbc_age_ok') === '1'; } catch (_) { ageOk = true; }
+            if (!ageOk) {
+                // Wait until the 21+ check is answered, then scroll.
+                if (!openLinkedProduct.waiting) {
+                    openLinkedProduct.waiting = true;
+                    window.addEventListener('spbc:age-ok', function () { setTimeout(openLinkedProduct, 350); }, { once: true });
+                }
+                return;
+            }
+            const card = Array.from(document.querySelectorAll('#priceTable .price-card')).find(function (c) {
+                return c.getAttribute('data-name') === want;
+            });
+            if (!card) return;
+            openLinkedProduct.done = true;
+            card.classList.add('is-linked');
+            const r = card.getBoundingClientRect();
+            const top = window.scrollY + r.top - Math.max(0, (window.innerHeight - r.height) / 2);
+            window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
+            setTimeout(function () { card.classList.remove('is-linked'); }, 4000);
+        }
+
         function buildPriceCard(p, draft) {
             const name = p.name;
             const trueKitOnly = isTrueKitOnly(p);
@@ -687,7 +750,10 @@ const CART_KEY = "spbc_cart_draft";
             }
             body += `</div>`;
             if (priceAlertsOn) body += priceAlertHtml(name);
+            body += `<button type="button" class="price-card-share" aria-label="Share ${escapeHtml(name)}" title="Share">${SHARE_ICON}</button>`;
+            article.classList.add('has-share');
             article.innerHTML = body;
+            article.querySelector('.price-card-share').addEventListener('click', function () { shareProduct(name); });
             wireStepper(article);
             if (priceAlertsOn) wirePriceAlert(article);
             return article;
@@ -805,6 +871,7 @@ const CART_KEY = "spbc_cart_draft";
             if (typeof window.spbcAtmosphereRefresh === 'function') {
                 window.spbcAtmosphereRefresh();
             }
+            openLinkedProduct();
         }
 
         async function loadProducts() {
