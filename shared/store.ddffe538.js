@@ -500,6 +500,34 @@ const CART_KEY = "spbc_cart_draft";
             }
         }
 
+        /** Search: full drug names, common nicknames, and spaces/dashes ignored ("bpc157" finds "BPC-157 10MG"). */
+        const SEARCH_ALIASES = [
+            [/\bsema\b/, 'semaglutide glp'],
+            [/\btirz\b/, 'tirzepatide glp'],
+            [/\breta\b/, 'retatrutide glp'],
+            [/\bcagri\b/, 'cagrilintide'],
+            [/\bipa\b/, 'ipamorelin'],
+            [/cjc/, 'cjc1295 ipamorelin'],
+            [/\bnad/, 'nad+ nicotinamide'],
+            [/\bbac\b/, 'bacteriostatic water'],
+            [/ghk/, 'copper peptide'],
+            [/\bmt1\b/, 'melanotan 1'],
+            [/\bmt2\b/, 'melanotan 2 melanotan ii'],
+            [/tb-500/, 'thymosin beta'],
+            [/thymosin a1/, 'ta1 thymosin alpha'],
+            [/pt-141/, 'bremelanotide'],
+            [/mots-c/, 'motsc'],
+            [/wolverine/, 'bpc tb500 blend'],
+        ];
+        function searchMatches(name, q) {
+            const n = String(name || '').toLowerCase();
+            let hay = n;
+            SEARCH_ALIASES.forEach(([re, extra]) => { if (re.test(n)) hay += ' ' + extra; });
+            if (hay.includes(q)) return true;
+            const squash = (t) => t.replace(/[^a-z0-9+]/g, '');
+            return squash(q).length >= 2 && squash(hay).includes(squash(q));
+        }
+
         function applyProductFilter() {
             const q = (document.getElementById('productSearch').value || '').trim().toLowerCase();
             const cards = document.querySelectorAll('#priceTable .price-card');
@@ -512,7 +540,7 @@ const CART_KEY = "spbc_cart_draft";
                 if (activeFilter === 'vials') typeOk = hasVial;
                 if (activeFilter === 'kit-only') typeOk = kitOnly;
                 if (activeFilter === 'popular') typeOk = card.hasAttribute('data-popular');
-                const textOk = !q || name.includes(q);
+                const textOk = !q || searchMatches(name, q);
                 const show = typeOk && textOk;
                 card.classList.toggle('hidden', !show);
                 if (show) visible += 1;
