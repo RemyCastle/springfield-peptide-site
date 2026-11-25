@@ -34,7 +34,7 @@
     function orderAgain(items) {
         const draft = {};
         items.forEach((it) => {
-            if (it.sku === 'SALES-TAX') return;
+            if (it.sku === 'SALES-TAX' || /^ADJ-/i.test(it.sku || '')) return; // tax, code discount, store credit
             const isVial = /\(\s*Vial\s*\)\s*$/i.test(it.name) || /-VIAL$/i.test(it.sku || '');
             const name = it.name.replace(/\s+\((?:10-Pack \/ Kit|Kit|Vial)\)\s*$/i, '').trim();
             if (!name || !it.qty) return;

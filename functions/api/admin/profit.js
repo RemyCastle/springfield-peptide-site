@@ -90,10 +90,12 @@ export async function onRequestGet({ request, env }) {
         continue;
       }
       const lineRev = (Number(it.unit_price_cents) / 100) * qty;
-      const lineCost = supplierUnitCost(it) * qty;
+      // Code discounts and store credit lower revenue; they have no supplier cost.
+      const adj = /^ADJ-/i.test(String(it.sku || ''));
+      const lineCost = adj ? 0 : supplierUnitCost(it) * qty;
       rev += lineRev;
       cost += lineCost;
-      const key = String(it.name || '');
+      const key = adj ? 'Discount codes and store credit' : String(it.name || '');
       const p = byProduct.get(key) || { name: key, units: 0, revenue: 0, supplier_cost: 0, profit: 0 };
       p.units += qty;
       p.revenue += lineRev;

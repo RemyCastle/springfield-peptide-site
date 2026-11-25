@@ -364,7 +364,7 @@ export async function syncBreakAlert(env, db) {
 /** Short item list for a text: "KPV 10 MG kit x2, BPC-157 10MG vial x1". */
 export function placeTextBody(order, items, link) {
   const list = (items || [])
-    .filter((it) => it.sku !== 'SALES-TAX' && !/^SHIP/i.test(String(it.sku || '')))
+    .filter((it) => !/^(ADJ-|SALES-TAX)/i.test(String(it.sku || '')) && !/^SHIP/i.test(String(it.sku || '')))
     .map((it) => {
       const vial = /\(\s*Vial\s*\)\s*$/i.test(it.name || '') || /-VIAL$/i.test(it.sku || '');
       const name = String(it.name || '').replace(/\s+\((?:10-Pack \/ Kit|Kit|Vial)\)\s*$/i, '').trim();

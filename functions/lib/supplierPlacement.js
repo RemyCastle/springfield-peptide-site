@@ -13,7 +13,8 @@ export async function supplierNameMap(db) {
 export function buildPlacement(detail, nameMap) {
   const o = (detail && detail.order) || {};
   let cost = 0;
-  const items = ((detail && detail.items) || []).filter((it) => it.sku !== 'SALES-TAX').map((it) => {
+  // Products only: never the tax line or a code-discount / store-credit line (sku ADJ-...).
+  const items = ((detail && detail.items) || []).filter((it) => !/^(ADJ-|SALES-TAX)/i.test(String(it.sku || ''))).map((it) => {
     const isVial = /\(\s*Vial\s*\)\s*$/i.test(it.name || '') || /-VIAL$/i.test(it.sku || '');
     const spbcName = String(it.name || '').replace(/\s+\((?:10-Pack \/ Kit|Kit|Vial)\)\s*$/i, '').trim();
     const unitCost = supplierUnitCost(it);

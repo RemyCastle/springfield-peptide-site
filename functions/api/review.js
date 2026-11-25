@@ -20,7 +20,7 @@ function shortName(name) {
 async function products(env, orderNumber) {
   const r = await proxyOrdersAdmin(env, `/admin/orders/${encodeURIComponent(orderNumber)}`);
   const items = (r.ok && r.data.items) || [];
-  return [...new Set(items.filter((i) => i.sku !== 'SALES-TAX').map((i) => String(i.name || '').replace(/\s+\((?:10-Pack \/ Kit|Kit|Vial)\)\s*$/i, '').trim()))].filter(Boolean);
+  return [...new Set(items.filter((i) => !/^(ADJ-|SALES-TAX)/i.test(String(i.sku || ''))).map((i) => String(i.name || '').replace(/\s+\((?:10-Pack \/ Kit|Kit|Vial)\)\s*$/i, '').trim()))].filter(Boolean);
 }
 
 export async function onRequestGet({ env }) {
