@@ -6,3 +6,8 @@ pages_build_output_dir = ".cf-pages"
 binding = "DB"
 database_name = "springfieldpeps-db"
 database_id = "67d60e74-cd83-46a7-b907-3a0b3437ceb3"
+
+# Public Turnstile site key (the secret, TURNSTILE_SECRET, is a Pages secret in the dashboard).
+# With this file managing the project, dashboard plain-text vars are ignored: public vars go here.
+[vars]
+TURNSTILE_SITE_KEY = "0x4AAAAAAGSIk0lZEgYL3m-V"
