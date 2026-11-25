@@ -199,6 +199,13 @@ export async function runScheduled(cron, env) {
   }
   const matched = await autoMatch(env, db).catch((e) => ({ error: String(e.message || e) }));
   const texts = await placeTexts(env, db).catch((e) => ({ error: String(e.message || e) }));
+  // Solana stablecoin payments: confirm any that arrived while nobody had the pay page open.
+  if (ordersReady(env)) {
+    const sol = await ordersApi(env, '/admin/crypto/sweep', { method: 'POST', body: {} }).catch((e) => ({ error: String(e.message || e) }));
+    if (sol && (sol.error || sol.paid)) await logEvent(db, { kind: 'crypto_sweep', status: sol.error ? 'error' : 'done', detail: sol });
+    // A crypto payment just confirmed: send the "place it at show-me-source" alert now, not in 2 hours.
+    if (sol && sol.paid) await placeTexts(env, db).catch(() => null);
+  }
   // Referral credit is earned (and store credit kept or given back) once the order's status is final.
   if (ordersReady(env)) {
     const codes = await settleCodes(db, async (n) => {
