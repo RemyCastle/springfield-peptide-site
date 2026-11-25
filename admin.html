@@ -982,6 +982,8 @@
           '<button type="button" data-rc-ok class="bg-[#FDD700] hover:bg-white text-black font-bold px-3 py-2 rounded-xl text-xs">Mark that order paid</button>' +
           '<button type="button" data-rc-no class="text-xs underline text-zinc-400">Not a payment for an order</button></div></div>';
       }).join('') : '<p class="text-zinc-400">Nothing to check.</p>';
+      // Payments with no SPBC order code (other Venmo / Cash App payments) are kept but not shown.
+      if (d.hidden_count) box.insertAdjacentHTML('beforeend', '<p class="text-xs text-zinc-500 mt-3">' + Number(d.hidden_count) + ' other payment' + (d.hidden_count === 1 ? '' : 's') + ' without an SPBC order code ' + (d.hidden_count === 1 ? 'is' : 'are') + ' hidden.</p>');
     }
     document.getElementById('checkpayList')?.addEventListener('click', async (e) => {
       const card = e.target.closest('[data-rc]');
