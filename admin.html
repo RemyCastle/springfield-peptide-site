@@ -518,19 +518,31 @@
         </div>
         <details class="admin-card p-4 mb-4">
           <summary class="cursor-pointer font-semibold text-white">Fill Orders at show-me-source Automatically (one-time setup)</summary>
-          <ol class="list-decimal ml-5 mt-2 space-y-1 text-sm text-zinc-300">
+          <p class="text-sm font-semibold text-white mt-3">On a computer</p>
+          <ol class="list-decimal ml-5 mt-1 space-y-1 text-sm text-zinc-300">
             <li>Show your bookmarks bar (Ctrl+Shift+B).</li>
             <li>Drag this button onto it: <a id="smsFillBookmark" href="#" class="inline-block bg-[#FDD700] text-black font-bold px-3 py-1 rounded-lg text-xs" onclick="return false">SPBC Fill</a></li>
             <li>For each order below, click <strong>Fill at show-me-source ↗</strong>. In the tab that opens, apply your pricing code if needed, then click <strong>SPBC Fill</strong> in your bookmarks bar.</li>
+          </ol>
+          <p class="text-sm font-semibold text-white mt-4">On your iPhone (Safari)</p>
+          <ol class="list-decimal ml-5 mt-1 space-y-1 text-sm text-zinc-300">
+            <li>Tap <button type="button" id="smsFillCopy" class="inline-block bg-[#FDD700] text-black font-bold px-3 py-1 rounded-lg text-xs">Copy bookmark code</button></li>
+            <li>In Safari, open any page, tap <strong>Share</strong> → <strong>Add Bookmark</strong>, name it <strong>SPBC Fill</strong>, tap Save.</li>
+            <li>Tap the <strong>Bookmarks</strong> (book) icon → <strong>Edit</strong> → tap <strong>SPBC Fill</strong>. Delete the address, paste the copied code, tap Done.</li>
+            <li>For each order below, tap <strong>Fill at show-me-source ↗</strong>. When their shop opens in Safari, apply your pricing code if needed, then tap the address bar, type <strong>SPBC Fill</strong> and tap the bookmark (or open Bookmarks and tap it).</li>
           </ol>
           <p class="text-xs text-zinc-500 mt-2">It fills the cart, the customer's address and supplier@springfieldpbc.com, and picks USPS Priority. It never ticks their boxes or places the order: you check and pay.</p>
         </details>
         <script type="text/plain" id="smsFillSrc">(() => {
   const PFX = 'SPBCFILL:';
   const say = (m) => alert('SPBC fill: ' + m);
-  if (!String(window.name || '').startsWith(PFX)) return say('open this tab from SPBC admin > Place orders > "Fill at show-me-source" first.');
+  /* The order comes in the tab's name (computer) or after #spbcfill= in the address (iPhone). */
+  let raw = String(window.name || '').startsWith(PFX) ? window.name.slice(PFX.length) : '';
+  if (!raw) { const m = /[#&]spbcfill=([A-Za-z0-9_-]+)/.exec(location.hash || ''); if (m) raw = m[1].replace(/-/g, '+').replace(/_/g, '/'); }
+  if (!raw) return say('open this tab from SPBC admin > Place orders > "Fill at show-me-source" first.');
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
   let d;
-  try { d = JSON.parse(decodeURIComponent(escape(atob(window.name.slice(PFX.length))))); } catch (e) { return say('could not read the order. Open it again from the SPBC admin.'); }
+  try { d = JSON.parse(decodeURIComponent(escape(atob(raw)))); } catch (e) { return say('could not read the order. Open it again from the SPBC admin.'); }
   if (typeof setProductQty !== 'function') return say('this page is not the show-me-source shop. Go to In Stock and click again.');
   document.querySelectorAll('input[id^="qty-"]').forEach((el) => { if ((parseInt(el.value, 10) || 0) > 0) setProductQty(el.id.slice(4), 0); });
   const missing = [];
@@ -1505,8 +1517,41 @@
       const link = document.getElementById('smsFillBookmark');
       if (!src || !link) return;
       const code = src.textContent.replace(/\n\s*/g, ' ').trim();
-      link.setAttribute('href', 'javascript:' + encodeURIComponent(code));
+      const bookmark = 'javascript:' + encodeURIComponent(code);
+      link.setAttribute('href', bookmark);
+      // iPhone: no dragging, so copy the code and paste it into a Safari bookmark's address.
+      document.getElementById('smsFillCopy')?.addEventListener('click', async (e) => {
+        try {
+          await navigator.clipboard.writeText(bookmark);
+          e.target.textContent = 'Copied: now step 2';
+        } catch {
+          prompt('Copy this, then paste it as the bookmark address:', bookmark);
+        }
+      });
     })();
+
+    // Where "Fill at show-me-source" opens. The order also rides after # in the address (never sent
+    // to any server; the bookmark erases it), because iPhone Safari does not keep the tab name.
+    // From the installed admin app on iPhone, x-safari- forces real Safari, where bookmarks are.
+    function openSmsFill(r) {
+      const payload = smsFillPayload(r, 'supplier@springfieldpbc.com');
+      const b64url = payload.slice('SPBCFILL:'.length).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const url = 'https://show-me-source.com/#spbcfill=' + b64url;
+      const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const installed = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+      if (ios && installed) {
+        location.href = 'x-safari-' + url;
+        return true;
+      }
+      const w = window.open(url, payload);
+      if (!w) return false;
+      try {
+        w.opener = null;
+      } catch {
+        /* ignore */
+      }
+      return true;
+    }
 
     function updatePlaceCount(n) {
       const el = document.getElementById('placeCount');
@@ -1684,14 +1729,8 @@
       if (fill) {
         const r = placeQueueCache.find((x) => x.order_number === fill.dataset.placeFill);
         if (!r) return;
-        const w = window.open('https://show-me-source.com/', smsFillPayload(r, 'supplier@springfieldpbc.com'));
-        if (!w) return placeMsg('Allow pop-ups for this page to open show-me-source.', false);
-        try {
-          w.opener = null;
-        } catch {
-          /* ignore */
-        }
-        placeMsg('Opened show-me-source. Apply your pricing code if needed, then click SPBC fill in your bookmarks bar.');
+        if (!openSmsFill(r)) return placeMsg('Allow pop-ups for this page to open show-me-source.', false);
+        placeMsg('Opened show-me-source. Apply your pricing code if needed, then tap SPBC Fill in your bookmarks.');
         return;
       }
       const use = e.target.closest('[data-place-use]');
