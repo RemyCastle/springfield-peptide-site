@@ -24,7 +24,7 @@ const PAGES = path.join(SRC, 'pages');
 const STYLES = path.join(SRC, 'styles');
 const SCRIPTS = path.join(SRC, 'scripts');
 
-const PAGE_NAMES = ['index', 'calculator', 'contact', 'titration', 'track', 'my-orders', 'review', 'lab-reports', 'email-preferences', 'privacy'];
+const PAGE_NAMES = ['index', 'calculator', 'contact', 'titration', 'track', 'my-orders', 'review', 'lab-reports', 'email-preferences', 'privacy', 'faq'];
 
 function read(p) {
   return fs.readFileSync(p, 'utf8');
