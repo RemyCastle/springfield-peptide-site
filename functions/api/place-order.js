@@ -5,6 +5,7 @@
  * admin Quick order). Client prices, totals and shipping_cents are ignored.
  */
 import { createOrder } from '../lib/createOrder.js';
+import { clientIp, overLimit } from '../lib/siteMail.js';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -21,6 +22,20 @@ export async function onRequestPost({ request, env }) {
     return json({ error: 'invalid_json' }, 400);
   }
   const customer = body.customer || {};
+  // Every order emails the address typed in and alerts the owner: cap per connection and
+  // per email so the checkout cannot be used to spam someone or flood the order list.
+  if (env.DB) {
+    const email = String(customer.email || '').trim().toLowerCase();
+    if (
+      (await overLimit(env.DB, `order-ip:${clientIp(request)}`, 8, 60)) ||
+      (email && (await overLimit(env.DB, `order-email:${email}`, 5, 60)))
+    ) {
+      return json(
+        { error: 'rate_limited', message: 'Too many orders from this connection in the last hour. Please wait a bit, or email us.' },
+        429
+      );
+    }
+  }
   const result = await createOrder(env, {
     name: customer.name,
     email: customer.email,

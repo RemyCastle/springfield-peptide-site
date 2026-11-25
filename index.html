@@ -35,11 +35,11 @@
 "name": "Springfield Peptide Buyers Club",
 "url": "https://springfieldpbc.com/",
 "description": "Members research collective for research-use peptides. Not medical advice.",
-"logo": "https://springfieldpbc.com/favicon.svg",
-"email": "springfieldpeps@proton.me",
+"logo": "https://springfieldpbc.com/assets/brand/spbc-mark-512.png",
+"email": "support@springfieldpbc.com",
 "contactPoint": {
   "@type": "ContactPoint",
-  "email": "springfieldpeps@proton.me",
+  "email": "support@springfieldpbc.com",
   "contactType": "customer service",
   "availableLanguage": "English"
 }
@@ -119,7 +119,7 @@
                 <div id="shopBanners" class="space-y-2 mb-4"></div>
                 <div class="depth-card px-3 sm:px-4 py-3 mb-5 text-sm text-center space-y-1.5 reveal prices-rules-card">
                     <p class="text-[#EAB308] font-semibold">Ordering Rules</p>
-                    <p class="text-zinc-300"><strong class="text-white">Single Vials and Kits</strong> — buy 1 vial or a 10-pack / kit. Some listings are kit-only.</p>
+                    <p class="text-zinc-300"><strong class="text-white">Single Vials and Kits</strong> — order single vials or 10-vial kits, in any mix. Every order needs at least 2 vials or 1 kit. Some listings are kit-only.</p>
                 </div>
 
                 <!-- Search + filter -->
@@ -187,7 +187,7 @@
         <section class="spbc-section">
             <div class="spbc-main order-shell">
                 <div class="notice26 notice26--ship mb-3 break-word">
-                    Orders placed by Friday ship the following Monday.
+                    Orders get a shipping label within a day of payment (post office days).
                 </div>
 
                 <div class="notice26 notice26--ruo mb-8">
@@ -216,18 +216,18 @@
                     <h3 class="ducks-font text-2xl text-white text-center">Place Order</h3>
                     <p class="text-xs text-zinc-500 text-center -mt-2">Contact, shipping address, then review</p>
                     <div>
-                        <input type="text" id="name" name="name" placeholder="Name" required autocomplete="name"
+                        <input type="text" id="name" name="name" aria-label="Full name" placeholder="Name" required autocomplete="name"
                                class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
                                aria-describedby="nameError">
                         <span id="nameError" class="field-error" hidden></span>
                     </div>
                     <div>
-                        <input type="email" id="email" name="email" placeholder="Your Email Address" required autocomplete="email" inputmode="email"
+                        <input type="email" id="email" name="email" aria-label="Email address" placeholder="Your Email Address" required autocomplete="email" inputmode="email"
                                class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
                                aria-describedby="emailError">
                         <span id="emailError" class="field-error" hidden></span>
                     </div>
-                    <textarea id="message" rows="6" placeholder="Your order summary will appear here..." readonly
+                    <textarea id="message" rows="6" aria-label="Order summary" placeholder="Your order summary will appear here..." readonly
                               class="w-full bg-black border border-zinc-700 rounded-3xl px-4 sm:px-5 py-3.5 text-sm sm:text-base leading-relaxed"></textarea>
                     <p id="orderRuleHint" class="text-xs text-zinc-500 text-center break-word px-1"></p>
                     <p id="savingsLine" class="text-center text-sm tabular-gold hidden" aria-live="polite">Savings: $<span id="savingsAmount">0.00</span></p>
@@ -238,34 +238,34 @@
                     <fieldset class="space-y-3 pt-1">
                         <legend class="text-[10px] uppercase tracking-[0.2em] text-[#EAB308]/80 font-semibold w-full text-center mb-1">Shipping Address (US only)</legend>
                         <div>
-                            <input type="text" id="shipLine1" name="ship_line1" placeholder="Street address" required autocomplete="address-line1"
+                            <input type="text" id="shipLine1" aria-label="Street address" name="ship_line1" placeholder="Street address" required autocomplete="address-line1"
                                    class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
                                    aria-describedby="shipLine1Error">
                             <span id="shipLine1Error" class="field-error" hidden></span>
                         </div>
-                        <input type="text" id="shipLine2" name="ship_line2" placeholder="Apt, suite, unit (optional)" autocomplete="address-line2"
+                        <input type="text" id="shipLine2" aria-label="Apartment, suite or unit (optional)" name="ship_line2" placeholder="Apt, suite, unit (optional)" autocomplete="address-line2"
                                class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
-                                <input type="text" id="shipCity" name="ship_city" placeholder="City" required autocomplete="address-level2"
+                                <input type="text" id="shipCity" aria-label="City" name="ship_city" placeholder="City" required autocomplete="address-level2"
                                        class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
                                        aria-describedby="shipCityError">
                                 <span id="shipCityError" class="field-error" hidden></span>
                             </div>
                             <div>
-                                <input type="text" id="shipState" name="ship_state" placeholder="State" required maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" autocomplete="address-level1"
+                                <input type="text" id="shipState" aria-label="State (2 letters)" name="ship_state" placeholder="State" required maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" autocomplete="address-level1"
                                        class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base uppercase"
                                        aria-describedby="shipStateError">
                                 <span id="shipStateError" class="field-error" hidden></span>
                             </div>
                             <div>
-                                <input type="text" id="shipPostal" name="ship_postal" placeholder="ZIP" required pattern="\d{5}(-\d{4})?" title="5-digit ZIP or ZIP+4" autocomplete="postal-code" inputmode="numeric"
+                                <input type="text" id="shipPostal" aria-label="ZIP code" name="ship_postal" placeholder="ZIP" required pattern="\d{5}(-\d{4})?" title="5-digit ZIP or ZIP+4" autocomplete="postal-code" inputmode="numeric"
                                        class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base"
                                        aria-describedby="shipPostalError">
                                 <span id="shipPostalError" class="field-error" hidden></span>
                             </div>
                         </div>
-                        <input type="tel" id="shipPhone" name="ship_phone" placeholder="Phone (optional)" autocomplete="tel" inputmode="tel"
+                        <input type="tel" id="shipPhone" aria-label="Phone (optional)" name="ship_phone" placeholder="Phone (optional)" autocomplete="tel" inputmode="tel"
                                class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3.5 text-base">
                         <input type="hidden" id="shipCountry" name="ship_country" value="US" autocomplete="country">
                         <p id="zipHint" class="text-[11px] text-amber-300 text-center hidden" aria-live="polite"></p>
@@ -288,7 +288,7 @@
                     </fieldset>
 
                     <div>
-                        <textarea id="deliveryNotes" rows="2" maxlength="300" placeholder="Delivery notes (optional), like &quot;leave at back door&quot;"
+                        <textarea id="deliveryNotes" aria-label="Delivery notes (optional)" rows="2" maxlength="300" placeholder="Delivery notes (optional), like &quot;leave at back door&quot;"
                                   class="w-full bg-black border border-zinc-700 rounded-2xl px-4 sm:px-5 py-3 text-sm"></textarea>
                     </div>
                     <div id="turnstileBox" class="flex justify-center hidden"></div>
@@ -422,7 +422,7 @@
   </div>
 
   
-  <script src="/shared/store.9dc3b984.js"></script>
+  <script src="/shared/store.3a2b98e4.js"></script>
   
   <script src="/shared/age-gate.1e38f130.js" defer></script>
   <script src="/shared/site-atmosphere.1934ad4a.js" defer></script>

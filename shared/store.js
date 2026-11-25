@@ -1540,10 +1540,12 @@ const CART_KEY = "spbc_cart_draft";
                     return;
                 }
                 if (!res.ok || !data.ok) {
-                    if (!['not_enough_stock', 'paused', 'validation_failed', 'order_minimum', 'turnstile_failed'].includes(data.error)) {
+                    // The server calls a failed bot check 'bot_check_failed' (older builds said 'turnstile_failed').
+                    const botFail = data.error === 'bot_check_failed' || data.error === 'turnstile_failed';
+                    if (!['not_enough_stock', 'paused', 'validation_failed', 'order_minimum', 'rate_limited'].includes(data.error) && !botFail) {
                         reportClientProblem('place_order', `${res.status} ${data.error || ''}`);
                     }
-                    if (data.error === 'turnstile_failed') resetTurnstile();
+                    if (botFail) resetTurnstile();
                     throw new Error(data.message || data.error || `Order failed (${res.status})`);
                 }
 

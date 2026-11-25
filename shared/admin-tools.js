@@ -317,6 +317,21 @@
     });
     $('bulkApply').addEventListener('click', async () => {
       const ids = [...document.querySelectorAll('[data-bulk-pick]:checked')].map((b) => b.closest('article').dataset.id);
+      if (!ids.length) {
+        toast('Tick at least one product.', false);
+        return;
+      }
+      // Say exactly what will happen before changing many prices at once.
+      const op = $('bulkOp').value;
+      const amt = Number($('bulkAmount').value);
+      const n = ids.length + ' product' + (ids.length === 1 ? '' : 's');
+      const what = {
+        show: 'Show ' + n + ' on the shop?',
+        hide: 'Hide ' + n + ' from the shop?',
+        add_vial: 'Change the VIAL price of ' + n + ' by ' + (amt >= 0 ? '+$' : '-$') + Math.abs(amt) + '?',
+        add_kit: 'Change the KIT price of ' + n + ' by ' + (amt >= 0 ? '+$' : '-$') + Math.abs(amt) + '?',
+      }[op] || 'Apply this to ' + n + '?';
+      if (!confirm(what + ' You can undo each change from the Change log.')) return;
       try {
         const r = await api('/api/admin/tools', { action: 'bulk', ids, op: $('bulkOp').value, amount: $('bulkAmount').value });
         toast(r.message);
@@ -351,7 +366,7 @@
       box.querySelectorAll('[data-undo]').forEach((b) =>
         b.addEventListener('click', async () => {
           try {
-            const r = await api('/api/admin/tools', { action: 'Undo', id: b.dataset.undo });
+            const r = await api('/api/admin/tools', { action: 'undo', id: b.dataset.undo });
             toast(r.message);
             box.classList.add('hidden');
             await loadProducts();

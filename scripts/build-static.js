@@ -37,7 +37,7 @@ const TRASH = path.join(ROOT, '_trash');
 const PAGES = ['index.html', 'calculator.html', 'contact.html', 'titration.html', 'track.html', 'admin.html', 'qr.html', 'my-orders.html', 'review.html', 'lab-reports.html', 'email-preferences.html', 'privacy.html'];
 
 /** Other root files that must be present in the deployed output. */
-const ROOT_FILES = ['favicon.svg', 'robots.txt', 'sitemap.xml', '_headers', '_redirects', 'admin-sw.js', 'admin.webmanifest'];
+const ROOT_FILES = ['404.html', 'favicon.svg', 'robots.txt', 'sitemap.xml', '_headers', '_redirects', 'admin-sw.js', 'admin.webmanifest'];
 
 const HASHED = /\.[a-f0-9]{8}\.(css|js)$/;
 /** Files under assets/ that are tools, not site content. */

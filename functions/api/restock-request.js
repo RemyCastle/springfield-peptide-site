@@ -4,12 +4,17 @@
  * The sync Worker emails everyone waiting once the product is for sale again.
  */
 import { json } from '../lib/auth.js';
+import { clientIp, overLimit } from '../lib/siteMail.js';
 import { ensureSyncSchema } from '../../workers/supplier-sync/src/schema.js';
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
 
 export async function onRequestPost({ request, env }) {
   if (!env.DB) return json({ error: 'server_misconfigured' }, 500);
+  // Each sign-up can lead to emails: cap it per connection so it cannot be used to spam.
+  if (await overLimit(env.DB, `restock:${clientIp(request)}`, 20, 60)) {
+    return json({ error: 'rate_limited', message: 'Too many sign-ups from this connection. Please try again later.' }, 429);
+  }
   const body = await request.json().catch(() => ({}));
   const product = String(body.product || '').trim().slice(0, 200);
   const email = String(body.email || '').trim().toLowerCase().slice(0, 254);

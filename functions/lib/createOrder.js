@@ -317,7 +317,8 @@ export async function createOrder(env, input) {
       const r = await fetch(`${publicBase}/shipping/${encodeURIComponent(orderNumber)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(ship),
+        // The email lets a repeat submit update an address already on file (the shipping page needs it).
+        body: JSON.stringify({ ...ship, customer_email: email }),
       });
       shipping_saved = r.ok;
     } catch {

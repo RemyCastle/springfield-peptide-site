@@ -149,7 +149,9 @@ export async function onRequestPost({ request, env }) {
   await ensureAdminTables(db);
   const body = await request.json().catch(() => ({}));
 
-  switch (body.action) {
+  // Lower-case so a label change in the admin UI can never break an action again
+  // (Title Case turned 'undo' into 'Undo' and Undo silently stopped working).
+  switch (String(body.action || '').toLowerCase()) {
     case 'undo': {
       try {
         return json({ ok: true, message: await undoChange(db, parseInt(body.id, 10)) });

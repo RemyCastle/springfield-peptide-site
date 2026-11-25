@@ -174,6 +174,14 @@ ${foot.html}`),
  *     shipped with that tracking (the customer gets the shipped email).
  * Each email is acted on once (logged as auto_paid / auto_shipped events).
  */
+/** Order codes in a payment note: 10-character codes, or legacy PEP-YYYYMMDD-NNNN / SPBC-NNNNNN. */
+export function noteOrderCodes(note) {
+  const t = String(note || '').toUpperCase();
+  const codes = new Set();
+  for (const m of t.matchAll(/\b(PEP-\d{8}-\d{4}|SPBC-\d{4,}|[A-Z0-9]{10})\b/g)) codes.add(m[1]);
+  return [...codes];
+}
+
 export async function autoMatch(env, db, now = Date.now()) {
   const s = await getSettings(db);
   if (s.auto_match_on !== '1' || !ordersReady(env)) return { skipped: true };
@@ -213,7 +221,16 @@ export async function autoMatch(env, db, now = Date.now()) {
     // A payment can only pay for an order that already existed when the payment email arrived
     // (5 minutes of slack for clocks), so an old payment never covers a newer order.
     const arrived = Date.parse(String(mail.received_at || '').replace(' ', 'T') + 'Z') || 0;
-    const cands = paymentCandidates(e, unpaid).filter((o) => arrived && (Date.parse(o.created_at || '') || Infinity) <= arrived + 5 * 60000);
+    const inTime = (o) => arrived && (Date.parse(o.created_at || '') || Infinity) <= arrived + 5 * 60000;
+    // An order code in the note decides: only that order, only while it is still unpaid
+    // and the amount is exact. If the note names an order that is no longer unpaid (the
+    // receipts mailbox already applied this same payment, or it was cancelled), do nothing:
+    // falling back to name + amount could pay a second order with one payment.
+    const codes = noteOrderCodes(e.note);
+    const cents = Math.round(Number(e.amount || 0) * 100);
+    const cands = codes.length
+      ? unpaid.filter((o) => codes.includes(String(o.order_number).toUpperCase()) && Number(o.total_cents) === cents && inTime(o))
+      : paymentCandidates(e, unpaid).filter(inTime);
     if (cands.length !== 1) continue;
     const o = cands[0];
     await ordersApi(env, `/admin/orders/${encodeURIComponent(o.order_number)}`, {
