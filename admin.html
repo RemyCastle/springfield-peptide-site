@@ -531,7 +531,8 @@
             <li>Tap the <strong>Bookmarks</strong> (book) icon → <strong>Edit</strong> → tap <strong>SPBC Fill</strong>. Delete the address, paste the copied code, tap Done.</li>
             <li>For each order below, tap <strong>Fill at show-me-source ↗</strong>. When their shop opens in Safari, apply your pricing code if needed, then tap the address bar, type <strong>SPBC Fill</strong> and tap the bookmark (or open Bookmarks and tap it).</li>
           </ol>
-          <p class="text-xs text-zinc-500 mt-2">It fills the cart, the customer's address and supplier@springfieldpbc.com, and picks USPS Priority. It never ticks their boxes or places the order: you check and pay.</p>
+          <p class="text-xs text-zinc-500 mt-2">It fills the cart, the customer's address and supplier@springfieldpbc.com, picks USPS Priority, ticks "No Show Me Source branding in the package" and asks them (in the notes) to put no invoice or prices in the box. It never ticks their agreement boxes or places the order: you check and pay.</p>
+          <p class="text-xs text-amber-300 mt-1">Made your SPBC Fill bookmark before Nov 25? Copy and paste the code into it once more to get the newest version.</p>
         </details>
         <script type="text/plain" id="smsFillSrc">(() => {
   const PFX = 'SPBCFILL:';
@@ -550,7 +551,12 @@
   const set = (id, v) => { const el = document.getElementById(id); if (!el || v == null || v === '') return; el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
   const parts = String(d.name || '').trim().split(/\s+/);
   set('fname', parts.shift()); set('lname', parts.join(' ')); set('email', d.email); set('phone', d.phone);
-  set('addr1', d.line1); set('addr2', d.line2); set('city', d.city); set('state', d.state); set('zip', d.zip); set('ship-zip', d.zip); set('shipping', d.shipping); set('notes', d.notes);
+  set('addr1', d.line1); set('addr2', d.line2); set('city', d.city); set('state', d.state); set('zip', d.zip); set('ship-zip', d.zip); set('shipping', d.shipping);
+  /* Drop-ship: the customer must not see show-me-source or its prices in the box. */
+  set('notes', [d.notes, 'Drop-ship: please include no invoice or prices in the package.'].filter(Boolean).join(' / '));
+  const plain = document.getElementById('ck-plain');
+  if (plain && !plain.checked) plain.click();
+  const plainOk = !!(plain && plain.checked);
   window.name = '';
   const esc = (t) => String(t || '').replace(/[<>&]/g, '');
   const noCode = typeof PROMO_CODE !== 'undefined' && !PROMO_CODE;
@@ -558,6 +564,7 @@
   box.style.cssText = 'position:fixed;z-index:99999;left:12px;right:12px;bottom:12px;padding:14px 16px;border-radius:12px;background:#0b120e;color:#fff;border:2px solid #FDD700;font:14px/1.4 Arial,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.5)';
   box.innerHTML = '<b style="color:#FDD700">SPBC order ' + esc(d.order) + ' filled in.</b> ' +
     (noCode ? '<b style="color:#fca5a5">Your pricing code is NOT applied: enter it under Preferred Pricing before you pay.</b> ' : '') +
+    (plainOk ? '' : '<b style="color:#fca5a5">Tick "No Show Me Source branding in the package" yourself.</b> ') +
     (missing.length ? '<span style="color:#fca5a5">Not found, add by hand: ' + esc(missing.join(', ')) + '.</span> ' : '') +
     'Check the cart and address, pick payment, tick their boxes, then place it. Then mark it placed in the SPBC admin. ' +
     '<button style="margin-left:8px;padding:4px 10px;border-radius:8px;border:0;background:#FDD700;font-weight:bold;cursor:pointer">OK</button>';
