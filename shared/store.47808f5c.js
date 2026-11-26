@@ -903,6 +903,25 @@ const CART_KEY = "spbc_cart_draft";
             openLinkedProduct();
         }
 
+        // A dropped connection on a phone ("Load failed" in Safari) usually works a second later,
+        // so try up to 3 times before showing the error. Server 4xx answers won't fix themselves.
+        async function fetchProductsWithRetry() {
+            const waits = [0, 1000, 2500];
+            let lastErr = null;
+            for (let i = 0; i < waits.length; i++) {
+                if (waits[i]) await new Promise((r) => setTimeout(r, waits[i]));
+                try {
+                    const res = await fetch('/api/products', { credentials: 'same-origin' });
+                    if (res.ok) return await res.json();
+                    lastErr = new Error('bad status ' + res.status);
+                    if (res.status < 500 && res.status !== 429) break;
+                } catch (e) {
+                    lastErr = e;
+                }
+            }
+            throw lastErr || new Error('unknown');
+        }
+
         async function loadProducts() {
             const root = document.getElementById('priceTable');
             root.innerHTML = `
@@ -918,9 +937,7 @@ const CART_KEY = "spbc_cart_draft";
                 // Cookie before first fetch (age-gate is defer; this inline script races it).
                 // Exactly one /api/products request per page load on the happy path.
                 document.cookie = 'spbc_member=1; path=/; max-age=31536000; SameSite=Lax';
-                const res = await fetch('/api/products', { credentials: 'same-origin' });
-                if (!res.ok) throw new Error('bad status');
-                const data = await res.json();
+                const data = await fetchProductsWithRetry();
                 priceAlertsOn = !!data.price_alerts;
                 freeShipOver = Number(data.free_ship_over) || 0;
                 applyShopSettings(data);
@@ -928,7 +945,17 @@ const CART_KEY = "spbc_cart_draft";
                 renderSoldOut(data.out_of_stock || []);
                 loadReviews();
             } catch (e) {
-                reportClientProblem('load_products', e && e.message);
+                // Offline or the page went to the background: not a shop problem, and when the
+                // shopper comes back to the tab we load again by ourselves.
+                const away = document.visibilityState === 'hidden' || navigator.onLine === false;
+                if (!away) reportClientProblem('load_products', (e && e.message) + ' (after 3 tries)');
+                if (document.visibilityState === 'hidden') {
+                    document.addEventListener('visibilitychange', function again() {
+                        if (document.visibilityState !== 'visible') return;
+                        document.removeEventListener('visibilitychange', again);
+                        loadProducts();
+                    });
+                }
                 root.innerHTML = `
                     <div class="text-center py-8 space-y-3">
                         <p class="text-red-400 text-sm">Could not load prices.</p>
